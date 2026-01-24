@@ -19,7 +19,7 @@ namespace AgroMarket.Application.Common.Services
             return await _repository.GetAllAsync();
         }
 
-        public virtual async Task<T?> GetByIdAsync(int id)
+        public virtual async Task<T?> GetByIdAsync(Guid id)
         {
             return await _repository.GetByIdAsync(id);
         }

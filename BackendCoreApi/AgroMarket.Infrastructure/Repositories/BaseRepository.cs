@@ -22,7 +22,7 @@ namespace AgroMarket.Infrastructure.Repositories
             return await _dbSet.Where(x => !x.IsDeleted).ToListAsync();
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<T?> GetByIdAsync(Guid id)
         {
             return await _dbSet.FindAsync(id);
         }
