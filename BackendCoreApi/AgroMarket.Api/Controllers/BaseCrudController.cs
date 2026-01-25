@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AgroMarket.Api.Controllers
 {
-    // Kế thừa BaseController để dùng lại các hàm Success, Error
-    public class BaseCrudController<TEntity, TDto, TCreateDto, TUpdateDto> : BaseController
+    // Rút gọn: Chỉ còn TDto (ra) và TFormDto (vào)
+    public class BaseCrudController<TEntity, TDto, TFormDto> : BaseController
         where TEntity : BaseEntity
     {
         protected readonly IBaseService<TEntity> _service;
@@ -18,69 +18,53 @@ namespace AgroMarket.Api.Controllers
             _mapper = mapper;
         }
 
-        // 1. GET ALL
         [HttpGet]
         public virtual async Task<IActionResult> GetAll()
         {
             var entities = await _service.GetAllAsync();
             var dtos = _mapper.Map<IEnumerable<TDto>>(entities);
-            return Success(dtos, "Lấy dữ liệu thành công");
+            return Success(dtos);
         }
 
-        // 2. GET BY ID
         [HttpGet("{id}")]
         public virtual async Task<IActionResult> GetById(Guid id)
         {
             var entity = await _service.GetByIdAsync(id);
             if (entity == null)
-                return Error("Không tìm thấy dữ liệu", 404);
-
-            var dto = _mapper.Map<TDto>(entity);
-            return Success(dto);
+                return Error("Không tìm thấy", 404);
+            return Success(_mapper.Map<TDto>(entity));
         }
 
-        // 3. CREATE
         [HttpPost]
-        public virtual async Task<IActionResult> Create([FromBody] TCreateDto createDto)
+        public virtual async Task<IActionResult> Create([FromBody] TFormDto formDto)
         {
-            if (!ModelState.IsValid)
-                return Error("Dữ liệu không hợp lệ");
-
-            // Map từ DTO sang Entity
-            var entity = _mapper.Map<TEntity>(createDto);
-
+            var entity = _mapper.Map<TEntity>(formDto);
             await _service.CreateAsync(entity);
 
-            // Trả về kết quả (thường sẽ trả về entity vừa tạo hoặc ID)
-            var resultDto = _mapper.Map<TDto>(entity);
-            return CreatedResult(resultDto, "Tạo mới thành công");
+            return CreatedResult(_mapper.Map<TDto>(entity));
         }
 
-        // 4. UPDATE
         [HttpPut("{id}")]
-        public virtual async Task<IActionResult> Update(Guid id, [FromBody] TUpdateDto updateDto)
+        public virtual async Task<IActionResult> Update(Guid id, [FromBody] TFormDto formDto)
         {
-            if (!ModelState.IsValid)
-                return Error("Dữ liệu không hợp lệ");
-
             var existingEntity = await _service.GetByIdAsync(id);
             if (existingEntity == null)
-                return Error("Không tìm thấy dữ liệu cần sửa", 404);
+                return Error("Không tìm thấy", 404);
 
-            _mapper.Map(updateDto, existingEntity);
-            existingEntity.Id = id; // Đảm bảo ID không bị đổi
+            _mapper.Map(formDto, existingEntity);
+
+            existingEntity.Id = id;
 
             await _service.UpdateAsync(existingEntity);
             return Success("Cập nhật thành công");
         }
 
-        // 5. DELETE
         [HttpDelete("{id}")]
         public virtual async Task<IActionResult> Delete(Guid id)
         {
             var entity = await _service.GetByIdAsync(id);
             if (entity == null)
-                return Error("Không tìm thấy dữ liệu cần xóa", 404);
+                return Error("Không tìm thấy", 404);
 
             await _service.DeleteAsync(id);
             return Success("Xóa thành công");

@@ -1,3 +1,4 @@
+using AgroMarket.Api.Middlewares;
 using AgroMarket.Application;
 using AgroMarket.Infrastructure;
 
@@ -13,6 +14,9 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+// middleware b?t l?i h? th?ng
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

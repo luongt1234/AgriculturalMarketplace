@@ -7,6 +7,7 @@ namespace AgroMarket.Application.Common.Interfaces
     {
         Task<IEnumerable<T>> GetAllAsync();
         Task<T?> GetByIdAsync(Guid id);
+        Task<T?> GetByValue(string propertyName, string value);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         void Add(T entity);
         void Update(T entity);
