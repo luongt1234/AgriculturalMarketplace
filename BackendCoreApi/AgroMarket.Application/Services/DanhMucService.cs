@@ -25,7 +25,7 @@ namespace AgroMarket.Application.Services
         {
             var danhMucs = await _repo.GetDanhMucByLoaiAsync(loai);
 
-            var result = _mapper.Map<IEnumerable<DanhMuc>>(danhMucs);
+            var result = _mapper.Map<IEnumerable<DanhMucDto>>(danhMucs);
 
             return result;
         }
