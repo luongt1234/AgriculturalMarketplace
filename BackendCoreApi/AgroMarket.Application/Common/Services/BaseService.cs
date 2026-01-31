@@ -36,7 +36,7 @@ namespace AgroMarket.Application.Common.Services
             await _unitOfWork.CommitAsync();
         }
 
-        public virtual async Task DeleteAsync(int id)
+        public virtual async Task DeleteAsync(Guid id)
         {
             var entity = await _repository.GetByIdAsync(id);
             if (entity != null)

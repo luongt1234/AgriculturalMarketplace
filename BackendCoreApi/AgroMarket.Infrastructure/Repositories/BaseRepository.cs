@@ -3,6 +3,7 @@ using AgroMarket.Domain.Common;
 using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace AgroMarket.Infrastructure.Repositories
 {
@@ -26,6 +27,24 @@ namespace AgroMarket.Infrastructure.Repositories
         {
             return await _dbSet.FindAsync(id);
         }
+
+        public async Task<T?> GetByValue(string propertyName, string value)
+        {
+            var prop = typeof(T).GetProperty(
+                propertyName,
+                BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+            );
+
+            if (prop == null)
+                throw new ArgumentException(
+                    $"Property '{propertyName}' không tồn tại trong {typeof(T).Name}"
+                );
+
+            return await _dbSet.FirstOrDefaultAsync(
+                x => EF.Property<string>(x, prop.Name) == value
+            );
+        }
+
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {

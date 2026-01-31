@@ -15,6 +15,9 @@ namespace AgroMarket.Domain.Entities
         public Guid? DanhMucId { get; set; } // loai_id (FK tới DanhMuc type=LOAI_SP)
         [ForeignKey("DanhMucId")]
         public virtual DanhMuc? DanhMuc { get; set; }
+        public Guid LoaiId { get; set; }
+        [ForeignKey("LoaiId")]
+        public virtual DanhMuc? Loai { get; set; }
 
         public Guid? ChaId { get; set; } // parent_id (Đệ quy)
         [ForeignKey("ChaId")]
