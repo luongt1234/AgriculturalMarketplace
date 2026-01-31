@@ -1,73 +1,106 @@
 # React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Khung dự án
+src/
+├── assets/                       # Tài nguyên tĩnh (Images, Global CSS, Fonts)
+│   ├── images/
+│   └── styles/                   # global.css (Tailwind directives)
+│
+├── lib/                          # Cấu hình các thư viện bên thứ 3
+│   ├── axios.ts                  # Cấu hình Axios Interceptors (Auth token)
+│   ├── query-client.ts           # Cấu hình TanStack Query
+│   └── utils.ts                  # Hàm tiện ích UI (vd: cn() cho tailwind)
+│
+├── constants/                    # Các hằng số toàn cục
+│   ├── api-endpoints.ts          # Đường dẫn API
+│   ├── roles.ts                  # ENUM Role: Nông dân, Thương lái, Admin
+│   └── status.ts                 # Mapping trạng thái đơn hàng/hợp đồng (từ SQL)
+│
+├── types/                        # TypeScript Definitions (Mapping từ DB)
+│   ├── auth.types.ts             # User, LoginResponse
+│   ├── product.types.ts          # SanPhamDang, SanPhamChung, NhatKySanPham
+│   ├── order.types.ts            # DonHang, ChiTietDonHang
+│   └── contract.types.ts         # HopDongBaoTieu
+│
+├── store/                        # Global State Management (Zustand)
+│   ├── useAuthStore.ts           # Lưu User Info, Token
+│   ├── useCartStore.ts           # Giỏ hàng (Persist local storage)
+│   └── useUIStore.ts             # Trạng thái Sidebar, Toast, Modal
+│
+├── components/                   # SHARED UI COMPONENTS (Dùng chung toàn app)
+│   ├── ui/                       # Base Components (Button, Input, Select, Badge...)
+│   ├── common/                   # Components phức tạp hơn
+│   │   ├── DataTable.tsx         # Bảng dữ liệu có phân trang/lọc
+│   │   ├── ConfirmModal.tsx
+│   │   ├── ImageUpload.tsx       # Component upload ảnh nông sản
+│   │   └── StatusBadge.tsx       # Hiển thị màu trạng thái (Hoàn tất/Hủy)
+│   └── layout/                   # Các phần nhỏ của Layout (Sidebar, Header)
+│
+├── features/                     # FEATURE-BASED MODULES (Nghiệp vụ cốt lõi)
+│   ├── auth/                     # Xác thực
+│   │   ├── components/           # LoginForm, RegisterForm, ProfileUpdate
+│   │   └── api/                  # authApi.login, authApi.register
+│   │
+│   ├── products/                 # Quản lý nông sản
+│   │   ├── components/           # ProductList, ProductForm, ProductFilter
+│   │   ├── hooks/                # useProducts, useProductDetail
+│   │   └── api/                  # createProduct, getProducts
+│   │
+│   ├── farming-logs/             # [NEW] Nhật ký canh tác & Truy xuất nguồn gốc
+│   │   ├── components/           # LogTimeline (Hiển thị quy trình), QRCodeGenerator
+│   │   └── api/                  # addLog, getLogsByProduct
+│   │
+│   ├── orders/                   # Quản lý đơn hàng & Checkout
+│   │   ├── components/           # OrderTable, OrderDetailDialog, CheckoutForm
+│   │   └── hooks/                # useMyOrders, useUpdateOrderStatus
+│   │
+│   ├── contracts/                # [NEW] Hợp đồng bao tiêu (B2B)
+│   │   ├── components/           # ContractList, ContractSignModal
+│   │   └── api/                  # getContracts, signContract
+│   │
+│   ├── chat/                     # Chat Realtime
+│   │   ├── components/           # ChatWindow, UserList
+│   │   └── services/             # SignalRService.ts (Kết nối WebSocket)
+│   │
+│   └── stats/                    # [NEW] Thống kê & Báo cáo
+│       └── components/           # RevenueChart, TopProductsChart
+│
+├── layouts/                      # BỐ CỤC TRANG (LAYOUTS)
+│   ├── MainLayout.tsx            # Header + Footer + Outlet (Cho khách vãng lai)
+│   ├── AuthLayout.tsx            # Center box (Cho Login/Register)
+│   ├── DashboardLayout.tsx       # [Gộp] Sidebar + Header (Dùng chung logic Layout)
+│   │                             # (Render Sidebar khác nhau dựa trên props role)
+│   └── components/
+│       ├── FarmerSidebar.tsx
+│       ├── TraderSidebar.tsx
+│       └── AdminSidebar.tsx
+│
+├── pages/                        # PAGES (Kết nối Features vào Route)
+│   ├── public/                   # Public Pages
+│   │   ├── HomePage.tsx          # Landing Page
+│   │   ├── ProductDetailPage.tsx # Xem chi tiết, Log canh tác, Đánh giá
+│   │   ├── CartPage.tsx          # Xem giỏ hàng
+│   │   ├── LoginPage.tsx
+│   │   └── RegisterPage.tsx
+│   │
+│   ├── farmer/                   # Nông dân (Seller)
+│   │   ├── FarmerDashboard.tsx   # Thống kê nhanh
+│   │   ├── MyProductPage.tsx     # CRUD Sản phẩm
+│   │   ├── OrderManagePage.tsx   # Quản lý đơn bán
+│   │   └── ContractPage.tsx      # Quản lý hợp đồng
+│   │
+│   ├── trader/                   # Thương lái/Doanh nghiệp (Buyer)
+│   │   ├── MarketPlacePage.tsx   # Chợ mua sỉ (Bộ lọc nâng cao)
+│   │   ├── MyOrderPage.tsx       # Lịch sử mua hàng
+│   │   └── RequestPage.tsx       # Yêu cầu đặt hàng (Pre-order)
+│   │
+│   └── admin/                    # Admin
+│       ├── UserManagePage.tsx    # Duyệt doanh nghiệp, khóa user
+│       └── SystemConfigPage.tsx  # Quản lý danh mục
+│
+├── routes/                       # ROUTING
+│   ├── AppRoutes.tsx             # Định nghĩa toàn bộ luồng
+│   ├── PrivateRoute.tsx          # Check login
+│   └── RoleGuard.tsx             # Check quyền (Farmer vs Trader)
+│
+└── main.tsx                      # Entry Point
