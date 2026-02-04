@@ -30,7 +30,7 @@ namespace AgroMarket.Api.Controllers
         }
 
         // 4. Trả về lỗi
-        protected IActionResult Error(string message, int statusCode = 400, List<string>? errors = null)
+        protected IActionResult Error(string message, int statusCode = 500, List<string>? errors = null)
         {
             var response = new Response<object>(message)
             {

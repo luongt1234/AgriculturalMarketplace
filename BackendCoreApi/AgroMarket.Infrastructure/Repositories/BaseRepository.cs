@@ -1,5 +1,6 @@
 ﻿using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Domain.Common;
+using AgroMarket.Domain.Entities;
 using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -17,8 +18,22 @@ namespace AgroMarket.Infrastructure.Repositories
             _context = context;
             _dbSet = _context.Set<T>();
         }
-
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public IQueryable<T> Query()
+        {
+            return _dbSet.Where(x => !x.IsDeleted);
+        }
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet.Where(x => !x.IsDeleted);
+        }
+        public IQueryable<T> GetPaged(int pageSize, int pageNumber)
+        {
+            return _dbSet
+                .Where(x => !x.IsDeleted)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+        }
+        public async Task<IEnumerable<T>> GetListAllAsync()
         {
             return await _dbSet.Where(x => !x.IsDeleted).ToListAsync();
         }

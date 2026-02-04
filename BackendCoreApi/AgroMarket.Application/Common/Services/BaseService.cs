@@ -16,7 +16,7 @@ namespace AgroMarket.Application.Common.Services
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _repository.GetAllAsync();
+            return await _repository.GetListAllAsync();
         }
 
         public virtual async Task<T?> GetByIdAsync(Guid id)

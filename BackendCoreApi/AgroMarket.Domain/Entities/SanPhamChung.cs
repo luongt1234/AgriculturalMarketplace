@@ -22,5 +22,6 @@ namespace AgroMarket.Domain.Entities
         public Guid? ChaId { get; set; } // parent_id (Đệ quy)
         [ForeignKey("ChaId")]
         public virtual SanPhamChung? Cha { get; set; }
+        public ICollection<SanPhamChung> SanPhamCons { get; set; } = new List<SanPhamChung>();
     }
 }

@@ -92,7 +92,7 @@ namespace AgroMarket.Infrastructure.Persistence
 
             modelBuilder.Entity<SanPhamChung>()
                 .HasOne(spc => spc.Cha)
-                .WithMany()
+                .WithMany(spc => spc.SanPhamCons)
                 .HasForeignKey(spc => spc.ChaId)
                 .OnDelete(DeleteBehavior.Restrict);
 

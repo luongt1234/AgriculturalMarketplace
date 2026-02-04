@@ -5,7 +5,10 @@ namespace AgroMarket.Application.Common.Interfaces
 {
     public interface IRepository<T> where T : BaseEntity
     {
-        Task<IEnumerable<T>> GetAllAsync();
+        IQueryable<T> Query();
+        IQueryable<T> GetAll();
+        Task<IEnumerable<T>> GetListAllAsync();
+        IQueryable<T> GetPaged(int pageSize, int pageNumber);
         Task<T?> GetByIdAsync(Guid id);
         Task<T?> GetByValue(string propertyName, string value);
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);

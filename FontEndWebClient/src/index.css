@@ -1,3 +1,29 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    /* Khai báo màu sắc cho dự án của bạn */
+    --color-primary: #2f7f34;
+    --color-background-light: #f6f8f6;
+    --color-background-dark: #141e15;
+
+    /* Khai báo font */
+    --font-display: "Work Sans", "Inter", sans-serif;
+}
+
+/* Các cấu hình custom khác */
+@layer utilities {
+    .icon-filled {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}

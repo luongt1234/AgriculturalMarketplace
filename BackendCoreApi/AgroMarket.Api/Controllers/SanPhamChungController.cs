@@ -19,6 +19,19 @@ namespace AgroMarket.Api.Controllers
             _sanPhamChungService = sanPhamChungService;
         }
 
+        public override async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var entities = await _sanPhamChungService.GetAllWithDetailsAsync();
+                //var dtos = _mapper.Map<IEnumerable<SanPhamChungDto>>(entities);
+                return Success(entities);
 
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy danh sách sản phẩm chung: {ex.Message}");
+            }
+        }
     }
 }
