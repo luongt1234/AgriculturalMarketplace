@@ -10,5 +10,6 @@ namespace AgroMarket.Application.Interfaces.Repositories
     public interface ISanPhamChungRepository
     {
         IEnumerable<SanPhamChung> GetSanPhamChungsByParentId(Guid parentId);
+        Task<bool> CheckExistCatagory(Guid catagoryId);
     }
 }

@@ -1,0 +1,134 @@
+import axios from 'axios';
+
+import type {
+    AxiosError,
+    AxiosInstance,
+    AxiosRequestConfig,
+    InternalAxiosRequestConfig
+} from 'axios';
+
+const API_BASE_URL = 'http://localhost:5042';
+
+const axiosInstance = axios.create({
+    baseURL: API_BASE_URL,
+    // timeout: 30000,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Request Interceptor
+axiosInstance.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+        const token = localStorage.getItem('accessToken');
+
+        if (token && config.headers) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // ✅ Xử lý FormData - xóa Content-Type để browser tự set
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+        }
+
+        return config;
+    },
+    (error: AxiosError) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response Interceptor
+axiosInstance.interceptors.response.use(
+    (response) => {
+        // ✅ Trả về response.data (giữ nguyên)
+        return response.data;
+    },
+    async (error: AxiosError) => {
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+        if (error.response) {
+            const { status, data } = error.response;
+
+            switch (status) {
+                case 401:
+                    if (!originalRequest._retry) {
+                        originalRequest._retry = true;
+
+                        try {
+                            const refreshToken = localStorage.getItem('refreshToken');
+
+                            if (refreshToken) {
+                                const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+                                    refreshToken
+                                });
+
+                                const newAccessToken = response.data.accessToken;
+                                localStorage.setItem('accessToken', newAccessToken);
+
+                                if (originalRequest.headers) {
+                                    originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                                }
+                                return axiosInstance(originalRequest);
+                            }
+                        } catch (refreshError) {
+                            console.error('Refresh token thất bại');
+                            localStorage.removeItem('accessToken');
+                            localStorage.removeItem('refreshToken');
+                            window.location.href = '/login';
+                            return Promise.reject(refreshError);
+                        }
+                    }
+
+                    console.error('Lỗi 401: Chưa xác thực.');
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    window.location.href = '/login';
+                    break;
+
+                case 403:
+                    console.error('Lỗi 403: Không có quyền truy cập.');
+                    break;
+
+                case 404:
+                    console.error('Lỗi 404: Không tìm thấy tài nguyên.');
+                    break;
+
+                case 422:
+                    console.error('Lỗi 422: Dữ liệu không hợp lệ.', data);
+                    break;
+
+                case 500:
+                    console.error('Lỗi 500: Lỗi máy chủ nội bộ.');
+                    break;
+
+                case 502:
+                case 503:
+                case 504:
+                    console.error(`Lỗi ${status}: Máy chủ không khả dụng.`);
+                    break;
+
+                default:
+                    console.error(`Lỗi HTTP ${status}:`, data);
+            }
+        } else if (error.request) {
+            console.error('Lỗi mạng:', error.request);
+        } else {
+            console.error('Lỗi request:', error.message);
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+interface CustomAxiosInstance extends AxiosInstance {
+    get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
+    post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
+    put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
+    delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
+}
+
+// Ép kiểu khi export
+export default axiosInstance as CustomAxiosInstance;
+
+// export default axiosInstance;

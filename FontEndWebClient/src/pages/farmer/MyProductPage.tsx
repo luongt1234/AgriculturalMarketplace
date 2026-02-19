@@ -1,15 +1,39 @@
 import React, { useMemo, useState } from 'react';
 import { useSetPageTitle } from '../../hooks/useSetPageTitle';
 import { MOCK_PRODUCTS, type Product } from '../../types/product.types';
+import { ProductFormModal } from '../../features/products/components/ProductFormModal';
 
 export const MyProductPage = () => {
+    const [products] = useState<Product[]>(MOCK_PRODUCTS);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    // State lưu sản phẩm đang được chọn để sửa (null = chế độ thêm mới)
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+    const handleOpenCreate = () => {
+        setSelectedProduct(null); // Reset về chế độ thêm
+        setIsModalOpen(true);
+    };
+
+    const handleOpenEdit = (product: Product) => {
+        setSelectedProduct(product); // Set chế độ edit cho sản phẩm này
+        setIsModalOpen(true);
+    };
+
+    const handleSuccess = () => {
+        console.log("Reloading data...");
+        // TODO: Fetch lại list products
+    };
+
     const headerAction = useMemo(() => (
         <div className="flex items-center gap-3">
             <button className="flex items-center gap-2 h-11 px-5 rounded-lg border border-[#dee3de] dark:border-[#2f3a30] bg-white dark:bg-[#1e2a1f] text-[#131613] dark:text-white hover:bg-gray-50 dark:hover:bg-[#2f3a30] font-medium transition-colors shadow-sm">
                 <span className="material-symbols-outlined text-[20px]">file_upload</span>
                 <span>Xuất file</span>
             </button>
-            <button className="flex items-center gap-2 h-11 px-5 rounded-lg bg-primary text-white hover:bg-[#246328] font-bold transition-colors shadow-sm">
+            <button
+                onClick={handleOpenCreate}
+                className="flex items-center gap-2 h-11 px-5 rounded-lg bg-primary text-white hover:bg-[#246328] font-bold transition-colors shadow-sm"
+            >
                 <span className="material-symbols-outlined text-[20px]">add</span>
                 <span>Thêm mới</span>
             </button>
@@ -17,8 +41,6 @@ export const MyProductPage = () => {
     ), []);
 
     useSetPageTitle('Quản lý Nông sản', headerAction);
-
-    const [products] = useState<Product[]>(MOCK_PRODUCTS);
 
     const renderStatusBadge = (status: Product['status']) => {
         switch (status) {
@@ -124,7 +146,11 @@ export const MyProductPage = () => {
                                 </td>
                                 <td className="px-4 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#6b806c] hover:text-primary transition-colors" title="Chỉnh sửa">
+                                        <button
+                                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#6b806c] hover:text-primary transition-colors"
+                                            title="Chỉnh sửa"
+                                            onClick={() => handleOpenEdit(product)}
+                                        >
                                             <span className="material-symbols-outlined text-[20px]">edit</span>
                                         </button>
                                         <button className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-[#6b806c] hover:text-red-600 transition-colors" title="Xóa">
@@ -134,7 +160,7 @@ export const MyProductPage = () => {
                                 </td>
                             </tr>
                         ))}
-                    </tbody>    
+                    </tbody>
                 </table>
             </div>
 
@@ -149,6 +175,14 @@ export const MyProductPage = () => {
                     </button>
                 </div>
             </div>
+
+            {/* Modal */}
+            <ProductFormModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={handleSuccess}
+                initialData={selectedProduct}
+            />
         </div>
     );
 };

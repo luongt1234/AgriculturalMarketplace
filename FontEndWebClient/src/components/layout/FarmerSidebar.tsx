@@ -1,5 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
+
+const MENU_ITEMS = [
+    { path: '/farmer/dashboard', icon: 'dashboard', label: 'Tổng quan' },
+    { path: '/farmer/products', icon: 'inventory_2', label: 'Sản phẩm' },
+    { path: '/farmer/orders', icon: 'shopping_cart', label: 'Đơn hàng' },
+    { path: '/farmer/contracts', icon: 'history_edu', label: 'Hợp đồng' },
+    { path: '/farmer/logs', icon: 'menu_book', label: 'Nhật kí canh tác' },
+];
 
 export const FarmerSidebar: React.FC = () => {
     return (
@@ -21,29 +29,54 @@ export const FarmerSidebar: React.FC = () => {
 
                 {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-                    <Link to="/farmer/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary">
-                        <span className="material-symbols-outlined icon-filled">dashboard</span>
-                        <span className="text-sm font-semibold">Tổng quan</span>
-                    </Link>
-                    <Link to="/farmer/products" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#131613] dark:text-gray-300 hover:bg-[#f1f3f1] dark:hover:bg-white/5 transition-colors group">
-                        <span className="material-symbols-outlined group-hover:text-primary transition-colors">inventory_2</span>
-                        <span className="text-sm font-medium">Sản phẩm</span>
-                    </Link>
-                    <Link to="/farmer/orders" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#131613] dark:text-gray-300 hover:bg-[#f1f3f1] dark:hover:bg-white/5 transition-colors group">
-                        <span className="material-symbols-outlined group-hover:text-primary transition-colors">shopping_cart</span>
-                        <span className="text-sm font-medium">Đơn hàng</span>
-                    </Link>
-                    <Link to="/farmer/contracts" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#131613] dark:text-gray-300 hover:bg-[#f1f3f1] dark:hover:bg-white/5 transition-colors group">
-                        <span className="material-symbols-outlined group-hover:text-primary transition-colors">history_edu</span>
-                        <span className="text-sm font-medium">Hợp đồng</span>
-                    </Link>
+                    {/* Render các menu chính */}
+                    {MENU_ITEMS.map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive
+                                    ? 'bg-primary/10 dark:bg-primary/20 text-primary'
+                                    : 'text-[#131613] dark:text-gray-300 hover:bg-[#f1f3f1] dark:hover:bg-white/5'
+                                }`
+                            }
+                        >
+                            {({ isActive }) => (
+                                <>
+                                    <span className={`material-symbols-outlined transition-colors ${isActive ? 'icon-filled' : 'group-hover:text-primary'}`}>
+                                        {item.icon}
+                                    </span>
+                                    <span className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                        {item.label}
+                                    </span>
+                                </>
+                            )}
+                        </NavLink>
+                    ))}
 
+                    {/* Menu Cài đặt (Render riêng vì có đường kẻ chia ngăn) */}
                     <div className="pt-4 mt-2 border-t border-[#f1f3f1] dark:border-gray-700">
                         <p className="px-3 text-xs font-semibold text-[#6b806c] uppercase tracking-wider mb-2">Cài đặt</p>
-                        <Link to="/farmer/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#131613] dark:text-gray-300 hover:bg-[#f1f3f1] dark:hover:bg-white/5 transition-colors group">
-                            <span className="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
-                            <span className="text-sm font-medium">Cấu hình Shop</span>
-                        </Link>
+                        <NavLink
+                            to="/farmer/settings"
+                            className={({ isActive }) =>
+                                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${isActive
+                                    ? 'bg-primary/10 dark:bg-primary/20 text-primary'
+                                    : 'text-[#131613] dark:text-gray-300 hover:bg-[#f1f3f1] dark:hover:bg-white/5'
+                                }`
+                            }
+                        >
+                            {({ isActive }) => (
+                                <>
+                                    <span className={`material-symbols-outlined transition-colors ${isActive ? 'icon-filled' : 'group-hover:text-primary'}`}>
+                                        settings
+                                    </span>
+                                    <span className={`text-sm ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                        Cấu hình Shop
+                                    </span>
+                                </>
+                            )}
+                        </NavLink>
                     </div>
                 </nav>
 

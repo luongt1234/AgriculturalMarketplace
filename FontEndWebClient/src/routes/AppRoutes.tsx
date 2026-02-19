@@ -3,6 +3,9 @@ import { Suspense, lazy } from 'react';
 import { FarmerSidebar } from '../components/layout/FarmerSidebar';
 import { DashboardLayoutFarmer } from '../components/layout/DashboardLayoutFarmer';
 import { MyProductPage } from '../pages/farmer/MyProductPage';
+import { FarmingLogsPage } from '../pages/farmer/FarmingLogsPage';
+import { LoginPage } from '../pages/public/LoginPage';
+import { RegisterPage } from '../pages/public/RegisterPage';
 
 // Pages (Lazy loading)
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
@@ -16,9 +19,10 @@ export default function AppRoutes() {
         <Suspense fallback={<Loading />}>
             <Routes>
                 {/* ================= PUBLIC ROUTES ================= */}
-                <Route element={<PublicLayout />}>
+                <Route>
                     <Route path="/" element={<div>Trang chủ</div>} />
-                    <Route path="/login" element={<div>Đăng nhập</div>} />
+                    <Route path="/login" element={<LoginPage/>} />
+                    <Route path="/register" element={<RegisterPage/>} />
                 </Route>
 
                 {/* ================= PROTECTED ROUTES ================= */}
@@ -31,6 +35,7 @@ export default function AppRoutes() {
                     <Route path="products" element={<MyProductPage />} />
                     <Route path="orders" element={<div>Quản lý Đơn hàng</div>} />
                     <Route path="contracts" element={<div>Quản lý Hợp đồng</div>} />
+                    <Route path="logs" element={<FarmingLogsPage />} />
                     <Route path="settings" element={<div>Cài đặt</div>} />
                 </Route>
 

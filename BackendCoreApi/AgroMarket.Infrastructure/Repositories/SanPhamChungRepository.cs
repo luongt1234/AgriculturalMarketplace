@@ -54,5 +54,9 @@ namespace AgroMarket.Infrastructure.Repositories
             return result;
         }
 
+        public async Task<bool> CheckExistCatagory(Guid catagoryId)
+        {
+            return await _repo.AnyAsync(x => x.Id == catagoryId);
+        }
     }
 }

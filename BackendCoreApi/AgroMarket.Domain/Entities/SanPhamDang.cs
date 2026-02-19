@@ -20,7 +20,7 @@ namespace AgroMarket.Domain.Entities
         [ForeignKey("ChatLuongId")]
         public virtual DanhMuc? ChatLuong { get; set; }
 
-        public decimal Gia { get; set; }      // gia
+        public decimal Gia { get; set; }      // gia 
         public int SoLuong { get; set; }       // so_luong
 
         public TrangThaiSanPham TrangThai { get; set; } = TrangThaiSanPham.ConHang; // trang_thai
