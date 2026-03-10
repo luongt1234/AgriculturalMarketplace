@@ -8,6 +8,6 @@ namespace AgroMarket.Application.Interfaces.Services
     public interface ISanPhamDangService
     {
         Task<SanPhamDangDto> CreateAsync(SanPhamDangFormDto request, IFormFile? hinhAnh);
-        Task<PaginatedResult<IEnumerable<SanPhamDangDto>>> GetProductByBuyerAsync(Guid buyerId);
+        //Task<PaginatedResult<IEnumerable<SanPhamDangDto>>> GetProductByBuyerAsync(Guid buyerId);
     }
 }

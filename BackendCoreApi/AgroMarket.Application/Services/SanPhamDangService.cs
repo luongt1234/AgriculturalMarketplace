@@ -68,22 +68,22 @@ namespace AgroMarket.Application.Services
             }
         }
 
-        public Task<PaginatedResult<IEnumerable<SanPhamDangDto>>> GetProductByBuyerAsync(Guid buyerId)
-        {
-            try
-            {
-                var userId = _currentUserService.UserId;
-                if (userId == null)
-                {
-                    throw new Exception("Người dùng không hợp lệ");
-                }
+        //public Task<PaginatedResult<IEnumerable<SanPhamDangDto>>> GetProductByBuyerAsync(Guid buyerId)
+        //{
+        //    try
+        //    {
+        //        var userId = _currentUserService.UserId;
+        //        if (userId == null)
+        //        {
+        //            throw new Exception("Người dùng không hợp lệ");
+        //        }
 
 
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Lỗi khi lây danh sách sản phẩm: {ex.Message}");
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"Lỗi khi lây danh sách sản phẩm: {ex.Message}");
+        //    }
+        //}
     }
 }
