@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+
+  backend:
+    build: ./BackendCoreApi
+    container_name: api
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build: ./FontEndWebClient
+    container_name: web
+    ports:
+      - "3000:80"
