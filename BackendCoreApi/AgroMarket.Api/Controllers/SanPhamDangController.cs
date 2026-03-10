@@ -22,12 +22,26 @@ namespace AgroMarket.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize] // Bắt buộc đăng nhập
         public override async Task<IActionResult> Create([FromForm] SanPhamDangFormDto formDto)
         {
             try
             {
                 var result = await _sanPhamDangService.CreateAsync(formDto, formDto.hinh_anh);
+                return CreatedResult(result, "Thêm mới thành công");
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi tạo sản phẩm đăng: {ex.Message}");
+            }
+        }
+
+        [HttpGet]
+        [Route("get-product-by-buyer/{id}")]
+        public async Task<IActionResult> GetProductByBuyer([FromRoute] Guid id)
+        {
+            try
+            {
+                var result = await _sanPhamDangService.GetProductByBuyerAsync(id);
                 return CreatedResult(result, "Thêm mới thành công");
             }
             catch (Exception ex)

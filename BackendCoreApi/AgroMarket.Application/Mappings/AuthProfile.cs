@@ -8,9 +8,11 @@ namespace AgroMarket.Application.Mappings
     {
         public AuthProfile()
         {
-            CreateMap<AuthFormDto, NguoiDung>();
+            CreateMap<AuthFormDto, NguoiDung>()
+                .ForMember(src => src.HoTen, otp => otp.MapFrom(x => x.HoVaTen));
 
-            CreateMap<NguoiDung, AuthResponseDto>();
+            CreateMap<NguoiDung, AuthResponseDto>()
+                .ForMember(src => src.MaVaiTro, otp => otp.MapFrom(x => x.VaiTro.MaGiaTri));
         }
     }
 }

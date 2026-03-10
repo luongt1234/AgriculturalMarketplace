@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axiosInstance from '../../lip/axiosInstance';
+import { toast } from 'sonner';
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
 
     // Quản lý state của Form
     const [formData, setFormData] = useState({
-        role: 'buyer', // Mặc định là Người mua
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
+        MaVaiTro: 'THUONG_LAI', // Mặc định là Người mua
+        HoVaTen: '',
+        Email: '',
+        SoDienThoai: '',
+        MatKhau: '',
+        MatKhauXacNhan: '',
         terms: false
     });
 
@@ -34,30 +36,28 @@ export const RegisterPage = () => {
         e.preventDefault();
 
         // Validate cơ bản
-        if (formData.password !== formData.confirmPassword) {
-            alert("Mật khẩu nhập lại không khớp!");
+        if (formData.MatKhau !== formData.MatKhauXacNhan) {
+            // alert("Mật khẩu nhập lại không khớp!");
+            toast.error("Mật khẩu nhập lại không khớp")
             return;
         }
 
         if (!formData.terms) {
-            alert("Vui lòng đồng ý với Điều khoản dịch vụ!");
+            // alert("Vui lòng đồng ý với Điều khoản dịch vụ!");
+            toast.error("Vui lòng đồng ý với Điều khoản dịch vụ");
             return;
         }
 
         setIsLoading(true);
 
         try {
-            // TODO: Gọi API đăng ký (VD: await authApi.register(formData))
-            console.log('Registering user:', formData);
+            const res = await axiosInstance.post(`/api/auth/register`, formData);
 
-            // Giả lập delay mạng
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            alert('Đăng ký thành công! Vui lòng đăng nhập.');
+            toast.success("Đăng kí tài khoản thành công");
             navigate('/login');
         } catch (error) {
             console.error('Lỗi đăng ký:', error);
-            alert('Đăng ký thất bại. Vui lòng thử lại!');
+            toast.error('Đăng ký thất bại. Vui lòng thử lại!');
         } finally {
             setIsLoading(false);
         }
@@ -132,9 +132,9 @@ export const RegisterPage = () => {
                                     <label className="relative flex-1 cursor-pointer">
                                         <input
                                             type="radio"
-                                            name="role"
-                                            value="buyer"
-                                            checked={formData.role === 'buyer'}
+                                            name="MaVaiTro"
+                                            value="THUONG_LAI"
+                                            checked={formData.MaVaiTro === 'THUONG_LAI'}
                                             onChange={handleChange}
                                             className="peer hidden"
                                         />
@@ -146,9 +146,9 @@ export const RegisterPage = () => {
                                     <label className="relative flex-1 cursor-pointer">
                                         <input
                                             type="radio"
-                                            name="role"
-                                            value="seller"
-                                            checked={formData.role === 'seller'}
+                                            name="MaVaiTro"
+                                            value="NONG_DAN"
+                                            checked={formData.MaVaiTro === 'NONG_DAN'}
                                             onChange={handleChange}
                                             className="peer hidden"
                                         />
@@ -166,8 +166,11 @@ export const RegisterPage = () => {
                                     <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Họ và tên đại diện</label>
                                     <input
                                         required
-                                        id="name" name="name" type="text"
-                                        value={formData.name} onChange={handleChange}
+                                        id="HoVaTen"
+                                        name="HoVaTen"
+                                        type="text"
+                                        value={formData.HoVaTen}
+                                        onChange={handleChange}
                                         placeholder="Nguyễn Văn A"
                                         className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors focus:ring-0 focus:border-primary focus:outline-none"
                                     />
@@ -176,8 +179,10 @@ export const RegisterPage = () => {
                                     <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Địa chỉ Email</label>
                                     <input
                                         required
-                                        id="email" name="email" type="email"
-                                        value={formData.email} onChange={handleChange}
+                                        id="Email"
+                                        name="Email"
+                                        type="email"
+                                        value={formData.Email} onChange={handleChange}
                                         placeholder="email@example.com"
                                         className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors focus:ring-0 focus:border-primary focus:outline-none"
                                     />
@@ -186,8 +191,10 @@ export const RegisterPage = () => {
                                     <label htmlFor="phone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Số điện thoại</label>
                                     <input
                                         required
-                                        id="phone" name="phone" type="tel"
-                                        value={formData.phone} onChange={handleChange}
+                                        id="SoDienThoai"
+                                        name="SoDienThoai"
+                                        type="tel"
+                                        value={formData.SoDienThoai} onChange={handleChange}
                                         placeholder="0912 345 678"
                                         className="w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors focus:ring-0 focus:border-primary focus:outline-none"
                                     />
@@ -199,9 +206,11 @@ export const RegisterPage = () => {
                                         <div className="relative">
                                             <input
                                                 required
-                                                id="password" name="password"
+                                                id="MatKhau"
+                                                name="MatKhau"
                                                 type={showPassword ? "text" : "password"}
-                                                value={formData.password} onChange={handleChange}
+                                                value={formData.MatKhau}
+                                                onChange={handleChange}
                                                 placeholder="••••••••"
                                                 className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors focus:ring-0 focus:border-primary focus:outline-none"
                                             />
@@ -221,9 +230,11 @@ export const RegisterPage = () => {
                                         <div className="relative">
                                             <input
                                                 required
-                                                id="confirmPassword" name="confirmPassword"
+                                                id="MatKhauXacNhan"
+                                                name="MatKhauXacNhan"
                                                 type={showConfirmPassword ? "text" : "password"}
-                                                value={formData.confirmPassword} onChange={handleChange}
+                                                value={formData.MatKhauXacNhan}
+                                                onChange={handleChange}
                                                 placeholder="••••••••"
                                                 className="w-full px-4 py-3 pr-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 transition-colors focus:ring-0 focus:border-primary focus:outline-none"
                                             />

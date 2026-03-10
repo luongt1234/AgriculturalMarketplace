@@ -1,6 +1,8 @@
 ﻿using AgroMarket.Application.Common.Interfaces;
+using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Infrastructure.Persistence;
 using AgroMarket.Infrastructure.Repositories;
+using AgroMarket.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +28,13 @@ namespace AgroMarket.Infrastructure
 
             services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // repository
+            services.AddScoped<IDanhMucRepository, DanhMucRepository>();
+            services.AddScoped<IFileStorageService, FileStorageService>();
+            services.AddScoped<ISanPhamChungRepository, SanPhamChungRepository>();
+            services.AddScoped<ISanPhamDangRepository, SanPhamDangRepository>();
+
 
             // cấu hình jwt
             services.AddAuthentication(options =>

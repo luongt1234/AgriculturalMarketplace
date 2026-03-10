@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axiosInstance from '../../lip/axiosInstance';
+import { toast } from 'sonner';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -15,18 +18,29 @@ export const LoginPage = () => {
         setIsLoading(true);
 
         try {
-            // TODO: Gọi API đăng nhập ở đây (ví dụ: await authApi.login(email, password))
-            console.log('Logging in with:', { email, password });
+            const form = {
+                Email: email,
+                MatKhau: password
+            }
 
-            // Giả lập delay mạng
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const res = await axiosInstance.post('/api/auth/login', form);
 
-            // Đăng nhập thành công -> Điều hướng dựa trên Role
-            // Tạm thời điều hướng mặc định về Dashboard của Nông dân
-            navigate('/farmer/dashboard');
+            if (res.success && res.data) {
+                localStorage.setItem('accessToken', res.data.token);
+                // localStorage.setItem('refreshToken', res.data.refreshToken);
+                toast.success(res.message || "Đăng nhập thành công");
+                useAuthStore.getState().login(res.data);
+
+                // if (res.data.tenVaiTro === 'Nông dân') navigate('/farmer/dashboard');
+                // else if (res.data.tenVaiTro === 'Thương lái') navigate('/trader/marketplace');
+
+                navigate('/farmer/dashboard');
+            } else {
+                toast.error(res.message || "Sai thông tin đăng nhập");
+            }
         } catch (error) {
             console.error('Lỗi đăng nhập:', error);
-            alert('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!');
+            toast.error(`Lỗi đăng nhập: ${error}`);
         } finally {
             setIsLoading(false);
         }

@@ -9,7 +9,7 @@
         public string Email { get; set; } = string.Empty;
         public string? SoDienThoai { get; set; }
         public string? AnhDaiDienUrl { get; set; }
-
+        public string? MaVaiTro { get; set; }
         public Guid VaiTroId { get; set; }
         public string TenVaiTro { get; set; } = string.Empty;
         public decimal SoDu { get; set; }

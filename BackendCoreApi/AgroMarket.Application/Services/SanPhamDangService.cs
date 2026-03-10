@@ -3,6 +3,7 @@ using AgroMarket.Application.DTOs.SanPhamChuDtos;
 using AgroMarket.Application.DTOs.SanPhamDangDtos;
 using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Application.Interfaces.Services;
+using AgroMarket.Application.Wrappers;
 using AgroMarket.Domain.Entities;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
@@ -21,13 +22,15 @@ namespace AgroMarket.Application.Services
         private readonly IMapper _mapper;
         private readonly ISanPhamDangRepository _sanPhamDangRepository;
         protected readonly IUnitOfWork _unitOfWork;
-        public SanPhamDangService(IFileStorageService fileStorageService, ISanPhamChungRepository sanPhamChungRepository, IMapper mapper, ISanPhamDangRepository sanPhamDangRepository, IUnitOfWork unitOfWork)
+        private readonly ICurrentUserService _currentUserService;
+        public SanPhamDangService(IFileStorageService fileStorageService, ISanPhamChungRepository sanPhamChungRepository, IMapper mapper, ISanPhamDangRepository sanPhamDangRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
         {
             _fileStorageService = fileStorageService;
             _sanPhamChungRepository = sanPhamChungRepository;
             _mapper = mapper;
             _sanPhamDangRepository = sanPhamDangRepository;
             _unitOfWork = unitOfWork;
+            _currentUserService = currentUserService;
         }
         public async Task<SanPhamDangDto> CreateAsync(SanPhamDangFormDto request, IFormFile? hinhAnh)
         {
@@ -63,6 +66,24 @@ namespace AgroMarket.Application.Services
             {
                 throw new Exception($"Lỗi khi tạo sản phẩm đăng: {ex.Message}");
             }
-        } 
+        }
+
+        public Task<PaginatedResult<IEnumerable<SanPhamDangDto>>> GetProductByBuyerAsync(Guid buyerId)
+        {
+            try
+            {
+                var userId = _currentUserService.UserId;
+                if (userId == null)
+                {
+                    throw new Exception("Người dùng không hợp lệ");
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lây danh sách sản phẩm: {ex.Message}");
+            }
+        }
     }
 }

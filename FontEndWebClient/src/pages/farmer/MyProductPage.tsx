@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSetPageTitle } from '../../hooks/useSetPageTitle';
 import { MOCK_PRODUCTS, type Product } from '../../types/product.types';
 import { ProductFormModal } from '../../features/products/components/ProductFormModal';
 
 export const MyProductPage = () => {
-    const [products] = useState<Product[]>(MOCK_PRODUCTS);
+    const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+    const [pageIndex, setPageIndex] = useState<number>(0);
+    const [pageTotal, setPageTotal] = useState<number>(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     // State lưu sản phẩm đang được chọn để sửa (null = chế độ thêm mới)
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -41,6 +43,10 @@ export const MyProductPage = () => {
     ), []);
 
     useSetPageTitle('Quản lý Nông sản', headerAction);
+
+    useEffect(() => {
+
+    }, [])
 
     const renderStatusBadge = (status: Product['status']) => {
         switch (status) {

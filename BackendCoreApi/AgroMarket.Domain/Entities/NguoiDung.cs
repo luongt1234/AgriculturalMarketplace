@@ -5,7 +5,7 @@ namespace AgroMarket.Domain.Entities
 {
     public class NguoiDung : BaseEntity
     {
-        public string TenDangNhap { get; set; } = null!; // username
+        public string? TenDangNhap { get; set; } = null!; // username
         public string MatKhauHash { get; set; } = null!; // password_hash
         public string HoTen { get; set; } = null!; // ho_ten
         public string Email { get; set; } = null!;

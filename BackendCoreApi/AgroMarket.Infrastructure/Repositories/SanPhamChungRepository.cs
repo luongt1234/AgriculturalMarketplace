@@ -1,6 +1,7 @@
 ﻿using AgroMarket.Application.DTOs.SanPhamChuDtos;
 using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Domain.Entities;
+using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -10,27 +11,25 @@ using System.Threading.Tasks;
 
 namespace AgroMarket.Infrastructure.Repositories
 {
-    public class SanPhamChungRepository : ISanPhamChungRepository
+    public class SanPhamChungRepository : BaseRepository<SanPhamChung>, ISanPhamChungRepository
     {
-        private readonly DbSet<SanPhamChung> _repo;
-        public SanPhamChungRepository(DbSet<SanPhamChung> repo)
+        public SanPhamChungRepository(AppDbContext context) : base(context)
         {
-            _repo = repo;
         }
         public IEnumerable<SanPhamChung> GetSanPhamChungsByParentId(Guid parentId)
         {
-            return _repo.Where(spc => spc.ChaId == parentId);
+            return _dbSet.Where(spc => spc.ChaId == parentId);
         }
         public async Task<List<SanPhamChungDto>> GetParentsWithChildAsync(int pageSize, int pageNumber)
         {
-            var parentQuery = _repo
+            var parentQuery = _dbSet
                 .Where(x => x.ChaId == null)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 
             var parentIds = parentQuery.Select(x => x.Id);
 
-            var childsQuery = _repo
+            var childsQuery = _dbSet
                 .Where(x => parentIds.Contains(x.ChaId!.Value));
 
             var result = await parentQuery
@@ -56,7 +55,7 @@ namespace AgroMarket.Infrastructure.Repositories
 
         public async Task<bool> CheckExistCatagory(Guid catagoryId)
         {
-            return await _repo.AnyAsync(x => x.Id == catagoryId);
+            return await _dbSet.AnyAsync(x => x.Id == catagoryId);
         }
     }
 }

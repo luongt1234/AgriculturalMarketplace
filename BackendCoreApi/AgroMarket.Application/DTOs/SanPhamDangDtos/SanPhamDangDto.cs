@@ -25,5 +25,6 @@ namespace AgroMarket.Application.DTOs.SanPhamDangDtos
 
         public Guid? LoaiId { get; set; }
         public string? TenLoai { get; set; }
+        public byte[]? AnhSanPham { get; set; }
     }
 }

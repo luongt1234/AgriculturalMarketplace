@@ -19,17 +19,32 @@ namespace AgroMarket.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] AuthFormDto registerDto)
         {
-            await _authService.DangKyAsync(registerDto);
+            try
+            {
+                await _authService.DangKyAsync(registerDto);
 
-            return CreatedResult<object>(null, "Đăng ký tài khoản thành công");
+                return CreatedResult<object>(null, "Đăng ký tài khoản thành công");
+            }
+            catch (Exception ex)
+            {
+                return Error($"Đã có lỗi xảy ra: {ex.Message}");
+            }
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
         {
-            var result = await _authService.DangNhapAsync(loginDto);
 
-            return Success(result, "Đăng nhập thành công");
+            try
+            {
+                var result = await _authService.DangNhapAsync(loginDto);
+
+                return Success(result, "Đăng nhập thành công");
+            }
+            catch (Exception ex)
+            {
+                return Error($"Đã có lỗi xảy ra: {ex.Message}");
+            }
         }
     }
 }

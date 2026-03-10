@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 import type {
     AxiosError,
     AxiosInstance,
@@ -7,7 +6,14 @@ import type {
     InternalAxiosRequestConfig
 } from 'axios';
 
-const API_BASE_URL = 'http://localhost:5042';
+const API_BASE_URL = 'http://localhost:5182';
+
+export interface ApiResponse<T = any> {
+    success: boolean;
+    message: string;
+    data: T;
+    errors: any | null;
+}
 
 const axiosInstance = axios.create({
     baseURL: API_BASE_URL,
@@ -15,9 +21,9 @@ const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true
 });
 
-// Request Interceptor
 axiosInstance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem('accessToken');
@@ -26,9 +32,8 @@ axiosInstance.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
 
-        // ✅ Xử lý FormData - xóa Content-Type để browser tự set
-        if (config.data instanceof FormData) {
-            delete config.headers['Content-Type'];
+        if (config.data instanceof FormData && config.headers) {
+            config.headers['Content-Type'] = 'multipart/form-data';
         }
 
         return config;
@@ -38,10 +43,8 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-// Response Interceptor
 axiosInstance.interceptors.response.use(
     (response) => {
-        // ✅ Trả về response.data (giữ nguyên)
         return response.data;
     },
     async (error: AxiosError) => {
@@ -59,11 +62,11 @@ axiosInstance.interceptors.response.use(
                             const refreshToken = localStorage.getItem('refreshToken');
 
                             if (refreshToken) {
-                                const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+                                const response = await axiosInstance.post('/auth/refresh', {
                                     refreshToken
                                 });
 
-                                const newAccessToken = response.data.accessToken;
+                                const newAccessToken = response.data.token;
                                 localStorage.setItem('accessToken', newAccessToken);
 
                                 if (originalRequest.headers) {
@@ -121,14 +124,12 @@ axiosInstance.interceptors.response.use(
     }
 );
 
-interface CustomAxiosInstance extends AxiosInstance {
-    get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
-    post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
-    put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
-    delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
+interface CustomAxiosInstance extends Omit<AxiosInstance, 'get' | 'post' | 'put' | 'delete'> {
+    get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>>;
+    post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>>;
+    put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>>;
+    delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>>;
 }
 
 // Ép kiểu khi export
 export default axiosInstance as CustomAxiosInstance;
-
-// export default axiosInstance;

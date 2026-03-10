@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AgroMarket.Api.Controllers
 {
-    // Rút gọn: Chỉ còn TDto (ra) và TFormDto (vào)
     public class BaseCrudController<TEntity, TDto, TFormDto> : BaseController
         where TEntity : BaseEntity
     {
