@@ -12,7 +12,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins("http://localhost:3000", "http://localhost:5173") // domain FE
+                .WithOrigins("http://localhost:3000", "http://localhost:5173", "http://192.168.31.192:3000")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
