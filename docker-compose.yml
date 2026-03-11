@@ -1,31 +1,38 @@
-version: "3.9"
 services:
 
   mysql:
     image: mysql:8
     container_name: mysql-db
     restart: unless-stopped
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: AgroMarketDb
+    ports:
+      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
-  api:
-    build: .
+  backend:
+    build:
+      context: ./BackendCoreApi
+      dockerfile: Dockerfile
     container_name: agro-api
     restart: unless-stopped
     ports:
       - "5000:5000"
+    depends_on:
+      - mysql
 
   frontend:
-    build: .
-    container_name: web
+    build:
+      context: ./FontEndWebClient
+      dockerfile: Dockerfile
+    container_name: agro-web
     restart: unless-stopped
     ports:
       - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:
