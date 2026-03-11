@@ -1,15 +1,31 @@
 version: "3.9"
-
 services:
 
-  backend:
-    build: ./BackendCoreApi
-    container_name: api
+  mysql:
+    image: mysql:8
+    container_name: mysql-db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: AgroMarketDb
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  api:
+    build: .
+    container_name: agro-api
+    restart: unless-stopped
     ports:
       - "5000:5000"
 
   frontend:
-    build: ./FontEndWebClient
+    build: .
     container_name: web
+    restart: unless-stopped
     ports:
       - "3000:80"
+
+volumes:
+  mysql_data:
