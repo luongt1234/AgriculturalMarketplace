@@ -11,7 +11,8 @@ export const RoleGuard = ({ allowedRoles }: RoleGuardProps) => {
     if (!isAuthenticated || !user) {
         return <Navigate to="/login" replace />;
     }
-
+    console.log("allowedRoles:: ", allowedRoles);
+    console.log("user.maVaiTro:: ", user.maVaiTro);
     if (user.maVaiTro && !allowedRoles.includes(user.maVaiTro)) {
         return <Navigate to="/unauthorized" replace />;
     }

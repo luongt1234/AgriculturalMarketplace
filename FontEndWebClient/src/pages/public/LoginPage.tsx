@@ -31,10 +31,11 @@ export const LoginPage = () => {
                 toast.success(res.message || "Đăng nhập thành công");
                 useAuthStore.getState().login(res.data);
 
-                // if (res.data.tenVaiTro === 'Nông dân') navigate('/farmer/dashboard');
-                // else if (res.data.tenVaiTro === 'Thương lái') navigate('/trader/marketplace');
+                if (res.data.maVaiTro === 'ADMIN') navigate('/admin');
+                else if (res.data.maVaiTro === 'NONG_DAN') navigate('/famer');
+                else navigate('/');
 
-                navigate('/farmer/dashboard');
+                // navigate('/farmer/dashboard');
             } else {
                 toast.error(res.message || "Sai thông tin đăng nhập");
             }

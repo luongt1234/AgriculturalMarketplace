@@ -23,6 +23,7 @@ namespace AgroMarket.Application
             services.AddScoped<IDanhMucService, DanhMucService>();
             services.AddScoped<ISanPhamChungService, SanPhamChungService>();
             services.AddScoped<ISanPhamDangService, SanPhamDangService>();
+            services.AddScoped<INguoiDungService, NguoiDungService>();
 
             return services;
         }

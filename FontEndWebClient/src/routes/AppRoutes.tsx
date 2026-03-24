@@ -9,11 +9,12 @@ import { RegisterPage } from '../pages/public/RegisterPage';
 import { PrivateRoute } from './PrivateRoute';
 import { RoleGuard } from './RoleGuard';
 import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
+import { AdminLayout } from '../components/layout/AdminLayout';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import BuyerManagement from '../pages/admin/BuyerManagement';
 
-// Pages (Lazy loading)
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
-// Mock Component Loading
 const Loading = () => <div className="p-10 text-center text-primary">Đang tải...</div>;
 
 export default function AppRoutes() {
@@ -51,12 +52,15 @@ export default function AppRoutes() {
                     </Route> */}
 
                     {/* 3. ADMIN */}
-                    {/* <Route path="/admin" element={<DashboardLayout sidebar={<div className="w-64 bg-gray-800 text-white p-4">Admin Sidebar</div>} />}>
-                        <Route path="users" element={<div>Quản lý User</div>} />
-                    </Route> */}
+                    <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
+                        <Route path="/admin" element={<AdminLayout />}>
+                            <Route index element={<Navigate to="dashboard" />} />
+                            <Route path="buyer" element={<BuyerManagement />} />
+                            <Route path="dashboard" element={<AdminDashboard />} />
+                            <Route path="users" element={<div>Quản lý User</div>} />
+                        </Route>
+                    </Route>
                 </Route>
-
-
 
                 {/* ================= 404 ================= */}
                 <Route path="*" element={<div className="text-center mt-20 text-red-500">404 - Not Found</div>} />

@@ -29,5 +29,13 @@ namespace AgroMarket.Application.Services
 
             return result;
         }
+
+        public async Task<DanhMucDto> GetDanhMucByMaGiaTriAsync(string MaGiaTri)
+        {
+            var danhMuc = await _repo.GetDanhMucByMaGiaTriAsync(MaGiaTri);
+
+            var result = _mapper.Map<DanhMucDto>(danhMuc);
+            return result;
+        }
     }
 }

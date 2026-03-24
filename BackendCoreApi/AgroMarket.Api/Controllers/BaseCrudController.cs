@@ -37,10 +37,18 @@ namespace AgroMarket.Api.Controllers
         [HttpPost]
         public virtual async Task<IActionResult> Create([FromBody] TFormDto formDto)
         {
-            var entity = _mapper.Map<TEntity>(formDto);
-            await _service.CreateAsync(entity);
+            try
+            {
+                var entity = _mapper.Map<TEntity>(formDto);
+                await _service.CreateAsync(entity);
 
-            return CreatedResult(_mapper.Map<TDto>(entity));
+                return CreatedResult(_mapper.Map<TDto>(entity));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + ex.InnerException + ex.StackTrace);
+            }
+            
         }
 
         [HttpPut("{id}")]
