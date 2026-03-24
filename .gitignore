@@ -5,6 +5,7 @@ obj/
 *.user
 *.suo
 *.vscode/
+appsettings.json
 
 # Node.js
 node_modules/
@@ -14,3 +15,4 @@ node_modules/
 __pycache__/
 *.pyc
 venv/
+
