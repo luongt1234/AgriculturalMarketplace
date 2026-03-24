@@ -6,14 +6,15 @@ const AdminSidebar: React.FC = () => {
         { name: 'Tổng quan', icon: 'dashboard', path: '/admin/dashboard' }, // Thống kê cơ bản 
         { name: 'Quản lý người mua', icon: 'group', path: '/admin/buyer' },
         { name: 'Quản lý người bán', icon: 'storefront', path: '/admin/seller' },
-        { name: 'Sản phẩm', icon: 'inventory_2', path: '/admin/products' },
-        { name: 'Khu vực', icon: 'map', path: '/admin/regions' },
-        { name: 'Doanh thu', icon: 'payments', path: '/admin/finances' },
+        { name: 'Quản lý tài khoản quản trị', icon: 'admin_panel_settings', path: '/admin/admin-managenent' },
+        // { name: 'Sản phẩm', icon: 'inventory_2', path: '/admin/products' },
+        // { name: 'Khu vực', icon: 'map', path: '/admin/regions' },
+        // { name: 'Doanh thu', icon: 'payments', path: '/admin/finances' },
     ];
 
     const systemMenus = [
-        { name: 'Cài đặt', icon: 'settings', path: '/admin/settings' },
-        { name: 'Phân quyền', icon: 'security', path: '/admin/permissions' }, // Phân quyền vai trò
+        { name: 'Cài đặt giao diện', icon: 'settings', path: '/admin/settings' },
+        { name: 'Phân quyền', icon: 'security', path: '/admin/permissions' },
     ];
 
     return (

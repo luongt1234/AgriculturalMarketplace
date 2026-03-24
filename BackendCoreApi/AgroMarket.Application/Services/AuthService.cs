@@ -138,7 +138,7 @@ namespace AgroMarket.Application.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 
-                new Claim(ClaimTypes.Role, user.VaiTro.MaGiaTri ?? "User")
+                new Claim(ClaimTypes.Role, user.VaiTro.MaGiaTri ?? "GUEST")
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

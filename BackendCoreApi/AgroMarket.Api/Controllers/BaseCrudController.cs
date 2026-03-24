@@ -54,16 +54,23 @@ namespace AgroMarket.Api.Controllers
         [HttpPut("{id}")]
         public virtual async Task<IActionResult> Update(Guid id, [FromBody] TFormDto formDto)
         {
-            var existingEntity = await _service.GetByIdAsync(id);
-            if (existingEntity == null)
-                return Error("Không tìm thấy", 404);
+            try
+            {
+                var existingEntity = await _service.GetByIdAsync(id);
+                if (existingEntity == null)
+                    return Error("Không tìm thấy", 404);
 
-            _mapper.Map(formDto, existingEntity);
+                existingEntity = _mapper.Map(formDto, existingEntity);
 
-            existingEntity.Id = id;
+                existingEntity.Id = id;
 
-            await _service.UpdateAsync(existingEntity);
-            return Success("Cập nhật thành công");
+                await _service.UpdateAsync(existingEntity);
+                return Success("Cập nhật thành công");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + ex.InnerException + ex.StackTrace);
+            }
         }
 
         [HttpDelete("{id}")]

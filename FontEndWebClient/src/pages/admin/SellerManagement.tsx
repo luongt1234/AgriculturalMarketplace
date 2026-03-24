@@ -8,7 +8,7 @@ import type { DanhMuc } from '../../types/danhMuc.type';
 import { EditUserModal } from '../../features/admin/components/EditUserModal';
 import { DeleteUserModal } from '../../features/admin/components/DeleteUserModal';
 
-const BuyerManagement: React.FC = () => {
+const SellerManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState('All');
     const [buyers, setBuyers] = useState<NguoiDung[]>();
     const [loading, setLoading] = useState<boolean>(false);
@@ -25,7 +25,7 @@ const BuyerManagement: React.FC = () => {
         setLoading(true);
         try {
             const res = await axiosInstance.get(
-                `/api/DanhMuc/GetByMaGiaTri/THUONG_LAI`
+                `/api/DanhMuc/GetByMaGiaTri/NONG_DAN`
             );
 
             console.log({ res });
@@ -45,7 +45,7 @@ const BuyerManagement: React.FC = () => {
         setLoading(true);
         try {
             const res = await axiosInstance.get(
-                `/api/NguoiDung/GetByMa/THUONG_LAI?pageNumber=${pageNumber}&pageSize=${pageSize}`
+                `/api/NguoiDung/GetByMa/NONG_DAN?pageNumber=${pageNumber}&pageSize=${pageSize}`
             );
 
             if (res.data && res.data.data) {
@@ -97,12 +97,12 @@ const BuyerManagement: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col min-w-0 p-6 bg-white dark:bg-[#131613] font-display overflow-y-auto">
             <AdminHeader
-                title="Quản lý người mua"
-                description="Xem xét, xác minh và quản lý các tài khoản người mua trong lĩnh vực nông nghiệp."
+                title="Quản lý người bán"
+                description="Xem xét, xác minh và quản lý các tài khoản người bán trong lĩnh vực nông nghiệp."
                 breadcrumbs={[
                     { label: 'Trang chủ', path: '/' },
                     { label: 'Admin', path: '/admin' },
-                    { label: 'Quản lý người mua', isActive: true }
+                    { label: 'Quản lý người bán', isActive: true }
                 ]}
                 rightContent={
                     <button
@@ -414,4 +414,4 @@ const BuyerManagement: React.FC = () => {
     );
 };
 
-export default BuyerManagement;
+export default SellerManagement;

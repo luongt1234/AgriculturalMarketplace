@@ -1,7 +1,9 @@
-﻿using AgroMarket.Application.Common.Interfaces;
+﻿using AgroMarket.Api.Attributes;
+using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.DTOs.NguoiDungDtos;
 using AgroMarket.Application.Interfaces.Services;
 using AgroMarket.Domain.Entities;
+using AgroMarket.Domain.Enums;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +21,23 @@ namespace AgroMarket.Api.Controllers
             _nguoiDungService = nguoiDungService;
         }
 
+        [RequireRole(UserRole.Admin)]
+        public override async Task<IActionResult> Create([FromBody] NguoiDungFormDto payload)
+        {
+            try
+            {
+                await _nguoiDungService.CreateUserAsync(payload);
+                return CreatedResult("Thêm mới thành công");
+            }
+            catch (Exception ex)
+            {
+                return (ActionResult)Error($"Lỗi khi thêm mới người dùng: {ex.Message}");
+            }
+        }
+
         [HttpGet]
         [Route("GetByMa/{ma}")]
+        [RequireRole(UserRole.Admin)]
         public async Task<IActionResult> GetBuyer([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromRoute] string ma)
         {
             try

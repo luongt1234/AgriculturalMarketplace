@@ -14,7 +14,8 @@ namespace AgroMarket.Application.Mappings
         public NguoiDungProfile()
         {
             CreateMap<NguoiDung, NguoiDungDto>();
-            CreateMap<NguoiDungFormDto, NguoiDung>();
+            CreateMap<NguoiDungFormDto, NguoiDung>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

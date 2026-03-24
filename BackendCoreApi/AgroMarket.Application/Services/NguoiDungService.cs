@@ -5,6 +5,7 @@ using AgroMarket.Application.Interfaces.Services;
 using AgroMarket.Application.Wrappers;
 using AgroMarket.Domain.Entities;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,14 +21,51 @@ namespace AgroMarket.Application.Services
         private readonly IMapper _mapper;
         private readonly INguoiDungRepository _nguoiDungRepository;
         private readonly IDanhMucRepository _danhMucRepository;
+        private readonly IRepository<NguoiDung> _userRepository;
 
-        public NguoiDungService(IUnitOfWork unitOfWork, IRepository<NguoiDung> baseRepository, IMapper mapper, INguoiDungRepository nguoiDungRepository, IDanhMucRepository danhMucRepository)
+        public NguoiDungService(IUnitOfWork unitOfWork, IRepository<NguoiDung> baseRepository, IMapper mapper, INguoiDungRepository nguoiDungRepository, IDanhMucRepository danhMucRepository, IRepository<NguoiDung> userRepository)
         {
             _unitOfWork = unitOfWork;
             _baseRepository = baseRepository;
             _mapper = mapper;
             _nguoiDungRepository = nguoiDungRepository;
             _danhMucRepository = danhMucRepository;
+            _userRepository = userRepository;
+        }
+
+        public async Task CreateUserAsync(NguoiDungFormDto userDto)
+        {
+            try
+            {
+                // A. Validate Logic
+                var existingUsers = await _userRepository.FindAsync(u => u.Email == userDto.Email);
+                if (existingUsers.Any())
+                {
+                    throw new ArgumentException("Email đã tồn tại trong hệ thống.");
+                }
+
+                // B. Map DTO -> Entity
+                var user = _mapper.Map<NguoiDung>(userDto);
+
+                // hash mật khẩu
+                var passwordHasher = new PasswordHasher<string>();
+                var passwordHash = passwordHasher.HashPassword(null, userDto.MatKhau);
+
+                // D. Set các giá trị mặc định
+                user.Id = Guid.NewGuid();
+                user.SoDu = 0;
+                user.DiemUyTin = 0;
+                user.KichHoat = true;
+                user.MatKhauHash = passwordHash;
+
+                // E. Lưu vào DB
+                _userRepository.Add(user);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex) 
+            {
+                throw new Exception($"Lỗi khi thêm mới người dùng: {ex.Message}");
+            }
         }
 
         public async Task<PagedResponse<IEnumerable<NguoiDungDto>>> GetAllByMaAsync(int pageSize, int pageNumber, string ma)

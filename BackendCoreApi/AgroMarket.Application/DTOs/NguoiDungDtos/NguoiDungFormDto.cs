@@ -5,13 +5,8 @@ namespace AgroMarket.Application.DTOs.NguoiDungDtos
 {
     public class NguoiDungFormDto
     {
-        [Required(ErrorMessage = "Tên đăng nhập không được để trống.")]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Tên đăng nhập phải từ 3 đến 50 ký tự.")]
-        public string TenDangNhap { get; set; } = null!;
-
-        [Required(ErrorMessage = "Mật khẩu không được để trống.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu phải có ít nhất 6 ký tự.")]
-        public string MatKhau { get; set; } = null!; // Nhận mật khẩu thô từ FE, Backend sẽ tự băm (Hash) thành MatKhauHash
+        public string? TenDangNhap { get; set; }
+        public string? MatKhau { get; set; }
 
         [Required(ErrorMessage = "Họ và tên không được để trống.")]
         [StringLength(100, ErrorMessage = "Họ tên không vượt quá 100 ký tự.")]
@@ -33,5 +28,6 @@ namespace AgroMarket.Application.DTOs.NguoiDungDtos
 
         // Bạn có thể thêm trường KichHoat nếu form cho phép set trạng thái ngay khi tạo
         public bool KichHoat { get; set; } = true;
+        public string? MatKhauHash { get; set; }
     }
 }

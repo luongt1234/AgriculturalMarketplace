@@ -40,7 +40,7 @@ namespace AgroMarket.Infrastructure.Repositories
 
         public async Task<T?> GetByIdAsync(Guid id)
         {
-            return await _dbSet.FindAsync(id);
+            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<T?> GetByValue(string propertyName, string value)

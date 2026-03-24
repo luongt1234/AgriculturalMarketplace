@@ -12,6 +12,8 @@ import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import BuyerManagement from '../pages/admin/BuyerManagement';
+import SellerManagement from '../pages/admin/SellerManagement';
+import AdminManagement from '../pages/admin/AdminManagement';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -56,6 +58,8 @@ export default function AppRoutes() {
                         <Route path="/admin" element={<AdminLayout />}>
                             <Route index element={<Navigate to="dashboard" />} />
                             <Route path="buyer" element={<BuyerManagement />} />
+                            <Route path="seller" element={<SellerManagement />} />
+                            <Route path="admin-managenent" element={<AdminManagement />} />
                             <Route path="dashboard" element={<AdminDashboard />} />
                             <Route path="users" element={<div>Quản lý User</div>} />
                         </Route>

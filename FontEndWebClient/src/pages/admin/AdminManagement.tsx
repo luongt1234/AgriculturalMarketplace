@@ -8,7 +8,7 @@ import type { DanhMuc } from '../../types/danhMuc.type';
 import { EditUserModal } from '../../features/admin/components/EditUserModal';
 import { DeleteUserModal } from '../../features/admin/components/DeleteUserModal';
 
-const BuyerManagement: React.FC = () => {
+const AdminManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState('All');
     const [buyers, setBuyers] = useState<NguoiDung[]>();
     const [loading, setLoading] = useState<boolean>(false);
@@ -25,7 +25,7 @@ const BuyerManagement: React.FC = () => {
         setLoading(true);
         try {
             const res = await axiosInstance.get(
-                `/api/DanhMuc/GetByMaGiaTri/THUONG_LAI`
+                `/api/DanhMuc/GetByMaGiaTri/ADMIN`
             );
 
             console.log({ res });
@@ -45,7 +45,7 @@ const BuyerManagement: React.FC = () => {
         setLoading(true);
         try {
             const res = await axiosInstance.get(
-                `/api/NguoiDung/GetByMa/THUONG_LAI?pageNumber=${pageNumber}&pageSize=${pageSize}`
+                `/api/NguoiDung/GetByMa/ADMIN?pageNumber=${pageNumber}&pageSize=${pageSize}`
             );
 
             if (res.data && res.data.data) {
@@ -98,11 +98,11 @@ const BuyerManagement: React.FC = () => {
         <div className="flex-1 flex flex-col min-w-0 p-6 bg-white dark:bg-[#131613] font-display overflow-y-auto">
             <AdminHeader
                 title="Quản lý người mua"
-                description="Xem xét, xác minh và quản lý các tài khoản người mua trong lĩnh vực nông nghiệp."
+                description="Quản trị hệ thống"
                 breadcrumbs={[
                     { label: 'Trang chủ', path: '/' },
                     { label: 'Admin', path: '/admin' },
-                    { label: 'Quản lý người mua', isActive: true }
+                    { label: 'Quản lý tài khoản quản trị', isActive: true }
                 ]}
                 rightContent={
                     <button
@@ -198,7 +198,6 @@ const BuyerManagement: React.FC = () => {
                             <tr>
                                 <th className="py-4 px-6 text-[11px] font-bold uppercase tracking-wider text-[#6b806c] dark:text-gray-400">Tài khoản người mua</th>
                                 <th className="py-4 px-6 text-[11px] font-bold uppercase tracking-wider text-[#6b806c] dark:text-gray-400">Địa điểm</th>
-                                <th className="py-4 px-6 text-[11px] font-bold uppercase tracking-wider text-[#6b806c] dark:text-gray-400 text-center">Tổng số đơn hàng</th>
                                 <th className="py-4 px-6 text-[11px] font-bold uppercase tracking-wider text-[#6b806c] dark:text-gray-400">Ngày đăng ký</th>
                                 <th className="py-4 px-6 text-[11px] font-bold uppercase tracking-wider text-[#6b806c] dark:text-gray-400 text-center">Trạng thái</th>
                                 <th className="py-4 px-6 text-[11px] font-bold uppercase tracking-wider text-[#6b806c] dark:text-gray-400 text-center">Hành động</th>
@@ -239,11 +238,11 @@ const BuyerManagement: React.FC = () => {
                                     </td>
 
                                     {/* Số dư */}
-                                    <td className="py-4 px-6 text-center">
+                                    {/* <td className="py-4 px-6 text-center">
                                         <span className="text-sm font-bold text-[#131613] dark:text-white">
                                             {user.soDu?.toLocaleString()} đ
                                         </span>
-                                    </td>
+                                    </td> */}
 
                                     {/* Ngày tạo */}
                                     <td className="py-4 px-6">
@@ -273,7 +272,7 @@ const BuyerManagement: React.FC = () => {
                                     </td>
 
                                     {/* Action */}
-                                    <td className="py-4 px-6 text-right">
+                                    <td className="py-4 px-6 text-center">
                                         <div className="flex items-center justify-end gap-1">
                                             <button
                                                 className="p-1.5 hover:text-primary"
@@ -414,4 +413,4 @@ const BuyerManagement: React.FC = () => {
     );
 };
 
-export default BuyerManagement;
+export default AdminManagement;

@@ -11,5 +11,6 @@ namespace AgroMarket.Application.Interfaces.Services
     public interface INguoiDungService
     {
         public Task<PagedResponse<IEnumerable<NguoiDungDto>>> GetAllByMaAsync(int pageSize, int pageNumber, string ma);
+        public Task CreateUserAsync(NguoiDungFormDto user);
     }
 }
