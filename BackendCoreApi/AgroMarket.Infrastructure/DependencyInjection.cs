@@ -35,7 +35,7 @@ namespace AgroMarket.Infrastructure
             services.AddScoped<ISanPhamChungRepository, SanPhamChungRepository>();
             services.AddScoped<ISanPhamDangRepository, SanPhamDangRepository>();
             services.AddScoped<INguoiDungRepository, NguoiDungRepository>();
-
+            services.AddScoped<ILoaiDanhMucRepository, LoaiDanhMucRepository>();
 
             // cấu hình jwt
             services.AddAuthentication(options =>

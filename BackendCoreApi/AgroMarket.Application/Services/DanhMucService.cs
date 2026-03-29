@@ -13,21 +13,36 @@ namespace AgroMarket.Application.Services
         private readonly IDanhMucRepository _repo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public DanhMucService(IRepository<DanhMuc> baseRepository, IDanhMucRepository repo, IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly ILoaiDanhMucRepository _loaiDanhMucRepo;
+        public DanhMucService(IRepository<DanhMuc> baseRepository, IDanhMucRepository repo, IUnitOfWork unitOfWork, IMapper mapper, ILoaiDanhMucRepository loaiDanhMucRepo)
         {
             _baseRepository = baseRepository;
             _repo = repo;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _loaiDanhMucRepo = loaiDanhMucRepo;
         }
 
         public async Task<IEnumerable<DanhMucDto>> GetDanhMucByLoai(string loai)
         {
-            var danhMucs = await _repo.GetDanhMucByLoaiAsync(loai);
+            try
+            {
+                var loaiDanhMuc = await _loaiDanhMucRepo.GetLoaiDanhMucByMaLoaiAsync(loai);
 
-            var result = _mapper.Map<IEnumerable<DanhMucDto>>(danhMucs);
+                if (loaiDanhMuc == null)
+                {
+                    throw new Exception("Không có loại danh mục này");
+                }
+                var danhMucs = await _repo.GetDanhMucByLoaiAsync(loaiDanhMuc.Id);
 
-            return result;
+                var result = _mapper.Map<IEnumerable<DanhMucDto>>(danhMucs);
+
+                return result;
+            }
+            catch (Exception ex) 
+            { 
+                throw new Exception($"Lỗi: {ex.Message}");
+            }
         }
 
         public async Task<DanhMucDto> GetDanhMucByMaGiaTriAsync(string MaGiaTri)

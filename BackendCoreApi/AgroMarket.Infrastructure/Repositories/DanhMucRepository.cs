@@ -13,9 +13,9 @@ namespace AgroMarket.Infrastructure.Repositories
         {
         }
 
-        public async Task<IEnumerable<DanhMuc>> GetDanhMucByLoaiAsync(string loai)
+        public async Task<IEnumerable<DanhMuc>> GetDanhMucByLoaiAsync(Guid loaiDanhMucId)
         {
-            var result = await _dbSet.Where(x => x.Loai == loai).ToListAsync();
+            var result = await _dbSet.Where(x => x.LoaiDanhMucId == loaiDanhMucId).ToListAsync();
             return result;
         }
 

@@ -4,6 +4,7 @@ using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgroMarket.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260325161642_them loai danh muc")]
+    partial class themloaidanhmuc
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,10 +134,6 @@ namespace AgroMarket.Infrastructure.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("DanhMucCapTrenId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("danh_muc_cap_tren_id");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_deleted");
@@ -167,9 +166,6 @@ namespace AgroMarket.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_danh_muc");
-
-                    b.HasIndex("DanhMucCapTrenId")
-                        .HasDatabaseName("ix_danh_muc_danh_muc_cap_tren_id");
 
                     b.HasIndex("LoaiDanhMucId")
                         .HasDatabaseName("ix_danh_muc_loai_danh_muc_id");
@@ -1001,20 +997,12 @@ namespace AgroMarket.Infrastructure.Migrations
 
             modelBuilder.Entity("AgroMarket.Domain.Entities.DanhMuc", b =>
                 {
-                    b.HasOne("AgroMarket.Domain.Entities.DanhMuc", "DanhMucCapTren")
-                        .WithMany("DanhMucCapDuoi")
-                        .HasForeignKey("DanhMucCapTrenId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_danh_muc_danh_muc_danh_muc_cap_tren_id");
-
                     b.HasOne("AgroMarket.Domain.Entities.LoaiDanhMuc", "LoaiDanhMuc")
                         .WithMany("DanhMucs")
                         .HasForeignKey("LoaiDanhMucId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_danh_muc_loai_danh_mucs_loai_danh_muc_id");
-
-                    b.Navigation("DanhMucCapTren");
 
                     b.Navigation("LoaiDanhMuc");
                 });
@@ -1249,11 +1237,6 @@ namespace AgroMarket.Infrastructure.Migrations
                         .HasConstraintName("fk_vi_giao_dich_nguoi_dung_nguoi_dung_id");
 
                     b.Navigation("NguoiDung");
-                });
-
-            modelBuilder.Entity("AgroMarket.Domain.Entities.DanhMuc", b =>
-                {
-                    b.Navigation("DanhMucCapDuoi");
                 });
 
             modelBuilder.Entity("AgroMarket.Domain.Entities.DonHang", b =>

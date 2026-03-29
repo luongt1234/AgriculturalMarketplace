@@ -25,6 +25,7 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<NhatKySanPham> NhatKySanPhams { get; set; }
         public DbSet<TinNhan> TinNhans { get; set; }
         public DbSet<YeuCauDangKy> YeuCauDangKys { get; set; }
+        public DbSet<LoaiDanhMuc> LoaiDanhMucs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,6 +50,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<NhatKySanPham>().ToTable("nhat_ky_san_pham");
             modelBuilder.Entity<TinNhan>().ToTable("tin_nhan");
             modelBuilder.Entity<YeuCauDangKy>().ToTable("yeu_cau_dang_ky");
+            modelBuilder.Entity<LoaiDanhMuc>().ToTable("loai_danh_muc");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -132,6 +134,18 @@ namespace AgroMarket.Infrastructure.Persistence
                 .HasForeignKey(nk => nk.NguoiThucHienId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<DanhMuc>()
+                .HasOne(d => d.LoaiDanhMuc)
+                .WithMany(l => l.DanhMucs)
+                .HasForeignKey(d => d.LoaiDanhMucId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DanhMuc>()
+               .HasOne(x => x.DanhMucCapTren)
+               .WithMany(x => x.DanhMucCapDuoi)
+               .HasForeignKey(x => x.DanhMucCapTrenId)
+               .OnDelete(DeleteBehavior.Restrict);
+
             // =========================================================
             // 4. CẤU HÌNH ENUM (CONVERSION)
             // =========================================================
@@ -183,6 +197,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<NhatKySanPham>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<TinNhan>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<YeuCauDangKy>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<LoaiDanhMuc>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

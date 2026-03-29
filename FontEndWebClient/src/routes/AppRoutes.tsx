@@ -61,7 +61,9 @@ export default function AppRoutes() {
                             <Route path="seller" element={<SellerManagement />} />
                             <Route path="admin-managenent" element={<AdminManagement />} />
                             <Route path="dashboard" element={<AdminDashboard />} />
+                            <Route path="category" element={<div>Quản lý danh mục</div>} />
                             <Route path="users" element={<div>Quản lý User</div>} />
+
                         </Route>
                     </Route>
                 </Route>
