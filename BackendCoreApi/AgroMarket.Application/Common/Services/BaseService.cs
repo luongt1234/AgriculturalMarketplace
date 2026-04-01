@@ -1,5 +1,6 @@
 ﻿using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Domain.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgroMarket.Application.Common.Services
 {
@@ -17,6 +18,20 @@ namespace AgroMarket.Application.Common.Services
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _repository.GetListAllAsync();
+        }
+
+        public virtual async Task<(IEnumerable<T> Items, int TotalRecords)> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var query = _repository.GetQueryable();
+
+            var totalRecords = await query.CountAsync();
+
+            var items = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalRecords);
         }
 
         public virtual async Task<T?> GetByIdAsync(Guid id)

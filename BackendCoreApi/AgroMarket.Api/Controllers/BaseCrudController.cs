@@ -25,6 +25,21 @@ namespace AgroMarket.Api.Controllers
             return Success(dtos);
         }
 
+        [HttpGet("paged")]
+        public virtual async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var (entities, totalRecords) = await _service.GetPagedAsync(pageNumber, pageSize);
+                var dtos = _mapper.Map<IEnumerable<TDto>>(entities);
+                return PagedResult(dtos, pageNumber, pageSize, totalRecords);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + ex.InnerException + ex.StackTrace);
+            }
+        }
+
         [HttpGet("{id}")]
         public virtual async Task<IActionResult> GetById(Guid id)
         {

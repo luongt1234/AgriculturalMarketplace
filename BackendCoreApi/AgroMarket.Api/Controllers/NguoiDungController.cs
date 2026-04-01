@@ -48,7 +48,7 @@ namespace AgroMarket.Api.Controllers
                 }
                 // xác thực admin
                 var result = await _nguoiDungService.GetAllByMaAsync(pageSize, pageNumber, ma);
-                return Success(result, "Lấy dữ liệu người bán thành công");
+                return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
             }
             catch (Exception ex)
             {

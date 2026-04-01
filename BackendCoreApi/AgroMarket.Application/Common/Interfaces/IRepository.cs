@@ -6,6 +6,7 @@ namespace AgroMarket.Application.Common.Interfaces
     public interface IRepository<T> where T : BaseEntity
     {
         IQueryable<T> Query();
+        IQueryable<T> GetQueryable();
         IQueryable<T> GetAll();
         Task<IEnumerable<T>> GetListAllAsync();
         IQueryable<T> GetPaged(int pageSize, int pageNumber);

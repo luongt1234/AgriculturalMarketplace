@@ -13,6 +13,10 @@ export interface ApiResponse<T = any> {
     message: string;
     data: T;
     errors: any | null;
+    pageNumber: number | null;
+    pageSize: number | null;
+    totalRecords: number | null;
+    totalPages: number | null;
 }
 
 const axiosInstance = axios.create({

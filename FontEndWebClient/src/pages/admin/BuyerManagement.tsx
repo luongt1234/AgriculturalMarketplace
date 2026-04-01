@@ -38,7 +38,7 @@ const BuyerManagement: React.FC = () => {
     // Lấy thông tin danh mục vai trò (để truyền vào modal thêm mới)
     const fetchRoleData = async () => {
         try {
-            const res = await axiosInstance.get(`/api/DanhMuc/GetByMaGiaTri/THUONG_LAI`);
+            const res = await axiosInstance.get(`/api/DanhMuc/GetByMaGiaTri/THUONG-LAI`);
             if (res.data) setDanhMucVaiTro(res.data);
         } catch (err) {
             console.error("Lỗi lấy danh mục vai trò:", err);
@@ -51,12 +51,12 @@ const BuyerManagement: React.FC = () => {
         try {
             // API này được ánh xạ từ bảng 'nguoi_dung' trong database 
             const res = await axiosInstance.get(
-                `/api/NguoiDung/GetByMa/THUONG_LAI?pageNumber=${pageNumber}&pageSize=${pageSize}&search=${searchTerm}`
+                `/api/NguoiDung/GetByMa/THUONG-LAI?pageNumber=${pageNumber}&pageSize=${pageSize}&search=${searchTerm}`
             );
 
-            if (res.data) {
-                setBuyers(res.data.data || []);
-                setTotal(res.data.totalRecords || 0);
+            if (res) {
+                setBuyers(res.data || []);
+                setTotal(res.totalRecords || 0);
             }
         } catch (err) {
             toast.error("Không thể tải danh sách người mua");

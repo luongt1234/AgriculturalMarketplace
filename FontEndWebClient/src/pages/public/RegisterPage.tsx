@@ -8,7 +8,7 @@ export const RegisterPage = () => {
 
     // Quản lý state của Form
     const [formData, setFormData] = useState({
-        MaVaiTro: 'THUONG_LAI', // Mặc định là Người mua
+        MaVaiTro: 'THUONG-LAI', // Mặc định là Người mua
         HoVaTen: '',
         Email: '',
         SoDienThoai: '',
@@ -133,8 +133,8 @@ export const RegisterPage = () => {
                                         <input
                                             type="radio"
                                             name="MaVaiTro"
-                                            value="THUONG_LAI"
-                                            checked={formData.MaVaiTro === 'THUONG_LAI'}
+                                            value="THUONG-LAI"
+                                            checked={formData.MaVaiTro === 'THUONG-LAI'}
                                             onChange={handleChange}
                                             className="peer hidden"
                                         />
@@ -147,8 +147,8 @@ export const RegisterPage = () => {
                                         <input
                                             type="radio"
                                             name="MaVaiTro"
-                                            value="NONG_DAN"
-                                            checked={formData.MaVaiTro === 'NONG_DAN'}
+                                            value="NONG-DAN"
+                                            checked={formData.MaVaiTro === 'NONG-DAN'}
                                             onChange={handleChange}
                                             className="peer hidden"
                                         />

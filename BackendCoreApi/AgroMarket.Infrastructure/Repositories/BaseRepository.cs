@@ -33,6 +33,10 @@ namespace AgroMarket.Infrastructure.Repositories
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
         }
+        public IQueryable<T> GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
         public async Task<IEnumerable<T>> GetListAllAsync()
         {
             return await _dbSet.Where(x => !x.IsDeleted).ToListAsync();

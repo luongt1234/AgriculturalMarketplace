@@ -1,7 +1,16 @@
+export interface LoaiDanhMuc {
+    id: string; // BaseEntity
+    maLoaiDanhMuc: string;
+    tenLoaiDanhMuc: string;
+}
+
 export interface DanhMuc {
-    loai: string;
+    id: string; // BaseEntity
+    loaiDanhMucId: string;
     maGiaTri: string;
+    danhMucCapTrenId?: string | null;
     tenHienThi: string;
     thuTu: number;
-    id: string;
+    loaiDanhMuc?: LoaiDanhMuc;
+    danhMucCapTren?: DanhMuc;
 }

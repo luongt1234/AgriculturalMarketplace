@@ -51,10 +51,9 @@ const AdminManagement: React.FC = () => {
             const res = await axiosInstance.get(
                 `/api/NguoiDung/GetByMa/ADMIN?pageNumber=${pageNumber}&pageSize=${pageSize}`
             );
-
-            if (res.data) {
-                setAdmins(res.data.data || []);
-                setTotal(res.data.totalRecords || 0);
+            if (res) {
+                setAdmins(res.data || []);
+                setTotal(res.totalRecords || 0);
             }
         } catch (err) {
             toast.error("Không thể tải danh sách quản trị viên");
@@ -109,8 +108,8 @@ const AdminManagement: React.FC = () => {
             className: "text-center",
             render: (user) => (
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${user.kichHoat
-                        ? 'bg-green-50 text-green-700 border-green-200'
-                        : 'bg-red-50 text-red-700 border-red-200'
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
                     }`}>
                     {user.kichHoat ? 'Hoạt động' : 'Khóa'}
                 </span>
@@ -180,8 +179,8 @@ const AdminManagement: React.FC = () => {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === tab
-                                            ? 'bg-white dark:bg-[#1a261c] text-[#131613] dark:text-white shadow-sm border border-[#dee3de]'
-                                            : 'text-[#6b806c] hover:text-[#131613]'
+                                        ? 'bg-white dark:bg-[#1a261c] text-[#131613] dark:text-white shadow-sm border border-[#dee3de]'
+                                        : 'text-[#6b806c] hover:text-[#131613]'
                                         }`}
                                 >
                                     {tab}

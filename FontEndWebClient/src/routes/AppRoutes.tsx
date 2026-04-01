@@ -8,12 +8,14 @@ import { LoginPage } from '../pages/public/LoginPage';
 import { RegisterPage } from '../pages/public/RegisterPage';
 import { PrivateRoute } from './PrivateRoute';
 import { RoleGuard } from './RoleGuard';
-import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
+import { NotFoundPage } from '../pages/public/NotFoundPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import BuyerManagement from '../pages/admin/BuyerManagement';
 import SellerManagement from '../pages/admin/SellerManagement';
 import AdminManagement from '../pages/admin/AdminManagement';
+import CategoryManagement from '../pages/admin/CategoryManagement';
+import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -35,7 +37,7 @@ export default function AppRoutes() {
 
                 <Route element={<PrivateRoute />}>
                     {/* 1. NÔNG DÂN (FARMER) */}
-                    <Route element={<RoleGuard allowedRoles={['NONG_DAN']} />}>
+                    <Route element={<RoleGuard allowedRoles={['NONG-DAN']} />}>
                         <Route path="/farmer" element={<DashboardLayoutFarmer sidebar={<FarmerSidebar />} />}>
                             <Route index element={<Navigate to="dashboard" />} />
 
@@ -60,8 +62,8 @@ export default function AppRoutes() {
                             <Route path="buyer" element={<BuyerManagement />} />
                             <Route path="seller" element={<SellerManagement />} />
                             <Route path="admin-managenent" element={<AdminManagement />} />
-                            <Route path="dashboard" element={<AdminDashboard />} />
-                            <Route path="category" element={<div>Quản lý danh mục</div>} />
+                            <Route path="dashboard" element={<AdminDashboard />} /> bn
+                            <Route path="category" element={<CategoryManagement />} />
                             <Route path="users" element={<div>Quản lý User</div>} />
 
                         </Route>
@@ -69,7 +71,7 @@ export default function AppRoutes() {
                 </Route>
 
                 {/* ================= 404 ================= */}
-                <Route path="*" element={<div className="text-center mt-20 text-red-500">404 - Not Found</div>} />
+                <Route path="*" element={<NotFoundPage />} />
             </Routes>
         </Suspense>
     );

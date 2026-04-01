@@ -32,7 +32,7 @@ export const LoginPage = () => {
                 useAuthStore.getState().login(res.data);
 
                 if (res.data.maVaiTro === 'ADMIN') navigate('/admin');
-                else if (res.data.maVaiTro === 'NONG_DAN') navigate('/famer');
+                else if (res.data.maVaiTro === 'NONG-DAN') navigate('/farmer');
                 else navigate('/');
 
                 // navigate('/farmer/dashboard');
