@@ -1,42 +1,48 @@
-// src/types/product.types.ts
 export interface Product {
     id: string;
-    name: string;
-    sku: string; // Mã sản phẩm
-    category: string;
-    price: number;
-    stock: number;
-    unit: string; // kg, bó, thùng
-    status: 'active' | 'out_of_stock' | 'draft';
-    imageUrl: string;
-    lastUpdated: string;
+    tenHienThi?: string;
+    tenLoai?: string;
+    gia: number;
+    soLuong: number;
+    tenDonVi?: string;
+    trangThai: 'active' | 'out_of_stock' | 'draft' | string;
+    hinhAnhUrl?: string;
+    ngayDang: string;
+    sku?: string;
+    moTaChiTiet?: string;
+    sanPhamChungId: string;
+    tenSanPhamChung?: string;
+    nguoiBanId: string;
+    tenNguoiBan?: string;
+    anhDaiDienNguoiBan?: string;
+    chatLuongId?: string;
+    tenChatLuong?: string;
+    donViId?: string;
+    loaiId?: string;
+    anhSanPham?: string;
 }
 
-// Mock data
-export const MOCK_PRODUCTS: Product[] = [
-    {
-        id: '1',
-        name: 'Cà chua hữu cơ (Organic Tomatoes)',
-        sku: 'PRD-2024-001',
-        category: 'Rau củ quả',
-        price: 25000,
-        stock: 150,
-        unit: 'kg',
-        status: 'active',
-        imageUrl: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=100&q=80',
-        lastUpdated: '24 Oct, 09:30 AM'
-    },
-    {
-        id: '2',
-        name: 'Gạo ST25 (Túi 5kg)',
-        sku: 'PRD-2024-002',
-        category: 'Lúa gạo',
-        price: 180000,
-        stock: 0,
-        unit: 'túi',
-        status: 'out_of_stock',
-        imageUrl: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=100&q=80',
-        lastUpdated: '23 Oct, 10:00 AM'
-    },
-    // ... thêm data khác
-];
+// Interface cho Sản Phẩm Chung (CommonProduct) - dạng cây
+export interface CommonProduct {
+    id: string;
+    tenSanPham: string;
+    loai_id: string | null;
+    moTa: string;
+    donViId: string;
+    ngayTao: string;
+    chaId: string | null;
+    children?: CommonProduct[] | null;
+}
+
+// Interface cho Chất lượng (Quality)
+export interface QualityOption {
+    id: string;
+    maGiaTri: string;
+    tenHienThi: string;
+    thuTu: number;
+    loaiDanhMuc?: {
+        id: string;
+        maLoaiDanhMuc: string;
+        tenLoaiDanhMuc: string;
+    };
+}

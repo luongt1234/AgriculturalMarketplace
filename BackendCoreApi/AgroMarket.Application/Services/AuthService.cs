@@ -133,7 +133,7 @@ namespace AgroMarket.Application.Services
 
             var claims = new List<Claim>
             {
-                new Claim("id", user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
                 //new Claim(JwtRegisteredClaimNames.Sub, user.TenDangNhap),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),

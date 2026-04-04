@@ -41,5 +41,49 @@ namespace AgroMarket.Application.Services
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<IEnumerable<SanPhamChungDto>> GetTree()
+        {
+            try
+            {
+                var sanPhamChungs = await _baseRepository.Query()
+                    .ToListAsync();
+
+                var sanPhamChungDtos = _mapper.Map<List<SanPhamChungDto>>(sanPhamChungs);
+
+                var result = new List<SanPhamChungDto>();
+                var parent = sanPhamChungDtos.Where(x => x.ChaId == null).ToList();
+                BuildTree(sanPhamChungDtos, parent, result);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        private void BuildTree(List<SanPhamChungDto> sanPhamChungDtos, List<SanPhamChungDto> parent, List<SanPhamChungDto> tree)
+        {
+            if (parent == null || parent.Count == 0)
+            {
+                tree.AddRange(sanPhamChungDtos.Where(x => x.ChaId == null));
+            }
+            else
+            {
+                foreach (var item in parent)
+                {
+                    tree.Add(item);
+
+                    var children = sanPhamChungDtos.Where(x => x.ChaId == item.id).ToList();
+                    if (children.Count > 0)
+                    {
+                        item.children = children;
+                        BuildTree(sanPhamChungDtos, children, tree);
+                    }
+                }
+            }
+
+        }
     }
 }

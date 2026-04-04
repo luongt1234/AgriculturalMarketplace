@@ -9,6 +9,6 @@
         public Guid DonViId { get; set; }
         public DateTime NgayTao { get; set; } = DateTime.Now;
         public Guid? ChaId { get; set; }
-        public List<SanPhamChungDto>? sanPhamCons { get; set; }
+        public List<SanPhamChungDto>? children { get; set; }
     }
 }

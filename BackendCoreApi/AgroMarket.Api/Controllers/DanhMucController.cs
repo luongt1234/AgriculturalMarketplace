@@ -20,13 +20,22 @@ namespace AgroMarket.Api.Controllers
             _danhMucService = danhMucService;
         }
 
-        [HttpGet("{loai}")]
+        [AllowAnonymous]
+        [HttpGet("GetByMaLoaiDanhMuc/{loai}")]
         public async Task<IActionResult> GetCatagoryByType([FromRoute] string? loai)
         {
-            var result = await _danhMucService.GetDanhMucByLoai(loai);
-            return Success(result, "Lấy danh sách loại");
+            try
+            {
+                var result = await _danhMucService.GetDanhMucByLoai(loai);
+                return Success(result, "Lấy danh sách loại");
+            }
+            catch (Exception ex)
+            {
+                return (ActionResult)Error($"Lỗi khi lấy danh mục vai trò: {ex.Message}");
+            }
         }
 
+        [AllowAnonymous]
         [HttpGet("GetByMaGiaTri/{MaGiaTri}")]
         public async Task<IActionResult> GetCatagoryByCodeValue([FromRoute] string? MaGiaTri)
         {

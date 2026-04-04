@@ -23,7 +23,8 @@ namespace AgroMarket.Application.Services
         private readonly ISanPhamDangRepository _sanPhamDangRepository;
         protected readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
-        public SanPhamDangService(IFileStorageService fileStorageService, ISanPhamChungRepository sanPhamChungRepository, IMapper mapper, ISanPhamDangRepository sanPhamDangRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
+        private readonly IBaseService<SanPhamDang> _sevice;
+        public SanPhamDangService(IFileStorageService fileStorageService, ISanPhamChungRepository sanPhamChungRepository, IMapper mapper, ISanPhamDangRepository sanPhamDangRepository, IUnitOfWork unitOfWork, ICurrentUserService currentUserService, IBaseService<SanPhamDang> service)
         {
             _fileStorageService = fileStorageService;
             _sanPhamChungRepository = sanPhamChungRepository;
@@ -31,6 +32,7 @@ namespace AgroMarket.Application.Services
             _sanPhamDangRepository = sanPhamDangRepository;
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _sevice = service; 
         }
         public async Task<SanPhamDangDto> CreateAsync(SanPhamDangFormDto request, IFormFile? hinhAnh)
         {
@@ -47,7 +49,7 @@ namespace AgroMarket.Application.Services
                     throw new ApplicationException($"Lưu hình ảnh lỗi: {ex.Message}");
                 }
 
-                if (!await _sanPhamChungRepository.CheckExistCatagory(request.spc_id))
+                if (!await _sanPhamChungRepository.CheckExistCatagory(request.SanPhamChungId))
                 {
                     throw new Exception("Không có sản phẩm chung này.");
                 }
@@ -58,32 +60,63 @@ namespace AgroMarket.Application.Services
                 sanPhamDang.NgayDang = DateTime.UtcNow.AddHours(7);
                 sanPhamDang.NgayTao = DateTime.UtcNow.AddHours(7);
                 sanPhamDang.HinhAnhUrl = hinhAnhPath;
+                // Ensure mapping of user id if provided
+                if (_currentUserService.UserId != null && _currentUserService.UserId != Guid.Empty)
+                {
+                    sanPhamDang.NguoiBanId = _currentUserService.UserId.Value;
+                }
+
+                await _sevice.CreateAsync(sanPhamDang);
 
                 await _unitOfWork.CommitAsync();
                 return _mapper.Map<SanPhamDangDto>(sanPhamDang);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Lỗi khi tạo sản phẩm đăng: {ex.Message}");
+                throw new Exception($"{ex.Message}");
             }
         }
 
-        //public Task<PaginatedResult<IEnumerable<SanPhamDangDto>>> GetProductByBuyerAsync(Guid buyerId)
-        //{
-        //    try
-        //    {
-        //        var userId = _currentUserService.UserId;
-        //        if (userId == null)
-        //        {
-        //            throw new Exception("Người dùng không hợp lệ");
-        //        }
+        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var (items, total) = await _sanPhamDangRepository.GetPagedAsync(pageNumber, pageSize);
+                var dtoList = _mapper.Map<IEnumerable<SanPhamDangDto>>(items);
+                return new PagedResponse<IEnumerable<SanPhamDangDto>>(dtoList, pageNumber, pageSize, total);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách sản phẩm: {ex.Message}");
+            }
+        }
 
+        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetProductsByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var (items, total) = await _sanPhamDangRepository.GetByUserPagedAsync(userId, pageNumber, pageSize);
+                var dtoList = _mapper.Map<IEnumerable<SanPhamDangDto>>(items);
+                return new PagedResponse<IEnumerable<SanPhamDangDto>>(dtoList, pageNumber, pageSize, total);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách sản phẩm người dùng: {ex.Message}");
+            }
+        }
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Lỗi khi lây danh sách sản phẩm: {ex.Message}");
-        //    }
-        //}
+        public async Task<SanPhamDangDto?> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _sanPhamDangRepository.GetByIdAsync(id);
+                if (entity == null) return null;
+                return _mapper.Map<SanPhamDangDto>(entity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy thông tin sản phẩm: {ex.Message}");
+            }
+        }
     }
 }

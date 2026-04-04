@@ -1,64 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { createProduct, updateProduct, type ProductFormRequest } from '../api/product.api';
-import type { Product } from '../../../types/product.types';
+import { toast } from 'sonner';
+import TreeSelect from '../../../components/common/TreeSelect';
+import { createProduct, updateProduct, getCommonProducts, getQualityOptions, type ProductFormRequest } from '../api/product.api';
+import type { Product, CommonProduct, QualityOption } from '../../../types/product.types';
 
 interface ProductFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
-    initialData?: Product | null; // Dữ liệu sản phẩm cần sửa (nếu có)
+    initialData?: Product | null;
 }
 
-// Mock Data (Thực tế nên lấy từ API)
-const MOCK_SPC = [
-    { id: '11111111-1111-1111-1111-111111111111', name: 'Cà phê Robusta' },
-    { id: '22222222-2222-2222-2222-222222222222', name: 'Gạo ST25' },
-];
-const MOCK_QUALITY = [
-    { id: 'aaaa-bbbb-cccc-dddd', name: 'Loại 1 (Xuất khẩu)' },
-    { id: 'eeee-ffff-gggg-hhhh', name: 'Loại 2 (Thương mại)' },
-];
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
-    isOpen, onClose, onSuccess, initialData
+    isOpen,
+    onClose,
+    onSuccess,
+    initialData,
 }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [commonProducts, setCommonProducts] = useState<CommonProduct[]>([]);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+    const [qualityOptions, setQualityOptions] = useState<QualityOption[]>([]);
+    const [isLoadingQuality, setIsLoadingQuality] = useState(false);
 
-    // Kiểm tra xem đang ở chế độ nào
     const isEditMode = !!initialData;
 
     const [formData, setFormData] = useState<ProductFormRequest>({
-        ten_san_pham: '',
-        spc_id: '',
-        chat_luong_id: '',
+        tenHienThi: '',
+        sanPhamChungId: '',
+        chatLuongId: '',
         gia: 0,
-        so_luong: 0,
-        mo_ta: '',
-        hinh_anh: null,
+        soLuong: 0,
+        moTaChiTiet: '',
+        hinhAnh: null,
     });
+
+    // Effect: Load danh sách sản phẩm chung
+    useEffect(() => {
+        const loadCommonProducts = async () => {
+            try {
+                setIsLoadingProducts(true);
+                const data = await getCommonProducts();
+                setCommonProducts(data);
+            } catch (error) {
+                console.error('Lỗi load sản phẩm chung:', error);
+            } finally {
+                setIsLoadingProducts(false);
+            }
+        };
+
+        if (isOpen) {
+            loadCommonProducts();
+        }
+    }, [isOpen]);
+
+    // Effect: Load danh sách chất lượng
+    useEffect(() => {
+        const loadQualityOptions = async () => {
+            try {
+                setIsLoadingQuality(true);
+                const data = await getQualityOptions();
+                setQualityOptions(data);
+            } catch (error) {
+                console.error('Lỗi load chất lượng:', error);
+            } finally {
+                setIsLoadingQuality(false);
+            }
+        };
+
+        if (isOpen) {
+            loadQualityOptions();
+        }
+    }, [isOpen]);
 
     // Effect: Reset form hoặc Fill data khi mở Modal
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                // --- CHẾ ĐỘ EDIT: Fill dữ liệu ---
                 setFormData({
-                    ten_san_pham: initialData.name,
-                    // Lưu ý: Cần map đúng ID từ tên danh mục nếu backend trả về tên
-                    // Ở đây giả định initialData có chứa các ID này hoặc bạn phải tìm ID từ list MOCK_SPC
-                    spc_id: MOCK_SPC.find(c => c.name === initialData.category)?.id || '',
-                    chat_luong_id: '', // Cần logic tương tự để map ID chất lượng
-                    gia: initialData.price,
-                    so_luong: initialData.stock,
-                    mo_ta: '', // Cần thêm field description vào Product type nếu chưa có
-                    hinh_anh: null // Không set file object, chỉ hiển thị preview
+                    tenHienThi: initialData.tenHienThi || '',
+                    sanPhamChungId: initialData.sanPhamChungId || '',
+                    chatLuongId: initialData.chatLuongId || '',
+                    gia: initialData.gia,
+                    soLuong: initialData.soLuong,
+                    moTaChiTiet: initialData.moTaChiTiet || '',
+                    hinhAnh: null,
                 });
-                setPreviewImage(initialData.imageUrl);
+                setPreviewImage(initialData.hinhAnhUrl || null);
             } else {
                 // --- CHẾ ĐỘ CREATE: Reset form ---
                 setFormData({
-                    ten_san_pham: '', spc_id: '', chat_luong_id: '', gia: 0, so_luong: 0, mo_ta: '', hinh_anh: null
+                    tenHienThi: '',
+                    sanPhamChungId: '',
+                    chatLuongId: '',
+                    gia: 0,
+                    soLuong: 0,
+                    moTaChiTiet: '',
+                    hinhAnh: null,
                 });
                 setPreviewImage(null);
             }
@@ -70,7 +110,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            setFormData({ ...formData, hinh_anh: file });
+            setFormData({ ...formData, hinhAnh: file });
             setPreviewImage(URL.createObjectURL(file));
         }
     };
@@ -78,9 +118,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate ảnh: Nếu tạo mới bắt buộc có ảnh, nếu sửa thì có thể dùng ảnh cũ (hinh_anh = null)
-        if (!isEditMode && !formData.hinh_anh) {
-            alert("Vui lòng chọn hình ảnh sản phẩm");
+        // Validate ảnh: Nếu tạo mới bắt buộc có ảnh, nếu sửa thì có thể dùng ảnh cũ (hinhAnh = null)
+        if (!isEditMode && !formData.hinhAnh) {
+            toast.error("Vui lòng chọn hình ảnh sản phẩm");
+            return;
+        }
+
+        // Validate sản phẩm chung
+        if (!formData.sanPhamChungId) {
+            toast.error("Vui lòng chọn sản phẩm chung");
             return;
         }
 
@@ -89,17 +135,17 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             if (isEditMode && initialData) {
                 // Gọi API Update
                 await updateProduct(initialData.id, formData);
-                alert("Cập nhật sản phẩm thành công!");
+                toast.success("Cập nhật sản phẩm thành công!");
             } else {
                 // Gọi API Create
                 await createProduct(formData);
-                alert("Thêm sản phẩm thành công!");
+                toast.success("Thêm sản phẩm thành công!");
             }
             onSuccess();
             onClose();
         } catch (error) {
             console.error(error);
-            alert("Có lỗi xảy ra. Vui lòng thử lại.");
+            toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
         } finally {
             setIsLoading(false);
         }
@@ -156,68 +202,88 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                                     required
                                     type="text"
                                     className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                                    value={formData.ten_san_pham}
-                                    onChange={e => setFormData({ ...formData, ten_san_pham: e.target.value })}
+                                    value={formData.tenHienThi}
+                                    onChange={e => setFormData({ ...formData, tenHienThi: e.target.value })}
+                                    placeholder="Ví dụ: Gạo ST25 premium"
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Loại nông sản</label>
+                            <div>
+                                <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Sản phẩm chung <span className="text-red-500">*</span></label>
+                                {isLoadingProducts ? (
+                                    <div className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm flex items-center text-gray-500">
+                                        Đang tải...
+                                    </div>
+                                ) : (
+                                    <TreeSelect<CommonProduct>
+                                        data={commonProducts}
+                                        value={formData.sanPhamChungId}
+                                        onChange={(value) => setFormData({ ...formData, sanPhamChungId: value })}
+                                        labelField="tenSanPham"
+                                        valueField="id"
+                                        childrenField="children"
+                                        parentField="chaId"
+                                        placeholder="-- Chọn sản phẩm chung --"
+                                        className="h-10"
+                                    />
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Chất lượng</label>
+                                {isLoadingQuality ? (
+                                    <div className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm flex items-center text-gray-500">
+                                        Đang tải...
+                                    </div>
+                                ) : (
                                     <select
-                                        required
                                         className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                                        value={formData.spc_id}
-                                        onChange={e => setFormData({ ...formData, spc_id: e.target.value })}
+                                        value={formData.chatLuongId || ''}
+                                        onChange={e => setFormData({ ...formData, chatLuongId: e.target.value })}
                                     >
-                                        <option value="">-- Chọn --</option>
-                                        {MOCK_SPC.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+                                        <option value="">-- Chọn chất lượng --</option>
+                                        {qualityOptions.map(option => (
+                                            <option key={option.id} value={option.id}>
+                                                {option.tenHienThi}
+                                            </option>
+                                        ))}
                                     </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Chất lượng</label>
-                                    <select
-                                        required
-                                        className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                                        value={formData.chat_luong_id}
-                                        onChange={e => setFormData({ ...formData, chat_luong_id: e.target.value })}
-                                    >
-                                        <option value="">-- Chọn --</option>
-                                        {MOCK_QUALITY.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-                                    </select>
-                                </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Giá bán (VNĐ)</label>
+                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Giá bán (VNĐ) <span className="text-red-500">*</span></label>
                                     <input
                                         required
                                         type="number"
                                         className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
                                         value={formData.gia}
                                         onChange={e => setFormData({ ...formData, gia: Number(e.target.value) })}
+                                        min="0"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Số lượng</label>
+                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Số lượng <span className="text-red-500">*</span></label>
                                     <input
                                         required
                                         type="number"
                                         className="w-full h-10 px-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                                        value={formData.so_luong}
-                                        onChange={e => setFormData({ ...formData, so_luong: Number(e.target.value) })}
+                                        value={formData.soLuong}
+                                        onChange={e => setFormData({ ...formData, soLuong: Number(e.target.value) })}
+                                        min="0"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Mô tả</label>
+                                <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Mô tả chi tiết</label>
                                 <textarea
                                     rows={3}
                                     className="w-full p-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none resize-none"
-                                    value={formData.mo_ta}
-                                    onChange={e => setFormData({ ...formData, mo_ta: e.target.value })}
+                                    value={formData.moTaChiTiet}
+                                    onChange={e => setFormData({ ...formData, moTaChiTiet: e.target.value })}
+                                    placeholder="Nhập mô tả chi tiết về sản phẩm..."
                                 ></textarea>
                             </div>
                         </div>
@@ -236,7 +302,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     <button
                         type="submit"
                         form="product-form"
-                        disabled={isLoading}
+                        disabled={isLoading || isLoadingProducts || isLoadingQuality}
                         className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-[#246328] transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2"
                     >
                         {isLoading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}

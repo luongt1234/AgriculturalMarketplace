@@ -7,6 +7,7 @@ using AgroMarket.Domain.Entities;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AgroMarket.Api.Controllers
 {
@@ -26,7 +27,7 @@ namespace AgroMarket.Api.Controllers
         {
             try
             {
-                var result = await _sanPhamDangService.CreateAsync(formDto, formDto.hinh_anh);
+                var result = await _sanPhamDangService.CreateAsync(formDto, formDto.HinhAnh);
                 return CreatedResult(result, "Thêm mới thành công");
             }
             catch (Exception ex)
@@ -49,5 +50,39 @@ namespace AgroMarket.Api.Controllers
         //        return Error($"Lỗi khi tạo sản phẩm đăng: {ex.Message}");
         //    }
         //}
+
+        [HttpGet("product")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProduct([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var result = await _sanPhamDangService.GetAllProductsAsync(pageNumber, pageSize);
+                return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy danh sách sản phẩm: {ex.Message}");
+            }
+        }
+
+        [HttpGet("user")]
+        public async Task<IActionResult> GetListProductByUser([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                // Lấy user id từ claims
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                    return Forbid();
+
+                var result = await _sanPhamDangService.GetProductsByUserAsync(userId, pageNumber, pageSize);
+                return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy danh sách sản phẩm người dùng: {ex.Message}");
+            }
+        }
     }
 }

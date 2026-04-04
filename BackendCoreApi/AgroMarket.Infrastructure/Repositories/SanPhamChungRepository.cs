@@ -41,7 +41,7 @@ namespace AgroMarket.Infrastructure.Repositories
                     {
                         id = parent.Id,
                         TenSanPham = parent.TenSanPham,
-                        sanPhamCons = children
+                        children = children
                             .Select(c => new SanPhamChungDto
                             {
                                 id = c.Id,

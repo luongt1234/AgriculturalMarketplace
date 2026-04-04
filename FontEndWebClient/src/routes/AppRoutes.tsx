@@ -16,6 +16,7 @@ import SellerManagement from '../pages/admin/SellerManagement';
 import AdminManagement from '../pages/admin/AdminManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
+import BuyerPage from '../pages/buyer/BuyerPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -27,7 +28,8 @@ export default function AppRoutes() {
             <Routes>
                 {/* ================= PUBLIC ROUTES ================= */}
                 <Route>
-                    <Route path="/" element={<div>Trang chủ</div>} />
+                    <Route path="/" element={<BuyerPage />} />
+                    {/* <Route path="/buyer" element={<BuyerPage />} /> */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/unauthorized" element={<UnauthorizedPage />} />

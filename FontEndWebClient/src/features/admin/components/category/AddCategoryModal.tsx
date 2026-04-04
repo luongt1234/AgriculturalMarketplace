@@ -79,8 +79,9 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
         setLoading(true);
         try {
             const payload = {
-                ...formDataDanhMuc            };
-            await axiosInstance.post('/api/DanhMuc', payload);
+                ...formDataLoai
+            };
+            await axiosInstance.post('/api/LoaiDanhMuc', payload);
             toast.success('Thêm mới loại danh mục thành công!');
             onSuccess();
             onClose();
@@ -144,7 +145,7 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
                         // Form cho Loại Danh Mục
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
-                                <label className="block text-xs font-bold text-[#6b806c] dark:text-gray-400 uppercase mb-1">Mã loại danh mục *</label>
+                                <label className="block text-xs font-bold text-[#6b806c] dark:text-gray uppercase mb-1">Mã loại danh mục *</label>
                                 <input
                                     required
                                     name="maLoaiDanhMuc"

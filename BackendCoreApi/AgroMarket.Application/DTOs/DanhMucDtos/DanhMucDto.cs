@@ -1,4 +1,5 @@
-﻿using AgroMarket.Domain.Entities;
+﻿using AgroMarket.Application.DTOs.LoaiDanhMucDtos;
+using AgroMarket.Domain.Entities;
 
 namespace AgroMarket.Application.DTOs.DanhMucDtos
 {
@@ -8,7 +9,7 @@ namespace AgroMarket.Application.DTOs.DanhMucDtos
         public string Loai { get; set; } = null!; // cot: loai (Vd: LOAI_SP, DON_VI)
         public string MaGiaTri { get; set; } = null!; // cot: ma_gia_tri
         public string TenHienThi { get; set; } = null!; // cot: ten_hien_thi
-        public LoaiDanhMuc LoaiDanhMuc { get; set; }
+        public LoaiDanhMucDto LoaiDanhMuc { get; set; }
         public int ThuTu { get; set; } = 0;       // cot: thu_tu
     }
 }

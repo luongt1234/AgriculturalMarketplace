@@ -11,29 +11,34 @@ namespace AgroMarket.Application.DTOs.SanPhamDangDtos
 {
     public class SanPhamDangFormDto
     {
-        [FromForm(Name = "spc_id")]
-        public Guid spc_id { get; set; }
+        [FromForm(Name = "tenHienThi")]
+        public string TenHienThi { get; set; } = null!; // tenHienThi: thay cho ten_san_pham
+
+        [FromForm(Name = "sanPhamChungId")]
+        public Guid SanPhamChungId { get; set; } // sanPhamChungId: thay cho spc_id
+
+        [FromForm(Name = "chatLuongId")]
+        public Guid? ChatLuongId { get; set; } // optional
 
         [FromForm(Name = "gia")]
         public decimal Gia { get; set; }
 
-        [FromForm(Name = "so_luong")]
-        public int so_luong { get; set; }
+        [FromForm(Name = "soLuong")]
+        public int SoLuong { get; set; }
 
-        [FromForm(Name = "tinh_trang")]
-        public string tinh_trang { get; set; } = "con_hang";
+        [FromForm(Name = "moTaChiTiet")]
+        public string? MoTaChiTiet { get; set; }
 
-        [FromForm(Name = "hinh_anh")]
-        public IFormFile hinh_anh { get; set; }
+        [FromForm(Name = "trangThai")]
+        public string? TrangThai { get; set; } = "con_hang";
 
-        [FromForm(Name = "mo_ta")]
-        public string? mo_ta { get; set; }
-        [FromForm(Name = "ten_san_pham")]
-        public string ten_san_pham { get; set; }
-        public Guid user_id { get; set; }
-        public Guid chat_luong_id { get; set; }
+        [FromForm(Name = "hinhAnh")]
+        public IFormFile? HinhAnh { get; set; }
 
-        public DateTime ngay_dang { get; set; } = DateTime.UtcNow.AddHours(7);
-        public DateTime ngay_tao { get; set; } = DateTime.UtcNow.AddHours(7);
+        // Thông tin thêm
+        public Guid? UserId { get; set; }
+
+        public DateTime NgayDang { get; set; } = DateTime.UtcNow.AddHours(7);
+        public DateTime NgayTao { get; set; } = DateTime.UtcNow.AddHours(7);
     }
 }

@@ -97,6 +97,7 @@ const CategoryManagement: React.FC = () => {
             header: 'Mã Loại',
             key: 'maLoaiDanhMuc',
             className: 'font-semibold',
+            render: (item) => <span className="text-[#131613] dark:text-white">{item.maLoaiDanhMuc}</span>
         },
         {
             header: 'Tên Loại Danh Mục',
