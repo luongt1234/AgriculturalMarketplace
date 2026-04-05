@@ -12,52 +12,52 @@ interface FlashDealsSectionProps {
 const FLASH_DEALS_PRODUCTS: BuyerProduct[] = [
     {
         id: '1',
-        name: 'Organic Tomatoes',
+        name: 'Cà chua hữu cơ',
         price: 20000,
         originalPrice: 25000,
         discount: 20,
         image:
             'https://lh3.googleusercontent.com/aida-public/AB6AXuCybU5rCnrJrAmnuwjJOSUt5m7xcEETO4U8piG2SedI8RrzAYJeIXucDM6ysOijxytsR36LamLKslVZd2Qm4IuYN7T10N4CW9_ytYyCL0cPMchdSEf1znZTSK_cZRNPETTiMTFbwQYZpWaDAe7Q39BkCQjimyPyQLCTHUuUxA7U_Qaek2r4yWUUxcr8_Qvp3FiNRCAHVaKEbS15q7TbnImLvlgKoAdkEKFftx_C6AwmoZRtx6gXqQPDOQ73zCzfQP8jftJczQjZGg',
         rating: 4.8,
-        location: 'Dalat Farm',
-        seller: 'Dalat Farm',
+        location: 'Nông trại Đà Lạt',
+        seller: 'Nông trại Đà Lạt',
         unit: '/kg',
-        category: 'Vegetable'
+        category: 'Rau củ'
     },
     {
         id: '2',
-        name: 'Dragon Fruit (White)',
+        name: 'Thanh long ruột trắng',
         price: 29750,
         originalPrice: 35000,
         discount: 15,
         image:
             'https://lh3.googleusercontent.com/aida-public/AB6AXuBW723Am8KPpguyG8UYH5O9aQRewDZ8qDPamm5Ngw2KEh5jb5KI-AqbRc1MxNq0FoHChwl-UfrtNrEIPICIwCSi4gAKnGg1aMM70t8L5Bv1QWilygyuAfGbNXsvUz8l9dPXu5togszqGRWxH81DU0ETN8-X4wGuEYNskAFLuqknrAUW2P4WN7cIokreLH7AMHMkUbDoTUYttmA-YhllsXM9braXyF7DtDzxSGsA_VdVfl6QRbDByxEsBeSYh6qx3SN4AFpSIrC01A',
         rating: 4.9,
-        location: 'Binh Thuan',
-        seller: 'Binh Thuan Farm',
+        location: 'Bình Thuận',
+        seller: 'Nông trại Bình Thuận',
         unit: '/kg',
-        category: 'Fruit'
+        category: 'Trái cây'
     },
     {
         id: '3',
-        name: 'Fresh Pork Belly',
+        name: 'Ba chỉ heo tươi',
         price: 126000,
         originalPrice: 140000,
         discount: 10,
         image:
             'https://lh3.googleusercontent.com/aida-public/AB6AXuCR5ldfXQXjFJ4ohal7krQzQ9q2yUGJA4fe6_7fkt6QUzUDC4RhqUXnvTbT_Xi_ZrhnPE_nZN9CVRU35h0aN42Q1LKyPIfaGcl1g4CpQt03W4AHVUxcpEwBBvd2BLjFcIvauzKfYx3PZuvuX_aHHL8W5u5TE4OYF4EJCUIliBUB43aaEaV2QN14gU6Xu8_lvCIDvqmwohgmhv5r7QjzfvblRl0JwH44Dhr9FswxKWCSABurnnRhB2FFA28jsj7B_dtT_HSu-O5fng',
         rating: 4.5,
-        location: 'CP Farm',
-        seller: 'CP Farm',
+        location: 'Nông trại CP',
+        seller: 'CP Food',
         unit: '/kg',
-        category: 'Meat'
+        category: 'Thịt'
     }
 ];
 
 export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
     products = FLASH_DEALS_PRODUCTS,
     onAddToCart,
-    title = 'Flash Deals'
+    title = 'Ưu đãi nhanh'
 }) => {
     const [timeLeft, setTimeLeft] = useState({
         hours: 4,
@@ -101,7 +101,7 @@ export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
                     </div>
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Limited time offers</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Ưu đãi trong thời gian giới hạn</p>
                     </div>
                 </div>
 

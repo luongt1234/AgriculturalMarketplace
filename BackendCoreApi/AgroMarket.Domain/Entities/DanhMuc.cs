@@ -10,6 +10,7 @@ namespace AgroMarket.Domain.Entities
         public Guid? DanhMucCapTrenId { get; set; }
         public string TenHienThi { get; set; } = null!; // cot: ten_hien_thi
         public int ThuTu { get; set; } = 0;       // cot: thu_tu
+        public string? Icon { get; set; } // icon cho danh mục
         [ForeignKey("LoaiDanhMucId")]
         public virtual LoaiDanhMuc LoaiDanhMuc { get; set; } = null!;
 

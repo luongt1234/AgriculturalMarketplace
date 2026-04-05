@@ -10,35 +10,35 @@ interface CategoriesSectionProps {
 const DEFAULT_CATEGORIES: Category[] = [
     {
         id: '1',
-        name: 'Vegetables',
+        name: 'Rau củ',
         icon: 'nutrition',
         color: 'green',
         href: '/buyer/category/vegetables'
     },
     {
         id: '2',
-        name: 'Fruits',
+        name: 'Trái cây',
         icon: 'eco',
         color: 'orange',
         href: '/buyer/category/fruits'
     },
     {
         id: '3',
-        name: 'Meat & Poultry',
+        name: 'Thịt & Gia cầm',
         icon: 'restaurant',
         color: 'red',
         href: '/buyer/category/meat'
     },
     {
         id: '4',
-        name: 'Rice & Grains',
+        name: 'Gạo & Ngũ cốc',
         icon: 'grass',
         color: 'yellow',
         href: '/buyer/category/rice'
     },
     {
         id: '5',
-        name: 'Dried Goods',
+        name: 'Thực phẩm khô',
         icon: 'inventory_2',
         color: 'amber',
         href: '/buyer/category/dried'
@@ -54,7 +54,7 @@ const colorClasses = {
 };
 
 export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
-    title = 'Explore Categories',
+    title = 'Khám phá danh mục',
     showViewAll = true,
     onCategoryClick
 }) => {
@@ -64,7 +64,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
                 {showViewAll && (
                     <a href="#" className="text-primary font-semibold text-sm hover:underline flex items-center">
-                        View All
+                        Xem tất cả
                         <span className="material-symbols-outlined text-sm ml-1">chevron_right</span>
                     </a>
                 )}

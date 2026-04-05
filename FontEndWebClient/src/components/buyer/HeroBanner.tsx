@@ -15,8 +15,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
     subtitle,
     description,
     imageUrl,
-    ctaText = 'Shop Now',
-    ctaSecondaryText = 'Learn More',
+    ctaText = 'Mua ngay',
+    ctaSecondaryText = 'Tìm hiểu thêm',
     onCtaClick
 }) => {
     return (

@@ -27,6 +27,31 @@ namespace AgroMarket.Infrastructure.Repositories
             return (items, total);
         }
 
+        public async Task<(IEnumerable<SanPhamDang> Items, int TotalRecords)> GetPagedWithIncludesAsync(int pageNumber, int pageSize)
+        {
+            // Base query with necessary includes for mapping
+            var baseQuery = _dbSet.Where(x => !x.IsDeleted).AsNoTracking()
+                .Include(x => x.SanPhamChung)
+                    .ThenInclude(spc => spc.DonVi)
+                .Include(x => x.SanPhamChung)
+                    .ThenInclude(spc => spc.Loai)
+                .Include(x => x.NguoiBan)
+                .Include(x => x.ChatLuong);
+
+            var total = await baseQuery.CountAsync();
+
+            if (total == 0)
+                return (new List<SanPhamDang>(), 0);
+
+            var items = await baseQuery
+                .OrderByDescending(x => x.NgayDang)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
         public async Task<SanPhamDang?> GetByIdAsync(Guid id)
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);

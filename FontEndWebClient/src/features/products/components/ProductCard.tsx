@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         className="w-full mt-3 py-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-1"
                     >
                         <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-                        Add to Cart
+                        Thêm vào giỏ
                     </button>
                 </div>
             </div>
@@ -126,7 +126,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     <button
                         onClick={() => onAddToCart?.(product)}
                         className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary text-primary hover:text-white flex items-center justify-center transition-colors"
-                        title="Add to Cart"
+                        title="Thêm vào giỏ"
                     >
                         <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
                     </button>

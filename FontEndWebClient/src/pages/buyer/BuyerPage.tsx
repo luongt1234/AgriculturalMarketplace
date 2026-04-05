@@ -14,16 +14,16 @@ export const BuyerPage = () => {
 
     const handleAddToCart = (product: BuyerProduct) => {
         setCartCount((prev) => prev + 1);
-        toast.success(`${product.name} added to cart!`);
+        toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
     };
 
     const handleCategoryClick = (category: Category) => {
-        toast.info(`Viewing ${category.name} category`);
+        toast.info(`Đang xem danh mục ${category.name}`);
         // Navigate to category page or filter products
     };
 
     const handleHeroBannerClick = () => {
-        toast.info('Redirecting to shop...');
+        toast.info('Đang chuyển đến cửa hàng...');
         // Navigate to shop/products page
     };
 
@@ -45,18 +45,18 @@ export const BuyerPage = () => {
             <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
                 {/* Hero Banner */}
                 <HeroBanner
-                    title="Fresh Lục Ngạn Lychees\nHarvested This Morning"
-                    subtitle="Direct from Farm"
-                    description="Experience the sweetness of premium Vietnamese lychees. Directly sourced from certified farmers in Bac Giang province."
+                    title="Trái vải Lục Ngạn tươi ngon\nThu hoạch sáng nay"
+                    subtitle="Từ nông trại"
+                    description="Trải nghiệm vị ngọt thanh của vải Lục Ngạn cao cấp. Nguồn gốc trực tiếp từ nông dân đạt chuẩn tỉnh Bắc Giang."
                     imageUrl="https://lh3.googleusercontent.com/aida-public/AB6AXuCpy2mZAcN5k6BzX_bURHyi3XojFDm1o-Gnx38QJopkLMz2EqKfHDGt7LHFLC41xw6TyrqvLVrjU4kwQCSmPthQ52mXKZtB9RgpReLKgGwiskVB0S5PGURESydMoHJVIv9QRIb-uiI90HKRXRlTzogTVAewTAMrXXq5wJGsbfJ3zfJ2dBakZs7veYoTG7g5pgDnABlLHz_DMoaLgH1CX7_xQq5RvF2-YgVUe1J5K_X7PWnMl7OS5_tPepeyS4Sbjhny1QptTPF-VA"
-                    ctaText="Shop Now"
-                    ctaSecondaryText="Learn More"
+                    ctaText="Mua ngay"
+                    ctaSecondaryText="Tìm hiểu thêm"
                     onCtaClick={handleHeroBannerClick}
                 />
 
                 {/* Categories Section */}
                 <CategoriesSection
-                    title="Explore Categories"
+                    title="Khám phá danh mục"
                     showViewAll={true}
                     onCategoryClick={handleCategoryClick}
                 />
@@ -66,10 +66,10 @@ export const BuyerPage = () => {
                     {/* Flash Deals - Main Section */}
                     <div className="lg:col-span-8">
                         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                            Today's Highlights
+                            Nổi bật hôm nay
                         </h3>
                         <FlashDealsSection
-                            title="Flash Deals"
+                            title="Ưu đãi nhanh"
                             onAddToCart={handleAddToCart}
                         />
                     </div>
@@ -85,20 +85,20 @@ export const BuyerPage = () => {
                                         </span>
                                     </div>
                                     <h3 className="font-bold text-gray-900 dark:text-white">
-                                        Market Price Watch
+                                        Bảng giá thị trường
                                     </h3>
                                 </div>
                                 <select className="text-xs bg-gray-100 dark:bg-gray-800 border-none rounded-md py-1.5 px-3 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-primary cursor-pointer font-medium">
-                                    <option>Rice ST25 (Paddy)</option>
-                                    <option>Pork (Live Weight)</option>
-                                    <option>Robusta Coffee</option>
+                                    <option>Gạo ST25 (Lúa)</option>
+                                    <option>Thịt heo (Giá sống)</option>
+                                    <option>Cà phê Robusta</option>
                                 </select>
                             </div>
 
                             <div className="flex-grow flex flex-col justify-between">
                                 <div>
                                     <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
-                                        Current Volatility
+                                        Biến động hiện tại
                                     </p>
                                     <div className="flex items-baseline gap-2 mt-2">
                                         <span className="text-3xl font-black text-gray-900 dark:text-white">
@@ -112,7 +112,7 @@ export const BuyerPage = () => {
                                         </span>
                                     </div>
                                     <p className="text-xs text-gray-400 mt-1">
-                                        Avg. price per kg (National Index)
+                                        Giá trung bình mỗi kg (Chỉ số quốc gia)
                                     </p>
                                 </div>
 
@@ -175,18 +175,18 @@ export const BuyerPage = () => {
                                     </svg>
                                 </div>
                                 <div className="flex justify-between text-[10px] text-gray-400 mt-2 px-1">
-                                    <span>Mon</span>
-                                    <span>Tue</span>
-                                    <span>Wed</span>
-                                    <span>Thu</span>
-                                    <span>Fri</span>
-                                    <span>Sat</span>
-                                    <span>Sun</span>
+                                    <span>T2</span>
+                                    <span>T3</span>
+                                    <span>T4</span>
+                                    <span>T5</span>
+                                    <span>T6</span>
+                                    <span>T7</span>
+                                    <span>CN</span>
                                 </div>
                             </div>
 
                             <button className="w-full mt-6 py-2.5 text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors flex items-center justify-center gap-2">
-                                View Full Price Report
+                                Xem báo cáo giá đầy đủ
                                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
                             </button>
                         </div>
@@ -195,7 +195,7 @@ export const BuyerPage = () => {
 
                 {/* Fresh Arrivals Section */}
                 <FreshArrivalsSection
-                    title="Fresh Arrivals"
+                    title="Gợi ý hôm nay"
                     onAddToCart={handleAddToCart}
                 />
             </main>

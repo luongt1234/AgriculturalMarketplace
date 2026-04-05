@@ -91,6 +91,58 @@ namespace AgroMarket.Application.Services
             }
         }
 
+        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10)
+        {
+            try
+            {
+                var (items, total) = await _sanPhamDangRepository.GetPagedWithIncludesAsync(pageNumber, pageSize);
+
+                // Thuật toán hiển thị: tính một điểm cho mỗi sản phẩm dựa trên uy tín người bán, độ mới, và tồn kho
+                var now = DateTime.UtcNow;
+                var dtoList = new List<SanPhamDangDto>();
+
+                foreach (var item in items)
+                {
+                    var dto = _mapper.Map<SanPhamDangDto>(item);
+
+                    double score = 0;
+
+                    // 1) Uy tín người bán (DiemUyTin) - nếu có
+                    var uyTin = item.NguoiBan != null ? item.NguoiBan.DiemUyTin : 0;
+                    score += uyTin * 0.5; // trọng số 0.5
+
+                    // 2) Độ mới (ngày đăng) - càng mới càng cao
+                    var days = (now - item.NgayDang).TotalDays;
+                    var recencyScore = Math.Max(0, 30 - days); // trong 30 ngày đầu có điểm
+                    score += recencyScore * 0.3;
+
+                    // 3) Tồn kho - còn hàng có điểm cao hơn
+                    score += item.SoLuong > 0 ? 10 : 0;
+
+                    // 4) Giá - sản phẩm rẻ hơn có thể được ưu tiên (chuẩn hóa ngược)
+                    if (item.Gia > 0)
+                    {
+                        var priceFactor = 1.0 / (double)item.Gia;
+                        score += priceFactor * 5; // nhỏ, tránh chi phối quá lớn
+                    }
+
+                    dto.DisplayScore = Math.Round(score, 3);
+                    dto.IsFeatured = dto.DisplayScore > 20; // ngưỡng có thể điều chỉnh
+
+                    dtoList.Add(dto);
+                }
+
+                // Optionally sort by DisplayScore descending before returning
+                var ordered = dtoList.OrderByDescending(d => d.DisplayScore).ToList();
+
+                return new PagedResponse<IEnumerable<SanPhamDangDto>>(ordered, pageNumber, pageSize, total);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ex.Message}");
+            }
+        }
+
         public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetProductsByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 10)
         {
             try

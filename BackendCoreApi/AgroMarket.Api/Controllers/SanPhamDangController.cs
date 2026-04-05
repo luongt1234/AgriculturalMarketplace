@@ -66,6 +66,21 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
+        [HttpGet("display")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProductForDisplay([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var result = await _sanPhamDangService.GetAllProductsForDisplayAsync(pageNumber, pageSize);
+                return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy danh sách sản phẩm cho hiển thị: {ex.Message}");
+            }
+        }
+
         [HttpGet("user")]
         public async Task<IActionResult> GetListProductByUser([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {

@@ -108,3 +108,54 @@ export const getProductById = async (id: string): Promise<Product> => {
 export const deleteProduct = async (id: string): Promise<void> => {
     await axiosInstance.delete(`/api/SanPhamDang/${id}`);
 };
+
+// Interface cho sản phẩm hiển thị
+export interface DisplayProduct {
+    id: string;
+    tenHienThi: string;
+    gia: number;
+    soLuong: number;
+    trangThai: string;
+    hinhAnhUrl: string;
+    moTaChiTiet: string;
+    ngayDang: string;
+    sanPhamChungId: string;
+    nguoiBanId: string;
+    chatLuongId: string;
+    tenSanPhamChung: string;
+    tenNguoiBan: string;
+    anhDaiDienNguoiBan: string | null;
+    tenChatLuong: string;
+    donViId: string;
+    tenDonVi: string;
+    loaiId: string;
+    tenLoai: string;
+    anhSanPham: string | null;
+    displayScore: number;
+    isFeatured: boolean;
+}
+
+// API Lấy danh sách sản phẩm hiển thị (cho buyer)
+export interface GetDisplayProductsParams {
+    pageNumber?: number;
+    pageSize?: number;
+}
+
+export interface DisplayProductsResponse {
+    pageNumber: number;
+    pageSize: number;
+    totalRecords: number;
+    totalPages: number;
+    success: boolean;
+    message: string;
+    data: DisplayProduct[];
+    errors: any | null;
+}
+
+export const getDisplayProducts = async (params?: GetDisplayProductsParams) => {
+    const queryString = new URLSearchParams();
+    if (params?.pageNumber !== undefined) queryString.append('pageNumber', params.pageNumber.toString());
+    if (params?.pageSize !== undefined) queryString.append('pageSize', params.pageSize.toString());
+
+    return await axiosInstance.get(`/api/SanPhamDang/display?${queryString.toString()}`);
+};

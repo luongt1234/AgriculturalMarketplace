@@ -10,6 +10,7 @@ namespace AgroMarket.Application.DTOs.DanhMucDtos
         public string TenHienThi { get; set; } = null!; // cot: ten_hien_thi
         public Guid LoaiDanhMucId { get; set; }
         public Guid? DanhMucCapTrenId { get; set; }
+        public string? Icon { get; set; }
         public int ThuTu { get; set; } = 0;       // cot: thu_tu
     }
 }

@@ -25,12 +25,14 @@ const AdminSidebar: React.FC = () => {
             <div className="h-16 flex items-center px-6 border-b border-[#dee3de] dark:border-gray-700 bg-white dark:bg-[#1a261c]">
                 <div className="flex items-center gap-3">
                     {/* Đã mở lại Logo và ốp màu Theme */}
-                    <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-md flex items-center justify-center">
-                        <span className="material-symbols-outlined text-primary text-xl font-semibold">
-                            agriculture
-                        </span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="size-8 text-primary flex items-center justify-center">
+                            <span className="material-symbols-outlined text-4xl">eco</span>
+                        </div>
+                        <h2 className="text-gray-900 dark:text-white text-xl font-extrabold tracking-tight">
+                            PeachyMarket
+                        </h2>
                     </div>
-                    <h1 className="text-[#131613] dark:text-white text-base font-bold tracking-tight">PeachyMarket</h1>
                 </div>
             </div>
 

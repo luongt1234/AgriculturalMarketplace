@@ -9,10 +9,10 @@ export const BuyerFooter: React.FC = () => {
                     <div className="col-span-1 md:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
                             <span className="material-symbols-outlined text-primary text-3xl">eco</span>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Nông Sản Việt</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">PeachyMarket</h3>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                            Connecting Vietnamese farmers directly with consumers. Freshness, transparency, and fair prices for everyone.
+                            Kết nối nông dân Việt Nam với người tiêu dùng. Tươi ngon, minh bạch và giá cả công bằng cho mọi nhà.
                         </p>
                         <div className="flex gap-4">
                             <a href="#" className="text-gray-400 hover:text-primary transition-colors">
@@ -35,31 +35,31 @@ export const BuyerFooter: React.FC = () => {
 
                     {/* Marketplace Links */}
                     <div>
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-6">Marketplace</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-6">Chợ</h4>
                         <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    All Products
+                                    Tất cả sản phẩm
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Fresh Fruits
+                                    Trái cây tươi
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Vegetables
+                                    Rau củ
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Meat & Seafood
+                                    Thịt & Hải sản
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Dried Goods
+                                    Thực phẩm khô
                                 </a>
                             </li>
                         </ul>
@@ -67,26 +67,26 @@ export const BuyerFooter: React.FC = () => {
 
                     {/* Company Links */}
                     <div>
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-6">Company</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-6">Công ty</h4>
                         <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
                             <li>
-                                <a href="#" className="hover:text-primary transition-colors">
-                                    About Us
+                                <a href="/about" className="hover:text-primary transition-colors">
+                                    Về chúng tôi
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Our Farmers
+                                    Nông dân của chúng tôi
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Pricing Analytics
+                                    Phân tích giá
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Careers
+                                    Tuyển dụng
                                 </a>
                             </li>
                             <li>
@@ -99,26 +99,26 @@ export const BuyerFooter: React.FC = () => {
 
                     {/* Support Links */}
                     <div>
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-6">Help & Support</h4>
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-6">Hỗ trợ</h4>
                         <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Shipping Policy
+                                    Chính sách giao hàng
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Returns & Refunds
+                                    Đổi trả & Hoàn tiền
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    FAQs
+                                    Câu hỏi thường gặp
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="hover:text-primary transition-colors">
-                                    Contact Support
+                                    Liên hệ hỗ trợ
                                 </a>
                             </li>
                         </ul>
@@ -127,13 +127,13 @@ export const BuyerFooter: React.FC = () => {
 
                 {/* Bottom Section */}
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-sm text-gray-400">© 2024 Nông Sản Việt. All rights reserved.</p>
+                    <p className="text-sm text-gray-400">© 2026 PeachyMarket. Bảo lưu mọi quyền.</p>
                     <div className="flex gap-6 text-sm text-gray-400">
-                        <a href="#" className="hover:text-primary">
-                            Privacy Policy
+                        <a href="/privacy-policy" className="hover:text-primary">
+                            Chính sách bảo mật
                         </a>
-                        <a href="#" className="hover:text-primary">
-                            Terms of Service
+                        <a href="/terms-of-service" className="hover:text-primary">
+                            Điều khoản dịch vụ
                         </a>
                     </div>
                 </div>

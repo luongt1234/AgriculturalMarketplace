@@ -26,5 +26,8 @@ namespace AgroMarket.Application.DTOs.SanPhamDangDtos
         public Guid? LoaiId { get; set; }
         public string? TenLoai { get; set; }
         public byte[]? AnhSanPham { get; set; }
+        // Thuộc tính tính toán cho thuật toán hiển thị
+        public double DisplayScore { get; set; }
+        public bool IsFeatured { get; set; }
     }
 }
