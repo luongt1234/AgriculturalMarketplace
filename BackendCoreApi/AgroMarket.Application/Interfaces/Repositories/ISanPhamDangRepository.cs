@@ -13,5 +13,7 @@ namespace AgroMarket.Application.Interfaces.Repositories
         Task<(IEnumerable<AgroMarket.Domain.Entities.SanPhamDang> Items, int TotalRecords)> GetByUserPagedAsync(Guid userId, int pageNumber, int pageSize);
         // Lấy phân trang kèm các relation cần thiết (SanPhamChung, NguoiBan, ChatLuong, DonVi, Loai)
         Task<(IEnumerable<AgroMarket.Domain.Entities.SanPhamDang> Items, int TotalRecords)> GetPagedWithIncludesAsync(int pageNumber, int pageSize);
+        // Lấy chi tiết 1 SanPhamDang kèm các relation để hiển thị
+        Task<AgroMarket.Domain.Entities.SanPhamDang?> GetByIdWithIncludesAsync(Guid id);
     }
 }

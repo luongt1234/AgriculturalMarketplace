@@ -13,5 +13,7 @@ namespace AgroMarket.Application.Interfaces.Services
         Task<SanPhamDangDto?> GetByIdAsync(Guid id);
         // Lấy phân trang kèm include và tính toán thuật toán hiển thị
         Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10);
+        // Lấy chi tiết sản phẩm theo id kèm các dữ liệu liên quan
+        Task<SanPhamDangDto?> GetDetailByIdAsync(Guid id);
     }
 }

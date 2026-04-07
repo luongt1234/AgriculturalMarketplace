@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../../features/products/components/ProductCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 import { getDisplayProducts, type DisplayProduct } from '../../features/products/api/product.api';
@@ -27,6 +28,7 @@ export const FreshArrivalsSection: React.FC<FreshArrivalsSectionProps> = ({
     onAddToCart,
     title = 'Gợi ý hôm nay'
 }) => {
+    const navigate = useNavigate();
     const [products, setProducts] = useState<BuyerProduct[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -99,6 +101,7 @@ export const FreshArrivalsSection: React.FC<FreshArrivalsSectionProps> = ({
                         variant="compact"
                         onAddToCart={onAddToCart}
                         showDiscount={false}
+                        onClick={() => navigate(`/sanPham/${product.id}`)}
                     />
                 ))}
             </div>

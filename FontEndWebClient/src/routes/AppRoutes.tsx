@@ -17,6 +17,7 @@ import AdminManagement from '../pages/admin/AdminManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
 import BuyerPage from '../pages/buyer/BuyerPage';
+import ProductDetailPage from '../pages/buyer/ProductDetailPage';
 import AboutPage from '../pages/public/AboutPage';
 import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/public/TermsOfServicePage';
@@ -32,6 +33,7 @@ export default function AppRoutes() {
                 {/* ================= PUBLIC ROUTES ================= */}
                 <Route>
                     <Route path="/" element={<BuyerPage />} />
+                    <Route path="/sanPham/:id" element={<ProductDetailPage />} />
                     {/* <Route path="/buyer" element={<BuyerPage />} /> */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />

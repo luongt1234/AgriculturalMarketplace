@@ -99,5 +99,23 @@ namespace AgroMarket.Api.Controllers
                 return Error($"Lỗi khi lấy danh sách sản phẩm người dùng: {ex.Message}");
             }
         }
+
+        [HttpGet("detail/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDetailById([FromRoute] Guid id)
+        {
+            try
+            {
+                var dto = await _sanPhamDangService.GetDetailByIdAsync(id);
+                if (dto == null)
+                    return Error("Không tìm thấy sản phẩm", 404);
+
+                return Success(dto);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy chi tiết sản phẩm: {ex.Message}");
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../../features/products/components/ProductCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 
@@ -59,6 +60,7 @@ export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
     onAddToCart,
     title = 'Ưu đãi nhanh'
 }) => {
+    const navigate = useNavigate();
     const [timeLeft, setTimeLeft] = useState({
         hours: 4,
         minutes: 23,
@@ -129,6 +131,7 @@ export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
                         product={product}
                         showDiscount={true}
                         onAddToCart={onAddToCart}
+                        onClick={() => navigate(`/sanPham/${product.id}`)}
                     />
                 ))}
             </div>

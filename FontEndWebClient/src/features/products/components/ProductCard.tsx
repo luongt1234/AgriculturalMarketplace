@@ -5,6 +5,7 @@ interface ProductCardProps {
     product: BuyerProduct;
     showDiscount?: boolean;
     onAddToCart?: (product: BuyerProduct) => void;
+    onClick?: () => void;
     variant?: 'default' | 'compact';
 }
 
@@ -12,13 +13,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     product,
     showDiscount = true,
     onAddToCart,
+    onClick,
     variant = 'default'
 }) => {
     const [isFavorite, setIsFavorite] = useState(false);
 
     if (variant === 'compact') {
         return (
-            <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-soft hover:-translate-y-1 transition-all duration-300 group relative">
+            <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-soft hover:-translate-y-1 transition-all duration-300 group relative cursor-pointer" onClick={onClick}>
                 <div className="aspect-square bg-gray-100 overflow-hidden relative">
                     <img
                         alt={product.name}
@@ -34,6 +36,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             favorite
                         </span>
                     </button>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-semibold z-20">
+                        Xem chi tiết
+                    </div>
                 </div>
                 <div className="p-4">
                     <div className="text-xs text-green-600 font-bold mb-1 uppercase tracking-wide">
@@ -49,20 +54,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         </span>
                         <span className="text-xs text-gray-400">{product.unit}</span>
                     </div>
-                    <button
-                        onClick={() => onAddToCart?.(product)}
-                        className="w-full mt-3 py-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-1"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-                        Thêm vào giỏ
-                    </button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow group relative">
+        <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow group relative cursor-pointer" onClick={onClick}>
             <div className="absolute top-3 left-3 z-10">
                 {showDiscount && product.discount && (
                     <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
@@ -80,12 +78,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 </span>
             </button>
 
-            <div className="aspect-[4/3] bg-gray-200 w-full overflow-hidden">
+            <div className="aspect-[4/3] bg-gray-200 w-full overflow-hidden relative">
                 <img
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     src={product.image}
                 />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-semibold z-20">
+                    Xem chi tiết
+                </div>
             </div>
 
             <div className="p-4">
@@ -123,13 +124,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             </span>
                         </div>
                     </div>
-                    <button
-                        onClick={() => onAddToCart?.(product)}
-                        className="w-8 h-8 rounded-full bg-primary/10 hover:bg-primary text-primary hover:text-white flex items-center justify-center transition-colors"
-                        title="Thêm vào giỏ"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">add_shopping_cart</span>
-                    </button>
                 </div>
             </div>
         </div>

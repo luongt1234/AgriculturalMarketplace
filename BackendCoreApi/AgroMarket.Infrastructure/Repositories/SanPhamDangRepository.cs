@@ -57,6 +57,20 @@ namespace AgroMarket.Infrastructure.Repositories
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
         }
 
+        public async Task<SanPhamDang?> GetByIdWithIncludesAsync(Guid id)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Id == id)
+                .Include(x => x.SanPhamChung)
+                    .ThenInclude(spc => spc.DonVi)
+                .Include(x => x.SanPhamChung)
+                    .ThenInclude(spc => spc.Loai)
+                .Include(x => x.NguoiBan)
+                .Include(x => x.ChatLuong)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<(IEnumerable<SanPhamDang> Items, int TotalRecords)> GetByUserPagedAsync(Guid userId, int pageNumber, int pageSize)
         {
             // 1. Base query chỉ chứa điều kiện lọc, dùng chung cho cả đếm và lấy dữ liệu

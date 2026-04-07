@@ -161,13 +161,37 @@ namespace AgroMarket.Application.Services
         {
             try
             {
-                var entity = await _sanPhamDangRepository.GetByIdAsync(id);
+                var entity = await _sanPhamDangRepository.GetByIdWithIncludesAsync(id);
                 if (entity == null) return null;
                 return _mapper.Map<SanPhamDangDto>(entity);
             }
             catch (Exception ex)
             {
                 throw new Exception($"Lỗi khi lấy thông tin sản phẩm: {ex.Message}");
+            }
+        }
+
+        public async Task<SanPhamDangDto?> GetDetailByIdAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _sanPhamDangRepository.GetByIdWithIncludesAsync(id);
+                if (entity == null) return null;
+
+                var dto = _mapper.Map<SanPhamDangDto>(entity);
+
+                // bổ sung tính toán hiển thị cho trang detail (ví dụ: đánh giá, điểm nổi bật)
+                dto.DisplayScore = 0;
+                if (entity.NguoiBan != null)
+                    dto.DisplayScore += entity.NguoiBan.DiemUyTin * 0.5;
+
+                dto.IsFeatured = dto.DisplayScore > 10;
+
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy chi tiết sản phẩm: {ex.Message}");
             }
         }
     }
