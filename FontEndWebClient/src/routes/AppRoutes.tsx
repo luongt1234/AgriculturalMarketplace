@@ -18,6 +18,7 @@ import CategoryManagement from '../pages/admin/CategoryManagement';
 import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
 import BuyerPage from '../pages/buyer/BuyerPage';
 import ProductDetailPage from '../pages/buyer/ProductDetailPage';
+import { CheckoutPage } from '../pages/buyer/CheckoutPage';
 import AboutPage from '../pages/public/AboutPage';
 import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/public/TermsOfServicePage';
@@ -46,6 +47,8 @@ export default function AppRoutes() {
                 {/* ================= PROTECTED ROUTES ================= */}
 
                 <Route element={<PrivateRoute />}>
+                    {/* BUYER ROUTES */}
+                    <Route path="/checkout" element={<CheckoutPage />} />
                     {/* 1. NÔNG DÂN (FARMER) */}
                     <Route element={<RoleGuard allowedRoles={['NONG-DAN']} />}>
                         <Route path="/farmer" element={<DashboardLayoutFarmer sidebar={<FarmerSidebar />} />}>

@@ -17,5 +17,6 @@ namespace AgroMarket.Domain.Entities
         [ForeignKey("DanhMucCapTrenId")]
         public virtual DanhMuc? DanhMucCapTren { get; set; }
         public virtual ICollection<DanhMuc> DanhMucCapDuoi { get; set; } = new HashSet<DanhMuc>();
+        public virtual ICollection<DiaChiNguoiDung> DiaChiNguoiDung { get; set; } = new HashSet<DiaChiNguoiDung>();
     }
 }

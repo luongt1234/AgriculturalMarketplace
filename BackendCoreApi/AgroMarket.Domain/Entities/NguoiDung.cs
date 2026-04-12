@@ -30,5 +30,6 @@ namespace AgroMarket.Domain.Entities
         public virtual ICollection<SanPhamDang> CacSanPham { get; set; } = new List<SanPhamDang>();
         public virtual ICollection<DonHang> DonHangMua { get; set; } = new List<DonHang>();
         public virtual ICollection<DonHang> DonHangBan { get; set; } = new List<DonHang>();
+        public virtual ICollection<DiaChiNguoiDung> DiaChiNguoiDung { get; set; } = new List<DiaChiNguoiDung>();
     }
 }
