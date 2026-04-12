@@ -10,6 +10,8 @@ import { ShippingStep } from '../../features/checkout/components/ShippingStep';
 import { PaymentStep } from '../../features/checkout/components/PaymentStep';
 import { ConfirmationStep } from '../../features/checkout/components/ConfirmationStep';
 import { OrderSummaryPanel } from '../../features/checkout/components/OrderSummaryPanel';
+import { getUserAddresses, deleteAddress as deleteAddressApi } from '../../features/checkout/api/address.api';
+import { toast } from 'sonner';
 
 export function CheckoutPage() {
     useSetPageTitle('Thanh toán');
@@ -18,45 +20,62 @@ export function CheckoutPage() {
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<DeliveryAddress | null>(null);
 
-    // Mock cart items - in real app, would come from cart store
-    const mockCartItems = [
-        {
-            id: '1',
-            productId: 'prod_1',
-            name: 'Fresh Lục Ngạn Lychees',
-            price: 80000,
-            quantity: 2,
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpy2mZAcN5k6BzX_bURHyi3XojFDm1o-Gnx38QJopkLMz2EqKfHDGt7LHFLC41xw6TyrqvLVrjU4kwQCSmPthQ52mXKZtB9RgpReLKgGwiskVB0S5PGURESydMoHJVIv9QRIb-uiI90HKRXRlTzogTVAewTAMrXXq5wJGsbfJ3zfJ2dBakZs7veYoTG7g5pgDnABlLHz_DMoaLgH1CX7_xQq5RvF2-YgVUe1J5K_X7PWnMl7OS5_tPepeyS4Sbjhny1QptTPF-VA',
-            unit: '2kg',
-        },
-        {
-            id: '2',
-            productId: 'prod_2',
-            name: 'ST25 Rice Premium',
-            price: 180000,
-            quantity: 1,
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB2wANe1QNeMzAamGgBAMhXulLUWgCTrgy2kcGuXiV0uQ3BRtXr_-C6nbatijkPrNPU7z43LRYelo_87IudL160IO32piWvCuBVwVn5yVNr_NEr9HUa1gfbx2HZhY6RGHnnM65f-gBVQDIxoSnZOIj-G7ZOtUl6FCZAXjH6ucfK92K-jWe-Bw6q61al0zsxiGdN4XbqX0-cZeh-gACNlml15pl2D0SrglGVEZcHI79GkCmoF424gGH-Ri5lAqWIU1uzo-Fp6pNrdA',
-            unit: '5kg',
-        },
-    ];
+    useEffect(() => {
+        const loadAddresses = async () => {
+            try {
+                const addresses = await getUserAddresses();
+                // Convert DiaChiNguoiDungDto[] to DeliveryAddress[]
+                const deliveryAddresses: DeliveryAddress[] = addresses.map(addr => {
+                    let city = '', district = '', ward = '';
+                    try {
+                        const diaChiObj = JSON.parse(addr.diaChi);
+                        city = diaChiObj.name || '';
+                        if (diaChiObj.districts && diaChiObj.districts.length > 0) {
+                            district = diaChiObj.districts[0].name || '';
+                            if (diaChiObj.districts[0].wards && diaChiObj.districts[0].wards.length > 0) {
+                                ward = diaChiObj.districts[0].wards[0].name || '';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error parsing diaChi:', error);
+                    }
+
+                    return {
+                        id: addr.id,
+                        fullName: addr.tenNguoiNhanHang,
+                        phone: addr.soDienThoai,
+                        city,
+                        district,
+                        ward,
+                        detailedAddress: addr.diaChiChiTiet,
+                        label: 'home',
+                        isDefault: addr.isDefault
+                    };
+                });
+                store.setAddresses(deliveryAddresses);
+            } catch (error) {
+                console.error('Error loading addresses:', error);
+                toast.error('Không thể tải danh sách địa chỉ');
+            }
+        };
+
+        loadAddresses();
+    }, []);
 
     useEffect(() => {
-        store.setCartItems(mockCartItems);
-
-        // Calculate order summary
-        const subtotal = mockCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const subtotal = store.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const shippingFee = store.selectedShippingMethod?.baseFee || 0;
         const total = subtotal + shippingFee;
 
         const summary: OrderSummary = {
-            items: mockCartItems,
+            items: store.cartItems,
             subtotal,
             shippingFee,
             total,
         };
 
         store.setOrderSummary(summary);
-    }, [store.selectedShippingMethod]);
+    }, [store.cartItems, store.selectedShippingMethod]);
 
     const handleAddAddress = () => {
         setEditingAddress(null);
@@ -78,8 +97,11 @@ export function CheckoutPage() {
         setEditingAddress(null);
     };
 
-    const handleDeleteAddress = (id: string) => {
-        if (confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+    const handleDeleteAddress = async (id: string) => {
+        if (!confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) return;
+
+        try {
+            await deleteAddressApi(id);
             store.removeAddress(id);
             if (store.selectedAddress?.id === id) {
                 const firstAddress = store.addresses.find((addr) => addr.id !== id);
@@ -87,14 +109,23 @@ export function CheckoutPage() {
                     store.setSelectedAddress(firstAddress);
                 }
             }
+            toast.success('Xóa địa chỉ thành công');
+        } catch (error) {
+            console.error('Error deleting address:', error);
+            toast.error('Không thể xóa địa chỉ');
         }
     };
 
     const handleContinueToShipping = () => {
+        if (!store.cartItems.length) {
+            toast.warning('Vui lòng chọn sản phẩm trước khi thanh toán');
+            return;
+        }
+
         if (store.selectedAddress) {
             store.goToNextStep();
         } else {
-            alert('Vui lòng chọn địa chỉ');
+            toast.warning('Vui lòng chọn địa chỉ');
         }
     };
 
@@ -102,7 +133,7 @@ export function CheckoutPage() {
         if (store.selectedShippingMethod) {
             store.goToNextStep();
         } else {
-            alert('Vui lòng chọn phương thức vận chuyển');
+            toast.warning('Vui lòng chọn phương thức vận chuyển');
         }
     };
 
@@ -110,7 +141,7 @@ export function CheckoutPage() {
         if (store.selectedPaymentMethod) {
             store.goToNextStep();
         } else {
-            alert('Vui lòng chọn phương thức thanh toán');
+            toast.warning('Vui lòng chọn phương thức thanh toán');
         }
     };
 
@@ -127,7 +158,7 @@ export function CheckoutPage() {
                 summary: store.orderSummary,
             });
 
-            alert('Đơn hàng đã được gửi thành công!');
+            toast.success('Đơn hàng đã được gửi thành công!');
             store.goToNextStep();
         } catch (error) {
             store.setError('Gửi đơn hàng thất bại. Vui lòng thử lại.');
@@ -358,7 +389,12 @@ export function CheckoutPage() {
             </main>
 
             {/* Address Modal */}
-            <AddressModal isOpen={showAddressModal} onClose={() => setShowAddressModal(false)} onSave={handleSaveAddress} editingAddress={editingAddress} />
+            <AddressModal
+                isOpen={showAddressModal}
+                onClose={() => setShowAddressModal(false)}
+                onSave={handleSaveAddress}
+                editingAddress={editingAddress}
+            />
 
             <BuyerFooter />
         </div>

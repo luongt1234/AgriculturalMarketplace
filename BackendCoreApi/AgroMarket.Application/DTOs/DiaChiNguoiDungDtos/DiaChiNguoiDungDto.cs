@@ -1,4 +1,4 @@
-﻿using AgroMarket.Domain.Common;
+﻿using AgroMarket.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgroMarket.Domain.Entities
+namespace AgroMarket.Application.DTOs.DiaChiNguoiDungDtos
 {
-    public class DiaChiNguoiDung : BaseEntity
+    public class DiaChiNguoiDungDto
     {
+        public Guid Id { get; set; }
         public string DiaChi { get; set; }
         /*
             {
@@ -36,13 +37,11 @@ namespace AgroMarket.Domain.Entities
         */
         public string TenNguoiNhanHang { get; set; }
         public Guid? LoaiDiaChiId { get; set; }
-        [ForeignKey("LoaiDiaChiId")]
-        public virtual DanhMuc LoaiDiaChi { get; set; }
+        public DanhMuc LoaiDiaChi { get; set; }
         public bool IsDefault { get; set; } = false;
         public string SoDienThoai { get; set; }
         public string DiaChiChiTiet { get; set; }
         public Guid NguoiDungId { get; set; }
-        [ForeignKey("NguoiDungId")]
-        public virtual NguoiDung NguoiDung { get; set; }
+        public NguoiDung NguoiDung { get; set; }
     }
 }

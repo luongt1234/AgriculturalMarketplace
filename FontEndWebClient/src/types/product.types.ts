@@ -20,6 +20,8 @@ export interface Product {
     donViId?: string;
     loaiId?: string;
     anhSanPham?: string;
+    diaChi?: string;
+    diaChiChiTiet?: string;
 }
 
 // Interface cho Sản Phẩm Chung (CommonProduct) - dạng cây

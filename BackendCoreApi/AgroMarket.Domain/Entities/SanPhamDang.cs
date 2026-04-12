@@ -25,7 +25,7 @@ namespace AgroMarket.Domain.Entities
 
         public TrangThaiSanPham TrangThai { get; set; } = TrangThaiSanPham.ConHang; // trang_thai
         public string? DiaChi { get; set; } // dia_chi (địa chỉ người bán, có thể lấy từ thông tin người bán hoặc cho phép người bán nhập riêng)
-
+        public string? DiaChiChiTiet { get; set; }
         public string? HinhAnhUrl { get; set; }   // hinh_anh
         public string? MoTaChiTiet { get; set; } // mo_ta
         public DateTime NgayDang { get; set; } = DateTime.UtcNow; // ngay_dang

@@ -22,7 +22,8 @@ namespace AgroMarket.Application.DTOs.SanPhamDangDtos
 
         public Guid? DonViId { get; set; }
         public string? TenDonVi { get; set; } 
-
+        public string? DiaChi { get; set; }
+        public string DiaChiChiTiet { get; set; } = string.Empty;
         public Guid? LoaiId { get; set; }
         public string? TenLoai { get; set; }
         public byte[]? AnhSanPham { get; set; }

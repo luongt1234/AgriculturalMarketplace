@@ -101,7 +101,7 @@ export const FreshArrivalsSection: React.FC<FreshArrivalsSectionProps> = ({
                         variant="compact"
                         onAddToCart={onAddToCart}
                         showDiscount={false}
-                        onClick={() => navigate(`/sanPham/${product.id}`)}
+                        onClick={() => navigate(`/Product/${product.id}`)}
                     />
                 ))}
             </div>

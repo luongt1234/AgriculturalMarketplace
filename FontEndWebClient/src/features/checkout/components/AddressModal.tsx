@@ -1,33 +1,190 @@
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { DeliveryAddress } from '../../../types/checkout.types';
+import axios from 'axios';
+import { useAuthStore } from '../../../store/useAuthStore';
+import { createAddress, updateAddress } from '../api/address.api';
+import { toast } from 'sonner';
 
 interface AddressModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (address: DeliveryAddress) => void;
+    onSave: (address: any) => void; // Changed to any for new format
     editingAddress?: DeliveryAddress | null;
 }
 
-export const AddressModal: React.FC<AddressModalProps> = ({
+type FullLocationItem = {
+    code: number;
+    name: string;
+    division_type: string;
+    codename: string;
+    phone_code?: number;
+    province_code?: number;
+    district_code?: number;
+};
+
+const API_ADDRESS = import.meta.env.PROVINCES_API_URL || 'https://provinces.open-api.vn/api/v1';
+
+const emptyAddress: DeliveryAddress = {
+    id: '',
+    fullName: '',
+    phone: '',
+    city: '',
+    district: '',
+    ward: '',
+    detailedAddress: '',
+    label: 'home',
+    isDefault: false,
+};
+
+export function AddressModal({
     isOpen,
     onClose,
     onSave,
-    editingAddress
-}) => {
-    const [formData, setFormData] = useState<Partial<DeliveryAddress>>(
-        editingAddress || {
-            fullName: '',
-            phone: '',
-            city: '',
-            district: '',
-            ward: '',
-            detailedAddress: '',
-            label: 'home',
-            isDefault: false,
-        }
-    );
+    editingAddress,
+}: AddressModalProps) {
+    const { user } = useAuthStore();
+    const [formData, setFormData] = useState<Partial<DeliveryAddress>>(emptyAddress);
+    const [provinces, setProvinces] = useState<FullLocationItem[]>([]);
+    const [districts, setDistricts] = useState<FullLocationItem[]>([]);
+    const [wards, setWards] = useState<FullLocationItem[]>([]);
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingDistricts, setLoadingDistricts] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const provinceSearchRef = useRef('');
+    const districtSearchRef = useRef('');
+    const wardSearchRef = useRef('');
+
+    const handleAutoSelectKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>, options: FullLocationItem[], searchRef: React.MutableRefObject<string>, onChange: (name: string) => void) => {
+        const key = e.key;
+        if (key === 'Backspace') {
+            searchRef.current = searchRef.current.slice(0, -1);
+        } else if (key.length === 1 && key.match(/[a-zA-Z0-9\s]/)) {
+            searchRef.current += key.toLowerCase();
+        } else {
+            return;
+        }
+
+        const matchingOption = options.find(option =>
+            option.name.toLowerCase().startsWith(searchRef.current)
+        );
+
+        if (matchingOption) {
+            onChange(matchingOption.name);
+            // Clear search after selection
+            setTimeout(() => {
+                searchRef.current = '';
+            }, 100);
+        }
+    };
+
+    const normalizeLocations = (data: any): FullLocationItem[] => {
+        if (!data) return [];
+        if (Array.isArray(data)) {
+            return data.map((item) => ({
+                code: item.code,
+                name: item.name ?? item.name_with_type ?? item.full_name ?? item.label ?? '',
+                division_type: item.division_type,
+                codename: item.codename,
+                phone_code: item.phone_code,
+                province_code: item.province_code,
+                district_code: item.district_code,
+            }));
+        }
+        if (data.provinces) return normalizeLocations(data.provinces);
+        if (data.districts) return normalizeLocations(data.districts);
+        if (data.wards) return normalizeLocations(data.wards);
+        if (data.data) return normalizeLocations(data.data);
+        return [];
+    };
+
+    const fetchProvinces = async () => {
+        try {
+            setLoadingProvinces(true);
+            const response = await axios.get(API_ADDRESS);
+            const list = normalizeLocations(response.data);
+            setProvinces(list);
+            return list;
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+            setProvinces([]);
+            return [];
+        } finally {
+            setLoadingProvinces(false);
+        }
+    };
+
+    const fetchDistricts = async (provinceCode: string) => {
+        try {
+            setLoadingDistricts(true);
+            const response = await axios.get(`${API_ADDRESS}/p/${provinceCode}?depth=2`);
+            const list = normalizeLocations(response.data.districts);
+            setDistricts(list);
+            return list;
+        } catch (error) {
+            console.error('Error fetching districts:', error);
+            setDistricts([]);
+            return [];
+        } finally {
+            setLoadingDistricts(false);
+        }
+    };
+
+    const fetchWards = async (districtCode: string) => {
+        try {
+            setLoadingWards(true);
+            const response = await axios.get(`${API_ADDRESS}/d/${districtCode}?depth=2`);
+            const list = normalizeLocations(response.data.wards);
+            setWards(list);
+            return list;
+        } catch (error) {
+            console.error('Error fetching wards:', error);
+            setWards([]);
+            return [];
+        } finally {
+            setLoadingWards(false);
+        }
+    };
+
+    // Khởi tạo dữ liệu khi mở Modal
+    useEffect(() => {
+        if (!isOpen) return;
+        setFormData(editingAddress ?? emptyAddress);
+        fetchProvinces();
+    }, [isOpen, editingAddress]);
+
+    // Fetch Quận/Huyện khi Tỉnh/Thành thay đổi
+    useEffect(() => {
+        if (!formData.city) {
+            setDistricts([]);
+            setWards([]);
+            return;
+        }
+        const province = provinces.find((item) => item.name === formData.city);
+        if (!province) {
+            setDistricts([]);
+            setWards([]);
+            return;
+        }
+        fetchDistricts(province.code.toString());
+    }, [formData.city, provinces]);
+
+    // Fetch Phường/Xã khi Quận/Huyện thay đổi
+    useEffect(() => {
+        if (!formData.district) {
+            setWards([]);
+            return;
+        }
+        const district = districts.find((item) => item.name === formData.district);
+        if (!district) {
+            setWards([]);
+            return;
+        }
+        fetchWards(district.code.toString());
+    }, [formData.district, districts]);
+
+    // Xử lý các Input text thông thường
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         setFormData({
             ...formData,
@@ -35,36 +192,85 @@ export const AddressModal: React.FC<AddressModalProps> = ({
         });
     };
 
-    const handleSave = () => {
-        if (!formData.fullName || !formData.phone || !formData.city || !formData.detailedAddress) {
-            alert('Vui lòng điền đầy đủ các trường bắt buộc');
+    // Các hàm xử lý riêng cho select để tự động reset cấp bậc thấp hơn
+    const handleCityChange = (cityName: string) => {
+        setFormData(prev => ({ ...prev, city: cityName, district: '', ward: '' }));
+        provinceSearchRef.current = '';
+    };
+
+    const handleDistrictChange = (districtName: string) => {
+        setFormData(prev => ({ ...prev, district: districtName, ward: '' }));
+        districtSearchRef.current = '';
+    };
+
+    const handleWardChange = (wardName: string) => {
+        setFormData(prev => ({ ...prev, ward: wardName }));
+        wardSearchRef.current = '';
+    };
+
+    const handleSave = async () => {
+        if (!formData.fullName || !formData.phone || !formData.city || !formData.district || !formData.ward || !formData.detailedAddress || !user?.id) {
+            toast.warning('Vui lòng điền đầy đủ các trường bắt buộc và đăng nhập');
             return;
         }
 
-        const address: DeliveryAddress = {
-            id: editingAddress?.id || `addr_${Date.now()}`,
-            fullName: formData.fullName,
-            phone: formData.phone,
-            city: formData.city,
-            district: formData.district || '',
-            ward: formData.ward || '',
-            detailedAddress: formData.detailedAddress,
-            label: (formData.label as any) || 'home',
-            isDefault: formData.isDefault || false,
+        const selectedProvince = provinces.find(p => p.name === formData.city);
+        const selectedDistrict = districts.find(d => d.name === formData.district);
+        const selectedWard = wards.find(w => w.name === formData.ward);
+
+        if (!selectedProvince || !selectedDistrict || !selectedWard) {
+            toast.error('Không tìm thấy thông tin địa chỉ đã chọn');
+            return;
+        }
+
+        const diaChiObject = {
+            ...selectedProvince,
+            districts: [{
+                ...selectedDistrict,
+                wards: [selectedWard]
+            }]
         };
 
-        onSave(address);
-        setFormData({
-            fullName: '',
-            phone: '',
-            city: '',
-            district: '',
-            ward: '',
-            detailedAddress: '',
-            label: 'home',
-            isDefault: false,
-        });
-        onClose();
+        const addressData = {
+            diaChi: JSON.stringify(diaChiObject),
+            tenNguoiNhanHang: formData.fullName,
+            loaiDiaChiId: null,
+            isDefault: formData.isDefault || false,
+            soDienThoai: formData.phone,
+            diaChiChiTiet: formData.detailedAddress,
+            nguoiDungId: user.id
+        };
+
+        try {
+            let savedAddress;
+            if (editingAddress) {
+                await updateAddress(editingAddress.id, addressData);
+                savedAddress = { ...addressData, id: editingAddress.id };
+            } else {
+                savedAddress = await createAddress(addressData);
+            }
+
+            // Convert to DeliveryAddress format for store
+            const deliveryAddress: DeliveryAddress = {
+                id: savedAddress.id,
+                fullName: savedAddress.tenNguoiNhanHang,
+                phone: savedAddress.soDienThoai,
+                city: formData.city,
+                district: formData.district,
+                ward: formData.ward,
+                detailedAddress: savedAddress.diaChiChiTiet,
+                label: 'home',
+                isDefault: savedAddress.isDefault
+            };
+
+            onSave(deliveryAddress);
+            setFormData(emptyAddress);
+            toast.success(editingAddress ? 'Cập nhật địa chỉ thành công' : 'Thêm địa chỉ thành công');
+            onClose();
+        } catch (error) {
+            console.error('Error saving address:', error);
+            toast.error('Có lỗi xảy ra khi lưu địa chỉ');
+        }
     };
 
     if (!isOpen) return null;
@@ -73,7 +279,8 @@ export const AddressModal: React.FC<AddressModalProps> = ({
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
 
-            <div className="relative bg-background-light dark:bg-background-dark bg-surface-light dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden z-10">
+            {/* FIX: Đổi overflow-hidden thành overflow-visible để Dropdown không bị cắt ngang */}
+            <div className="relative bg-background-light dark:bg-background-dark bg-surface-light dark:bg-surface-dark w-full max-w-2xl rounded-2xl shadow-2xl overflow-visible z-10">
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary">add_location_alt</span>
@@ -121,50 +328,61 @@ export const AddressModal: React.FC<AddressModalProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="city" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 Tỉnh/Thành phố <span className="text-red-500">*</span>
                             </label>
                             <select
-                                id="city"
-                                name="city"
                                 value={formData.city || ''}
-                                onChange={handleInputChange}
+                                onChange={(e) => handleCityChange(e.target.value)}
+                                onKeyDown={(e) => handleAutoSelectKeyDown(e, provinces, provinceSearchRef, handleCityChange)}
                                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                                disabled={loadingProvinces}
                             >
                                 <option value="">Chọn tỉnh/thành</option>
-                                <option value="Ho Chi Minh City">Ho Chi Minh City</option>
-                                <option value="Ha Noi">Ha Noi</option>
-                                <option value="Da Nang">Da Nang</option>
-                                <option value="Can Tho">Can Tho</option>
+                                {provinces.map((province) => (
+                                    <option key={province.code} value={province.name}>
+                                        {province.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="district" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                Quận/Huyện
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Quận/Huyện <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                id="district"
-                                name="district"
+                            <select
                                 value={formData.district || ''}
-                                onChange={handleInputChange}
-                                placeholder="vd: Quận 1"
+                                onChange={(e) => handleDistrictChange(e.target.value)}
+                                onKeyDown={(e) => handleAutoSelectKeyDown(e, districts, districtSearchRef, handleDistrictChange)}
                                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                            />
+                                disabled={!districts.length || loadingDistricts}
+                            >
+                                <option value="">Chọn quận/huyện</option>
+                                {districts.map((district) => (
+                                    <option key={district.code} value={district.name}>
+                                        {district.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div className="space-y-2">
-                            <label htmlFor="ward" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                Phường/Xã
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                Phường/Xã <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                id="ward"
-                                name="ward"
+                            <select
                                 value={formData.ward || ''}
-                                onChange={handleInputChange}
-                                placeholder="vd: Phường Bến Nghé"
+                                onChange={(e) => handleWardChange(e.target.value)}
+                                onKeyDown={(e) => handleAutoSelectKeyDown(e, wards, wardSearchRef, handleWardChange)}
                                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                            />
+                                disabled={!wards.length || loadingWards}
+                            >
+                                <option value="">Chọn phường/xã</option>
+                                {wards.map((ward) => (
+                                    <option key={ward.code} value={ward.name}>
+                                        {ward.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -197,7 +415,7 @@ export const AddressModal: React.FC<AddressModalProps> = ({
                     </div>
                 </div>
 
-                <div className="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3">
+                <div className="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 rounded-b-2xl">
                     <button
                         onClick={onClose}
                         className="px-6 py-2.5 rounded-lg font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"

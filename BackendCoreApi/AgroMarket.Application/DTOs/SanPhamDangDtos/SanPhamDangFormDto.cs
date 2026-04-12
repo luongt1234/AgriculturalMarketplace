@@ -37,7 +37,8 @@ namespace AgroMarket.Application.DTOs.SanPhamDangDtos
 
         // Thông tin thêm
         public Guid? UserId { get; set; }
-
+        public string? DiaChi { get; set; }
+        public string? DiaChiChiTiet { get; set; }
         public DateTime NgayDang { get; set; } = DateTime.UtcNow.AddHours(7);
         public DateTime NgayTao { get; set; } = DateTime.UtcNow.AddHours(7);
     }

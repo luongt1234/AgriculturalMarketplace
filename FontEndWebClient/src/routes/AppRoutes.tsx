@@ -34,7 +34,7 @@ export default function AppRoutes() {
                 {/* ================= PUBLIC ROUTES ================= */}
                 <Route>
                     <Route path="/" element={<BuyerPage />} />
-                    <Route path="/sanPham/:id" element={<ProductDetailPage />} />
+                    <Route path="/product/:id" element={<ProductDetailPage />} />
                     {/* <Route path="/buyer" element={<BuyerPage />} /> */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />

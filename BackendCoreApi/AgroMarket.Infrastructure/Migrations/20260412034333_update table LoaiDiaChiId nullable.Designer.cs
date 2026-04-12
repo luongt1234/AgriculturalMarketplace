@@ -4,6 +4,7 @@ using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgroMarket.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260412034333_update table LoaiDiaChiId nullable")]
+    partial class updatetableLoaiDiaChiIdnullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,11 +254,6 @@ namespace AgroMarket.Infrastructure.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
-                    b.Property<string>("DiaChiGiaoHang")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
-                        .HasColumnName("dia_chi_giao_hang");
-
                     b.Property<string>("GhiChu")
                         .HasColumnType("longtext")
                         .HasColumnName("ghi_chu");
@@ -267,11 +265,6 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_deleted");
-
-                    b.Property<string>("MaVanDonGhn")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
-                        .HasColumnName("ma_van_don_ghn");
 
                     b.Property<DateTime?>("NgayChinhSua")
                         .HasColumnType("datetime(6)")
@@ -289,19 +282,10 @@ namespace AgroMarket.Infrastructure.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("nguoi_mua_id");
 
-                    b.Property<decimal>("PhiVanChuyen")
-                        .HasColumnType("decimal(18,2)")
-                        .HasColumnName("phi_van_chuyen");
-
                     b.Property<string>("PhuongThucNhanHang")
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("phuong_thuc_nhan_hang");
-
-                    b.Property<string>("ToaDoGiaoHang")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("toa_do_giao_hang");
 
                     b.Property<decimal>("TongTien")
                         .HasPrecision(18, 2)
@@ -748,10 +732,6 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.Property<string>("DiaChi")
                         .HasColumnType("longtext")
                         .HasColumnName("dia_chi");
-
-                    b.Property<string>("DiaChiChiTiet")
-                        .HasColumnType("longtext")
-                        .HasColumnName("dia_chi_chi_tiet");
 
                     b.Property<decimal>("Gia")
                         .HasPrecision(18, 2)

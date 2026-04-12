@@ -11,6 +11,8 @@ export interface ProductFormRequest {
     moTaChiTiet: string;     // Thay cho mo_ta
     trangThai?: string;      // Tình trạng: còn hàng, hết hàng...
     hinhAnh: File | null;    // File upload
+    diaChi?: string;         // Địa chỉ JSON
+    diaChiChiTiet?: string;  // Địa chỉ chi tiết
 }
 
 // Hàm chuyển object thành FormData để gửi multipart/form-data
@@ -32,6 +34,14 @@ const buildFormData = (data: ProductFormRequest) => {
 
     // Đặt giá trị mặc định nếu form không gửi lên
     formData.append('trangThai', data.trangThai || 'con_hang');
+
+    // Địa chỉ
+    if (data.diaChi) {
+        formData.append('diaChi', data.diaChi);
+    }
+    if (data.diaChiChiTiet) {
+        formData.append('diaChiChiTiet', data.diaChiChiTiet);
+    }
 
     // Chỉ đính kèm file nếu người dùng thực sự chọn ảnh mới
     if (data.hinhAnh instanceof File) {

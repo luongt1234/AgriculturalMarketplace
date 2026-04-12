@@ -1,4 +1,4 @@
-import type { PaymentMethod } from '../../types/checkout.types';
+import type { PaymentMethod } from '../../../types/checkout.types';
 
 interface PaymentStepProps {
     methods: PaymentMethod[];

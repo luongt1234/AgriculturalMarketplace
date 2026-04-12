@@ -11,6 +11,29 @@ export interface DeliveryAddress {
     createdAt?: string;
 }
 
+export interface DiaChiNguoiDungDto {
+    id: string;
+    diaChi: string;
+    tenNguoiNhanHang: string;
+    loaiDiaChiId?: string | null;
+    loaiDiaChi?: any; // DanhMuc
+    isDefault: boolean;
+    soDienThoai: string;
+    diaChiChiTiet: string;
+    nguoiDungId: string;
+    nguoiDung?: any; // NguoiDung
+}
+
+export interface DiaChiNguoiDungFormDto {
+    diaChi: string;
+    tenNguoiNhanHang: string;
+    loaiDiaChiId?: string | null;
+    isDefault: boolean;
+    soDienThoai: string;
+    diaChiChiTiet: string;
+    nguoiDungId: string;
+}
+
 export interface ShippingMethod {
     id: string;
     name: string;
@@ -61,9 +84,9 @@ export interface CheckoutState {
 
     // Actions
     setStep: (step: 1 | 2 | 3 | 4) => void;
-    setSelectedAddress: (address: DeliveryAddress) => void;
-    setSelectedShippingMethod: (method: ShippingMethod) => void;
-    setSelectedPaymentMethod: (method: PaymentMethod) => void;
+    setSelectedAddress: (address: DeliveryAddress | null) => void;
+    setSelectedShippingMethod: (method: ShippingMethod | null) => void;
+    setSelectedPaymentMethod: (method: PaymentMethod | null) => void;
     addAddress: (address: DeliveryAddress) => void;
     removeAddress: (id: string) => void;
     updateAddress: (id: string, address: Partial<DeliveryAddress>) => void;

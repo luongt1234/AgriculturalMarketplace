@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../lip/axiosInstance';
+import { useCheckoutStore } from '../../store/useCheckoutStore';
+import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 
@@ -51,6 +53,7 @@ interface ProductDetail {
     description: string;
     harvestDate: string;
     stock: string;
+    availableQuantity: number; // Thêm trường này để check tồn kho
     certifications: string[];
     rating: number;
     reviews: number;
@@ -59,14 +62,131 @@ interface ProductDetail {
 
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const checkoutStore = useCheckoutStore();
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [quantity, setQuantity] = useState(1);
+
+    // Sử dụng number | string để cho phép người dùng xóa trắng input khi gõ
+    const [quantity, setQuantity] = useState<number | string>(1);
     const [isFavorite, setIsFavorite] = useState(false);
 
-    const incrementQuantity = () => setQuantity(prev => prev + 1);
-    const decrementQuantity = () => setQuantity(prev => prev > 1 ? prev - 1 : 1);
+    // ==========================================
+    // CÁC HÀM XỬ LÝ SỐ LƯỢNG MỚI
+    // ==========================================
+    const incrementQuantity = () => {
+        if (!product) return;
+        const currentQty = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
+        if (currentQty < product.availableQuantity) {
+            setQuantity(currentQty + 1);
+        } else {
+            toast.error(`Sản phẩm này chỉ còn tối đa ${product.availableQuantity} ${product.unit}`);
+        }
+    };
+
+    const decrementQuantity = () => {
+        const currentQty = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
+        if (currentQty > 1) {
+            setQuantity(currentQty - 1);
+        }
+    };
+
+    const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!product) return;
+        const val = e.target.value;
+
+        // Chỉ cho phép nhập số
+        if (/^\d*$/.test(val)) {
+            if (val === '') {
+                setQuantity(''); // Cho phép trống tạm thời để dễ gõ phím
+                return;
+            }
+
+            const num = parseInt(val, 10);
+            if (num > product.availableQuantity) {
+                setQuantity(product.availableQuantity);
+                toast.error(`Sản phẩm này chỉ còn tối đa ${product.availableQuantity} ${product.unit}`);
+            } else if (num === 0) {
+                setQuantity(1); // Không cho nhập số 0
+            } else {
+                setQuantity(num);
+            }
+        }
+    };
+
+    const handleQuantityBlur = () => {
+        // Khi blur ra ngoài, nếu input đang trống thì set mặc định về 1
+        if (quantity === '' || Number(quantity) < 1) {
+            setQuantity(1);
+        }
+    };
+    // ==========================================
+
+    const handleAddToCart = () => {
+        if (!product) return;
+
+        const finalQuantity = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
+        const existingItemIndex = checkoutStore.cartItems.findIndex((item) => item.productId === product.id);
+
+        const newItem = {
+            id: product.id,
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: finalQuantity,
+            image: product.image,
+            unit: product.unit,
+        };
+
+        if (existingItemIndex >= 0) {
+            const updatedItems = [...checkoutStore.cartItems];
+            const newTotalQty = updatedItems[existingItemIndex].quantity + finalQuantity;
+
+            // Check thêm tồn kho khi cộng dồn giỏ hàng
+            if (newTotalQty > product.availableQuantity) {
+                toast.error(`Không thể thêm. Bạn đã có tổng cộng ${product.availableQuantity} ${product.unit} trong giỏ.`);
+                return;
+            }
+
+            updatedItems[existingItemIndex] = {
+                ...updatedItems[existingItemIndex],
+                quantity: newTotalQty,
+            };
+            checkoutStore.setCartItems(updatedItems);
+        } else {
+            checkoutStore.setCartItems([...checkoutStore.cartItems, newItem]);
+        }
+
+        toast.success('Đã thêm sản phẩm vào giỏ hàng');
+    };
+
+    const handleBuyNow = () => {
+        if (!product) return;
+
+        const finalQuantity = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
+        const item = {
+            id: product.id,
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: finalQuantity,
+            image: product.image,
+            unit: product.unit,
+        };
+
+        checkoutStore.setCartItems([item]);
+        checkoutStore.setOrderSummary({
+            items: [item],
+            subtotal: item.price * item.quantity,
+            shippingFee: checkoutStore.selectedShippingMethod?.baseFee || 0,
+            total: item.price * item.quantity + (checkoutStore.selectedShippingMethod?.baseFee || 0),
+        });
+        checkoutStore.setSelectedShippingMethod(null);
+        checkoutStore.setSelectedPaymentMethod(null);
+        checkoutStore.setStep(1);
+        navigate('/checkout');
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -105,6 +225,7 @@ const ProductDetailPage: React.FC = () => {
                     description: item.moTaChiTiet,
                     harvestDate: new Date(item.ngayDang).toLocaleDateString('vi-VN', { year: 'numeric', month: 'short' }),
                     stock: item.trangThai === 'ConHang' ? 'Available' : 'Out of stock',
+                    availableQuantity: item.soLuong, // Lấy số lượng từ API
                     certifications: [item.tenChatLuong, item.tenSanPhamChung].filter(Boolean),
                     rating: 4.8,
                     reviews: 128,
@@ -124,7 +245,7 @@ const ProductDetailPage: React.FC = () => {
     if (loading) {
         return (
             <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 min-h-screen">
-                <BuyerHeader cartCount={3} showNavigation={true} />
+                <BuyerHeader cartCount={checkoutStore.cartItems.length} showNavigation={true} />
                 <div className="flex items-center justify-center h-[calc(100vh-64px)] px-4">
                     <div className="text-center text-gray-600 dark:text-gray-300">Đang tải chi tiết sản phẩm...</div>
                 </div>
@@ -135,7 +256,7 @@ const ProductDetailPage: React.FC = () => {
     if (error || !product) {
         return (
             <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 min-h-screen">
-                <BuyerHeader cartCount={3} showNavigation={true} />
+                <BuyerHeader cartCount={checkoutStore.cartItems.length} showNavigation={true} />
                 <div className="flex items-center justify-center h-[calc(100vh-64px)] px-4">
                     <div className="text-center text-red-600 dark:text-red-400">
                         {error ?? 'Không tìm thấy sản phẩm.'}
@@ -149,7 +270,7 @@ const ProductDetailPage: React.FC = () => {
         <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
             {/* Header */}
             <BuyerHeader
-                cartCount={3}
+                cartCount={checkoutStore.cartItems.length}
                 showNavigation={true}
             />
 
@@ -236,8 +357,12 @@ const ProductDetailPage: React.FC = () => {
                             <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
                                 <div className="flex items-end gap-3 mb-2">
                                     <span className="text-4xl font-black text-primary">{product.price.toLocaleString('vi-VN')}₫</span>
-                                    <span className="text-lg text-gray-400 line-through mb-1">{product.originalPrice?.toLocaleString('vi-VN')}₫</span>
-                                    <span className="text-sm font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-md mb-2">-{product.discount}%</span>
+                                    {product.originalPrice && (
+                                        <span className="text-lg text-gray-400 line-through mb-1">{product.originalPrice.toLocaleString('vi-VN')}₫</span>
+                                    )}
+                                    {product.discount && (
+                                        <span className="text-sm font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-md mb-2">-{product.discount}%</span>
+                                    )}
                                 </div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Unit: {product.unit}</p>
                                 <button className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-primary/20 hover:border-primary text-primary font-bold rounded-lg transition-all duration-200 hover:bg-primary/5 group">
@@ -272,25 +397,35 @@ const ProductDetailPage: React.FC = () => {
                                 </div>
                                 <div className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
                                     <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">inventory_2</span>
-                                    <p>Stock: <span className="text-green-600 font-bold">{product.stock}</span></p>
+                                    {/* FIX: Thêm hiển thị cụ thể số lượng còn lại cho rõ ràng */}
+                                    <p>Stock: <span className="text-green-600 font-bold">{product.availableQuantity} {product.unit}</span> ({product.stock})</p>
                                 </div>
                             </div>
                             <div className="mt-auto flex flex-col gap-4">
-                                {/* <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg h-12 w-full sm:w-auto sm:min-w-[120px]">
+                                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg h-12 w-full sm:w-auto sm:min-w-[120px]">
                                     <button onClick={decrementQuantity} className="w-10 h-full flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-l-lg transition-colors">
                                         <span className="material-symbols-outlined text-[18px]">remove</span>
                                     </button>
-                                    <input className="w-full text-center border-none bg-transparent h-full focus:ring-0 font-bold text-gray-900 dark:text-white p-0" type="text" value={quantity} readOnly />
+
+                                    {/* FIX: Thay readOnly bằng onChange và onBlur */}
+                                    <input
+                                        className="w-full text-center border-none bg-transparent h-full focus:ring-0 font-bold text-gray-900 dark:text-white p-0"
+                                        type="text"
+                                        value={quantity}
+                                        onChange={handleQuantityChange}
+                                        onBlur={handleQuantityBlur}
+                                    />
+
                                     <button onClick={incrementQuantity} className="w-10 h-full flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-r-lg transition-colors">
                                         <span className="material-symbols-outlined text-[18px]">add</span>
                                     </button>
-                                </div> */}
+                                </div>
                                 <div className="flex flex-col sm:flex-row gap-3">
-                                    <button className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold h-12 rounded-lg shadow-lg hover:shadow-green-900/20 transition-all flex items-center justify-center gap-2">
+                                    <button onClick={handleAddToCart} className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold h-12 rounded-lg shadow-lg hover:shadow-green-900/20 transition-all flex items-center justify-center gap-2">
                                         <span className="material-symbols-outlined">shopping_cart</span>
                                         Thêm vào giỏ
                                     </button>
-                                    <button className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-lg shadow-lg hover:shadow-green-900/20 transition-all flex items-center justify-center gap-2">
+                                    <button onClick={handleBuyNow} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-lg shadow-lg hover:shadow-green-900/20 transition-all flex items-center justify-center gap-2">
                                         <span className="material-symbols-outlined">shopping_bag</span>
                                         Mua ngay
                                     </button>

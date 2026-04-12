@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { DeliveryAddress } from '../../types/checkout.types';
+import type { DeliveryAddress } from '../../../types/checkout.types';
 
 interface AddressStepProps {
     addresses: DeliveryAddress[];

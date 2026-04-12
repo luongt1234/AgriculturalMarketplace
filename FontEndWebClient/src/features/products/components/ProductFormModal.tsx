@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import axios from 'axios';
 import TreeSelect from '../../../components/common/TreeSelect';
+import { AutocompleteSelect } from '../../../components/common/AutocompleteSelect';
 import { createProduct, updateProduct, getCommonProducts, getQualityOptions, type ProductFormRequest } from '../api/product.api';
 import type { Product, CommonProduct, QualityOption } from '../../../types/product.types';
 
@@ -10,6 +12,18 @@ interface ProductFormModalProps {
     onSuccess: () => void;
     initialData?: Product | null;
 }
+
+type FullLocationItem = {
+    code: number;
+    name: string;
+    division_type: string;
+    codename: string;
+    phone_code?: number;
+    province_code?: number;
+    district_code?: number;
+};
+
+const API_ADDRESS = import.meta.env.PROVINCES_API_URL || 'https://provinces.open-api.vn/api/v1';
 
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
@@ -24,6 +38,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     const [isLoadingProducts, setIsLoadingProducts] = useState(false);
     const [qualityOptions, setQualityOptions] = useState<QualityOption[]>([]);
     const [isLoadingQuality, setIsLoadingQuality] = useState(false);
+    const [provinces, setProvinces] = useState<FullLocationItem[]>([]);
+    const [districts, setDistricts] = useState<FullLocationItem[]>([]);
+    const [wards, setWards] = useState<FullLocationItem[]>([]);
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingDistricts, setLoadingDistricts] = useState(false);
+    const [loadingWards, setLoadingWards] = useState(false);
+    const [selectedCity, setSelectedCity] = useState('');
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedWard, setSelectedWard] = useState('');
 
     const isEditMode = !!initialData;
 
@@ -35,6 +58,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         soLuong: 0,
         moTaChiTiet: '',
         hinhAnh: null,
+        diaChi: '',
+        diaChiChiTiet: '',
     });
 
     // Effect: Load danh sách sản phẩm chung
@@ -75,6 +100,57 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         }
     }, [isOpen]);
 
+    // Effect: Load provinces
+    useEffect(() => {
+        const loadProvinces = async () => {
+            try {
+                setLoadingProvinces(true);
+                const response = await axios.get(API_ADDRESS);
+                const list = normalizeLocations(response.data);
+                setProvinces(list);
+            } catch (error) {
+                console.error('Error fetching provinces:', error);
+                setProvinces([]);
+            } finally {
+                setLoadingProvinces(false);
+            }
+        };
+
+        if (isOpen) {
+            loadProvinces();
+        }
+    }, [isOpen]);
+
+    // Effect: Load districts when city changes
+    useEffect(() => {
+        if (!selectedCity) {
+            setDistricts([]);
+            setWards([]);
+            return;
+        }
+        const province = provinces.find((item) => item.name === selectedCity);
+        if (!province) {
+            setDistricts([]);
+            setWards([]);
+            return;
+        }
+        fetchDistricts(province.code.toString());
+    }, [selectedCity, provinces]);
+
+    // Effect: Load wards when district changes
+    useEffect(() => {
+        if (!selectedDistrict) {
+            setWards([]);
+            return;
+        }
+        const district = districts.find((item) => item.name === selectedDistrict);
+        if (!district) {
+            setWards([]);
+            return;
+        }
+        fetchWards(district.code.toString());
+    }, [selectedDistrict, districts]);
+
     // Effect: Reset form hoặc Fill data khi mở Modal
     useEffect(() => {
         if (isOpen) {
@@ -87,8 +163,14 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     soLuong: initialData.soLuong,
                     moTaChiTiet: initialData.moTaChiTiet || '',
                     hinhAnh: null,
+                    diaChi: initialData.diaChi || '',
+                    diaChiChiTiet: initialData.diaChiChiTiet || '',
                 });
                 setPreviewImage(initialData.hinhAnhUrl || null);
+                // For edit mode, leave selects empty for now
+                setSelectedCity('');
+                setSelectedDistrict('');
+                setSelectedWard('');
             } else {
                 // --- CHẾ ĐỘ CREATE: Reset form ---
                 setFormData({
@@ -99,13 +181,89 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     soLuong: 0,
                     moTaChiTiet: '',
                     hinhAnh: null,
+                    diaChi: '',
+                    diaChiChiTiet: '',
                 });
                 setPreviewImage(null);
+                setSelectedCity('');
+                setSelectedDistrict('');
+                setSelectedWard('');
             }
         }
     }, [isOpen, initialData]);
 
     if (!isOpen) return null;
+
+    const normalizeLocations = (data: any): FullLocationItem[] => {
+        if (!data) return [];
+        if (Array.isArray(data)) {
+            return data.map((item) => ({
+                code: item.code,
+                name: item.name ?? item.name_with_type ?? item.full_name ?? item.label ?? '',
+                division_type: item.division_type,
+                codename: item.codename,
+                phone_code: item.phone_code,
+                province_code: item.province_code,
+                district_code: item.district_code,
+            }));
+        }
+        if (data.provinces) return normalizeLocations(data.provinces);
+        if (data.districts) return normalizeLocations(data.districts);
+        if (data.wards) return normalizeLocations(data.wards);
+        if (data.data) return normalizeLocations(data.data);
+        return [];
+    };
+
+    const fetchDistricts = async (provinceCode: string) => {
+        try {
+            setLoadingDistricts(true);
+            const response = await axios.get(`${API_ADDRESS}/p/${provinceCode}?depth=2`);
+            const list = normalizeLocations(response.data.districts);
+            setDistricts(list);
+        } catch (error) {
+            console.error('Error fetching districts:', error);
+            setDistricts([]);
+        } finally {
+            setLoadingDistricts(false);
+        }
+    };
+
+    const fetchWards = async (districtCode: string) => {
+        try {
+            setLoadingWards(true);
+            const response = await axios.get(`${API_ADDRESS}/d/${districtCode}?depth=2`);
+            const list = normalizeLocations(response.data.wards);
+            setWards(list);
+        } catch (error) {
+            console.error('Error fetching wards:', error);
+            setWards([]);
+        } finally {
+            setLoadingWards(false);
+        }
+    };
+
+    const handleCityChange = (cityName: string) => {
+        setSelectedCity(cityName);
+        setSelectedDistrict('');
+        setSelectedWard('');
+    };
+
+    const handleDistrictChange = (districtName: string) => {
+        setSelectedDistrict(districtName);
+        setSelectedWard('');
+    };
+
+    const handleWardChange = (wardName: string) => {
+        setSelectedWard(wardName);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: value,
+        });
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -130,15 +288,44 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             return;
         }
 
+        // Validate địa chỉ
+        if (!selectedCity || !selectedDistrict || !selectedWard || !formData.diaChiChiTiet) {
+            toast.error("Vui lòng điền đầy đủ địa chỉ giao hàng");
+            return;
+        }
+
+        const selectedProvince = provinces.find(p => p.name === selectedCity);
+        const selectedDistrictObj = districts.find(d => d.name === selectedDistrict);
+        const selectedWardObj = wards.find(w => w.name === selectedWard);
+
+        if (!selectedProvince || !selectedDistrictObj || !selectedWardObj) {
+            toast.error('Không tìm thấy thông tin địa chỉ đã chọn');
+            return;
+        }
+
+        const diaChiObject = {
+            ...selectedProvince,
+            districts: [{
+                ...selectedDistrictObj,
+                wards: [selectedWardObj]
+            }]
+        };
+
+        const submitData = {
+            ...formData,
+            diaChi: JSON.stringify(diaChiObject),
+            diaChiChiTiet: formData.diaChiChiTiet,
+        };
+
         try {
             setIsLoading(true);
             if (isEditMode && initialData) {
                 // Gọi API Update
-                await updateProduct(initialData.id, formData);
+                await updateProduct(initialData.id, submitData);
                 toast.success("Cập nhật sản phẩm thành công!");
             } else {
                 // Gọi API Create
-                await createProduct(formData);
+                await createProduct(submitData);
                 toast.success("Thêm sản phẩm thành công!");
             }
             onSuccess();
@@ -285,6 +472,67 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                                     onChange={e => setFormData({ ...formData, moTaChiTiet: e.target.value })}
                                     placeholder="Nhập mô tả chi tiết về sản phẩm..."
                                 ></textarea>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h4 className="text-sm font-semibold text-[#131613] dark:text-gray-200">Địa chỉ bán hàng <span className="text-red-500">*</span></h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Tỉnh/Thành phố</label>
+                                        <AutocompleteSelect
+                                            options={provinces}
+                                            value={selectedCity}
+                                            onChange={(value, item) => handleCityChange(item.name)}
+                                            getOptionLabel={(item) => item.name}
+                                            getOptionValue={(item) => item.name}
+                                            placeholder="Chọn tỉnh/thành"
+                                            disabled={loadingProvinces}
+                                            loading={loadingProvinces}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Quận/Huyện</label>
+                                        <AutocompleteSelect
+                                            options={districts}
+                                            value={selectedDistrict}
+                                            onChange={(value, item) => handleDistrictChange(item.name)}
+                                            getOptionLabel={(item) => item.name}
+                                            getOptionValue={(item) => item.name}
+                                            placeholder="Chọn quận/huyện"
+                                            disabled={!districts.length || loadingDistricts}
+                                            loading={loadingDistricts}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Phường/Xã</label>
+                                        <AutocompleteSelect
+                                            options={wards}
+                                            value={selectedWard}
+                                            onChange={(value, item) => handleWardChange(item.name)}
+                                            getOptionLabel={(item) => item.name}
+                                            getOptionValue={(item) => item.name}
+                                            placeholder="Chọn phường/xã"
+                                            disabled={!wards.length || loadingWards}
+                                            loading={loadingWards}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-[#131613] dark:text-gray-200 mb-1">Địa chỉ chi tiết</label>
+                                    <textarea
+                                        name="diaChiChiTiet"
+                                        rows={2}
+                                        className="w-full p-3 rounded-lg border border-[#e0e2e0] dark:border-[#2f3a30] bg-white dark:bg-[#1a261c] text-sm focus:ring-2 focus:ring-primary/50 outline-none resize-none"
+                                        value={formData.diaChiChiTiet || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="Số nhà, tên đường, thôn/xóm..."
+                                    ></textarea>
+                                </div>
                             </div>
                         </div>
                     </form>

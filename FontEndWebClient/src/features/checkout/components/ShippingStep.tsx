@@ -1,4 +1,4 @@
-import type { ShippingMethod } from '../../types/checkout.types';
+import type { ShippingMethod } from '../../../types/checkout.types';
 
 interface ShippingStepProps {
     methods: ShippingMethod[];
