@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSetPageTitle } from '../../hooks/useSetPageTitle';
 import { useCheckoutStore } from '../../store/useCheckoutStore';
-import type { DeliveryAddress, OrderSummary } from '../../types/checkout.types';
+import type { DeliveryAddress, OrderSummary, ShippingMethod } from '../../types/checkout.types';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { AddressStep } from '../../features/checkout/components/AddressStep';
@@ -11,6 +11,7 @@ import { PaymentStep } from '../../features/checkout/components/PaymentStep';
 import { ConfirmationStep } from '../../features/checkout/components/ConfirmationStep';
 import { OrderSummaryPanel } from '../../features/checkout/components/OrderSummaryPanel';
 import { getUserAddresses, deleteAddress as deleteAddressApi } from '../../features/checkout/api/address.api';
+import { getAvailableShippingMethods, getShippingFeeForDestination } from '../../features/checkout/api/shipping.api';
 import { toast } from 'sonner';
 
 export function CheckoutPage() {
@@ -19,6 +20,8 @@ export function CheckoutPage() {
     const store = useCheckoutStore();
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<DeliveryAddress | null>(null);
+    const [loadingShippingMethods, setLoadingShippingMethods] = useState(false);
+    const [loadingShippingFee, setLoadingShippingFee] = useState(false);
 
     useEffect(() => {
         const loadAddresses = async () => {
@@ -27,15 +30,19 @@ export function CheckoutPage() {
                 // Convert DiaChiNguoiDungDto[] to DeliveryAddress[]
                 const deliveryAddresses: DeliveryAddress[] = addresses.map(addr => {
                     let city = '', district = '', ward = '';
+                    let provinceId: number | undefined;
+                    let districtCode: number | undefined;
+                    let wardCode: string | undefined;
+
                     try {
                         const diaChiObj = JSON.parse(addr.diaChi);
-                        city = diaChiObj.name || '';
-                        if (diaChiObj.districts && diaChiObj.districts.length > 0) {
-                            district = diaChiObj.districts[0].name || '';
-                            if (diaChiObj.districts[0].wards && diaChiObj.districts[0].wards.length > 0) {
-                                ward = diaChiObj.districts[0].wards[0].name || '';
-                            }
-                        }
+
+                        provinceId = diaChiObj.provinceId ?? diaChiObj.ProvinceID ?? diaChiObj.provinceID ?? undefined;
+                        city = diaChiObj.provinceName ?? diaChiObj.ProvinceName ?? diaChiObj.name ?? '';
+                        district = diaChiObj.districtName ?? diaChiObj.DistrictName ?? diaChiObj.district ?? '';
+                        districtCode = diaChiObj.districtId ?? diaChiObj.DistrictID ?? diaChiObj.districtCode ?? undefined;
+                        ward = diaChiObj.wardName ?? diaChiObj.WardName ?? diaChiObj.ward ?? '';
+                        wardCode = String(diaChiObj.wardCode ?? diaChiObj.WardCode ?? diaChiObj.wardCode ?? '');
                     } catch (error) {
                         console.error('Error parsing diaChi:', error);
                     }
@@ -47,6 +54,9 @@ export function CheckoutPage() {
                         city,
                         district,
                         ward,
+                        provinceId,
+                        districtCode,
+                        wardCode,
                         detailedAddress: addr.diaChiChiTiet,
                         label: 'home',
                         isDefault: addr.isDefault
@@ -61,6 +71,87 @@ export function CheckoutPage() {
 
         loadAddresses();
     }, []);
+
+    useEffect(() => {
+        const loadShippingMethods = async () => {
+            const selectedAddress = store.selectedAddress;
+            if (!selectedAddress?.districtCode || !selectedAddress?.wardCode) {
+                return;
+            }
+
+            setLoadingShippingMethods(true);
+            try {
+                const methods = await getAvailableShippingMethods(selectedAddress.districtCode, store.cartItems);
+
+                const updatedMethods = await Promise.all(
+                    methods.map(async (method) => {
+                        if (!method.serviceId) {
+                            return method;
+                        }
+
+                        try {
+                            const fee = await getShippingFeeForDestination(
+                                selectedAddress.districtCode!,
+                                selectedAddress.wardCode!,
+                                store.cartItems,
+                                method.serviceId
+                            );
+                            return { ...method, baseFee: fee };
+                        } catch (error) {
+                            console.error('Error calculating shipping fee for method', method.id, error);
+                            return method;
+                        }
+                    })
+                );
+
+                store.setShippingMethods(updatedMethods);
+
+                if (selectedAddress && !updatedMethods.find((method) => method.id === store.selectedShippingMethod?.id)) {
+                    store.setSelectedShippingMethod(null);
+                } else if (store.selectedShippingMethod) {
+                    const updatedSelected = updatedMethods.find((method) => method.id === store.selectedShippingMethod?.id);
+                    if (updatedSelected) {
+                        store.setSelectedShippingMethod(updatedSelected);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading shipping methods:', error);
+                toast.error('Không thể tải phương thức vận chuyển từ backend');
+            } finally {
+                setLoadingShippingMethods(false);
+            }
+        };
+
+        loadShippingMethods();
+    }, [store.selectedAddress?.districtCode, store.selectedAddress?.wardCode, store.cartItems]);
+
+    const handleSelectShippingMethod = async (method: ShippingMethod) => {
+        if (!store.selectedAddress?.districtCode || !store.selectedAddress?.wardCode) {
+            toast.warning('Vui lòng chọn địa chỉ đầy đủ để tính phí vận chuyển');
+            return;
+        }
+
+        setLoadingShippingFee(true);
+        try {
+            const fee = await getShippingFeeForDestination(
+                store.selectedAddress.districtCode,
+                store.selectedAddress.wardCode,
+                store.cartItems,
+                method.serviceId
+            );
+
+            store.setSelectedShippingMethod({
+                ...method,
+                baseFee: fee,
+            });
+        } catch (error) {
+            console.error('Error calculating shipping fee:', error);
+            toast.error('Không thể tính phí vận chuyển. Vui lòng thử lại.');
+            store.setSelectedShippingMethod(method);
+        } finally {
+            setLoadingShippingFee(false);
+        }
+    };
 
     useEffect(() => {
         const subtotal = store.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -122,11 +213,22 @@ export function CheckoutPage() {
             return;
         }
 
-        if (store.selectedAddress) {
-            store.goToNextStep();
-        } else {
+        if (!store.selectedAddress) {
             toast.warning('Vui lòng chọn địa chỉ');
+            return;
         }
+
+        if (loadingShippingMethods) {
+            toast.warning('Vui lòng đợi phương thức vận chuyển được tải');
+            return;
+        }
+
+        if (!store.shippingMethods.length) {
+            toast.warning('Không tìm thấy phương thức vận chuyển phù hợp với địa chỉ đã chọn');
+            return;
+        }
+
+        store.goToNextStep();
     };
 
     const handleContinueToPayment = () => {
@@ -261,7 +363,8 @@ export function CheckoutPage() {
                                 <ShippingStep
                                     methods={store.shippingMethods}
                                     selectedMethod={store.selectedShippingMethod}
-                                    onSelectMethod={(method) => store.setSelectedShippingMethod(method)}
+                                    onSelectMethod={handleSelectShippingMethod}
+                                    loading={loadingShippingMethods || loadingShippingFee}
                                 />
                                 {store.currentStep === 2 && (
                                     <div className="p-6 bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-700 rounded-xl flex justify-between shadow-sm">

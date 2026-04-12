@@ -3,31 +3,6 @@ import { persist } from 'zustand/middleware';
 import type { CheckoutState } from '../types/checkout.types';
 import type { DeliveryAddress, ShippingMethod, PaymentMethod, CartItem, OrderSummary } from '../types/checkout.types';
 
-const mockAddresses: DeliveryAddress[] = [
-    {
-        id: '1',
-        fullName: 'Nguyen Van A',
-        phone: '+84 90 123 4567',
-        city: 'Ho Chi Minh City',
-        district: 'District 1',
-        ward: 'Ben Nghe Ward',
-        detailedAddress: '123 Le Loi Street, Ben Nghe Ward, District 1, Ho Chi Minh City',
-        label: 'home',
-        isDefault: true,
-    },
-    {
-        id: '2',
-        fullName: 'Nguyen Van A (Work)',
-        phone: '+84 91 888 9999',
-        city: 'Ho Chi Minh City',
-        district: 'District 7',
-        ward: 'Tan Thuan Ward',
-        detailedAddress: '4th Floor, Tech Park Building, Tan Thuan EPZ, District 7, HCMC',
-        label: 'office',
-        isDefault: false,
-    },
-];
-
 const mockShippingMethods: ShippingMethod[] = [
     {
         id: '1',
@@ -90,11 +65,11 @@ export const useCheckoutStore = create<CheckoutState>()(
     persist(
         (set) => ({
             currentStep: 1,
-            selectedAddress: mockAddresses[0],
+            selectedAddress: null,
             selectedShippingMethod: null,
             selectedPaymentMethod: null,
-            addresses: mockAddresses,
-            shippingMethods: mockShippingMethods,
+            addresses: [],
+            shippingMethods: [],
             paymentMethods: mockPaymentMethods,
             cartItems: [],
             orderSummary: null,
@@ -184,10 +159,10 @@ export const useCheckoutStore = create<CheckoutState>()(
             reset: () => {
                 set({
                     currentStep: 1,
-                    selectedAddress: mockAddresses[0],
+                    selectedAddress: null,
                     selectedShippingMethod: null,
                     selectedPaymentMethod: null,
-                    addresses: mockAddresses,
+                    addresses: [],
                     cartItems: [],
                     orderSummary: null,
                     loading: false,

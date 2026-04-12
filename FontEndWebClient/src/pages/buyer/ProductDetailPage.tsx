@@ -29,6 +29,7 @@ interface ProductDetailApiData {
     anhSanPham: string | null;
     displayScore: number;
     isFeatured: boolean;
+    diaChi?: string;
 }
 
 interface ApiResponse<T> {
@@ -58,6 +59,7 @@ interface ProductDetail {
     rating: number;
     reviews: number;
     sold: string;
+    sellerDistrictCode?: number;
 }
 
 const ProductDetailPage: React.FC = () => {
@@ -137,6 +139,7 @@ const ProductDetailPage: React.FC = () => {
             quantity: finalQuantity,
             image: product.image,
             unit: product.unit,
+            originDistrictCode: product.sellerDistrictCode,
         };
 
         if (existingItemIndex >= 0) {
@@ -173,6 +176,7 @@ const ProductDetailPage: React.FC = () => {
             quantity: finalQuantity,
             image: product.image,
             unit: product.unit,
+            originDistrictCode: product.sellerDistrictCode,
         };
 
         checkoutStore.setCartItems([item]);
@@ -206,6 +210,18 @@ const ProductDetailPage: React.FC = () => {
                         : `${axiosInstance.defaults.baseURL}${item.hinhAnhUrl}`
                     : '';
 
+                let sellerDistrictCode: number | undefined;
+                if (item.diaChi) {
+                    try {
+                        const diaChiObj = JSON.parse(item.diaChi);
+                        if (diaChiObj.districts && diaChiObj.districts.length > 0) {
+                            sellerDistrictCode = diaChiObj.districts[0].district_code ?? diaChiObj.districts[0].code;
+                        }
+                    } catch (err) {
+                        console.error('Error parsing seller address for product:', err);
+                    }
+                }
+
                 setProduct({
                     id: item.id,
                     name: item.tenHienThi,
@@ -229,7 +245,8 @@ const ProductDetailPage: React.FC = () => {
                     certifications: [item.tenChatLuong, item.tenSanPhamChung].filter(Boolean),
                     rating: 4.8,
                     reviews: 128,
-                    sold: item.soLuong ? `${item.soLuong}+` : 'N/A'
+                    sold: item.soLuong ? `${item.soLuong}+` : 'N/A',
+                    sellerDistrictCode,
                 });
             } catch (fetchError) {
                 console.error(fetchError);
