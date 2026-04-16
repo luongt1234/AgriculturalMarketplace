@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.Common.Interfaces;
+using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.DTOs.SanPhamChuDtos;
 using AgroMarket.Application.DTOs.SanPhamDangDtos;
 using AgroMarket.Application.Interfaces.Repositories;
@@ -91,11 +91,11 @@ namespace AgroMarket.Application.Services
             }
         }
 
-        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10, string? keyword = null)
         {
             try
             {
-                var (items, total) = await _sanPhamDangRepository.GetPagedWithIncludesAsync(pageNumber, pageSize);
+                var (items, total) = await _sanPhamDangRepository.GetPagedWithIncludesAsync(pageNumber, pageSize, keyword);
 
                 // Thuật toán hiển thị: tính một điểm cho mỗi sản phẩm dựa trên uy tín người bán, độ mới, và tồn kho
                 var now = DateTime.UtcNow;
@@ -106,6 +106,9 @@ namespace AgroMarket.Application.Services
                     var dto = _mapper.Map<SanPhamDangDto>(item);
 
                     double score = 0;
+
+                    // 0) Ghim sản phẩm
+                    if (item.IsGhim) score += 999;
 
                     // 1) Uy tín người bán (DiemUyTin) - nếu có
                     var uyTin = item.NguoiBan != null ? item.NguoiBan.DiemUyTin : 0;
@@ -192,6 +195,34 @@ namespace AgroMarket.Application.Services
             catch (Exception ex)
             {
                 throw new Exception($"Lỗi khi lấy chi tiết sản phẩm: {ex.Message}");
+            }
+        }
+        public async Task<bool> ToggleGhimAsync(Guid id, Guid currentUserId)
+        {
+            var entity = await _sanPhamDangRepository.GetByIdAsync(id);
+            if (entity == null) throw new Exception("Không tìm thấy sản phẩm");
+
+            // Kiểm tra quyền: Chỉ người bán mới được ghim/bỏ ghim sản phẩm của mình
+            if (entity.NguoiBanId != currentUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền thực hiện thao tác này");
+
+            entity.IsGhim = !entity.IsGhim;
+            // EF Core tracks the entity
+            await _unitOfWork.CommitAsync();
+
+            return entity.IsGhim;
+        }
+
+        public async Task<IEnumerable<SanPhamDangDto>> GetSearchSuggestionsAsync(string keyword, int limit = 5)
+        {
+            try
+            {
+                var items = await _sanPhamDangRepository.SearchSuggestionsAsync(keyword, limit);
+                return _mapper.Map<IEnumerable<SanPhamDangDto>>(items);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy gợi ý tìm kiếm: {ex.Message}");
             }
         }
     }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSetPageTitle } from '../../hooks/useSetPageTitle';
+import { useCartStore } from '../../store/useCartStore';
 import { useCheckoutStore } from '../../store/useCheckoutStore';
-import type { DeliveryAddress, OrderSummary } from '../../types/checkout.types';
+import type { DeliveryAddress, OrderSummary, CartItem } from '../../types/checkout.types';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { AddressStep } from '../../features/checkout/components/AddressStep';
@@ -17,6 +18,24 @@ export function CheckoutPage() {
     useSetPageTitle('Thanh toán');
 
     const store = useCheckoutStore();
+    const { cart, fetchCart } = useCartStore();
+
+    // Map cart items to CartItem[] format for checkout
+    const checkoutItems: CartItem[] = cart?.chiTiet?.map(item => ({
+        id: item.id,
+        productId: item.sanPhamDangId,
+        name: item.tenSanPham || '',
+        price: item.gia,
+        quantity: item.soLuong,
+        image: item.hinhAnhUrl || '',
+        unit: item.donVi || '',
+        sellerId: item.nguoiBanId,
+        sellerName: item.tenNguoiBan || '',
+    })) || [];
+
+    useEffect(() => {
+        fetchCart();
+    }, [fetchCart]);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<DeliveryAddress | null>(null);
 
@@ -63,19 +82,25 @@ export function CheckoutPage() {
     }, []);
 
     useEffect(() => {
-        const subtotal = store.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const subtotal = checkoutItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const shippingFee = store.selectedShippingMethod?.baseFee || 0;
         const total = subtotal + shippingFee;
 
         const summary: OrderSummary = {
-            items: store.cartItems,
+            items: checkoutItems,
             subtotal,
             shippingFee,
             total,
         };
 
+        const current = store.orderSummary;
+
+        if (JSON.stringify(current) === JSON.stringify(summary)) {
+            return;
+        }
+
         store.setOrderSummary(summary);
-    }, [store.cartItems, store.selectedShippingMethod]);
+    }, [checkoutItems, store.selectedShippingMethod?.id, store.selectedShippingMethod?.baseFee]);
 
     const handleAddAddress = () => {
         setEditingAddress(null);
@@ -117,7 +142,7 @@ export function CheckoutPage() {
     };
 
     const handleContinueToShipping = () => {
-        if (!store.cartItems.length) {
+        if (!(cart?.chiTiet && cart.chiTiet.length > 0)) {
             toast.warning('Vui lòng chọn sản phẩm trước khi thanh toán');
             return;
         }
@@ -383,7 +408,7 @@ export function CheckoutPage() {
 
                     {/* RIGHT COLUMN: Order Summary Panel */}
                     <div className="lg:w-1/3 sticky top-40 h-fit z-30 w-full">
-                        <OrderSummaryPanel items={store.cartItems} summary={store.orderSummary} />
+                        <OrderSummaryPanel items={checkoutItems} summary={store.orderSummary} />
                     </div>
                 </div>
             </main>

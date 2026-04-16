@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.DTOs.SanPhamChuDtos;
+using AgroMarket.Application.DTOs.SanPhamChuDtos;
 using AgroMarket.Application.DTOs.SanPhamDangDtos;
 using AgroMarket.Application.Wrappers;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +12,9 @@ namespace AgroMarket.Application.Interfaces.Services
         Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetProductsByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
         Task<SanPhamDangDto?> GetByIdAsync(Guid id);
         // Lấy phân trang kèm include và tính toán thuật toán hiển thị
-        Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10);
+        Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10, string? keyword = null);
+        Task<IEnumerable<SanPhamDangDto>> GetSearchSuggestionsAsync(string keyword, int limit = 5);
+        Task<bool> ToggleGhimAsync(Guid id, Guid currentUserId);
         // Lấy chi tiết sản phẩm theo id kèm các dữ liệu liên quan
         Task<SanPhamDangDto?> GetDetailByIdAsync(Guid id);
     }

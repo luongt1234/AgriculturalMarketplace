@@ -5,7 +5,7 @@ import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { FloatingChat } from '../../features/chat/components/FloatingChat';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useCheckoutStore } from '../../store/useCheckoutStore';
+import { useCartStore } from '../../store/useCartStore';
 import {
     checkFollow,
     followSeller,
@@ -49,7 +49,7 @@ const SellerStorefrontPage: React.FC = () => {
     const { sellerId } = useParams<{ sellerId: string }>();
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuthStore();
-    const checkoutStore = useCheckoutStore();
+    const { addToCart } = useCartStore();
 
     // Profile state
     const [profile, setProfile] = useState<SellerProfile | null>(null);
@@ -128,27 +128,13 @@ const SellerStorefrontPage: React.FC = () => {
     };
 
     // ─── Add to cart ──────────────────────────────────────────────────────
-    const handleAddToCart = (product: SellerProduct) => {
-        const existing = checkoutStore.cartItems.findIndex(i => i.productId === product.id);
-        if (existing >= 0) {
-            const updated = [...checkoutStore.cartItems];
-            updated[existing] = { ...updated[existing], quantity: updated[existing].quantity + 1 };
-            checkoutStore.setCartItems(updated);
-        } else {
-            checkoutStore.setCartItems([
-                ...checkoutStore.cartItems,
-                {
-                    id: product.id,
-                    productId: product.id,
-                    name: product.tenHienThi,
-                    price: product.gia,
-                    quantity: 1,
-                    image: product.hinhAnhUrl || PLACEHOLDER_PRODUCT,
-                    unit: product.tenDonVi || '',
-                },
-            ]);
+    const handleAddToCart = async (product: SellerProduct) => {
+        try {
+            await addToCart({ sanPhamDangId: product.id, soLuong: 1 });
+            toast.success(`Đã thêm "${product.tenHienThi}" vào giỏ hàng`);
+        } catch (error) {
+            toast.error('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
         }
-        toast.success(`Đã thêm "${product.tenHienThi}" vào giỏ hàng`);
     };
 
     // ─── Search ───────────────────────────────────────────────────────────
@@ -171,7 +157,7 @@ const SellerStorefrontPage: React.FC = () => {
     if (loadingProfile) {
         return (
             <div className="bg-background-light dark:bg-background-dark min-h-screen">
-                <BuyerHeader cartCount={checkoutStore.cartItems.length} showNavigation />
+                <BuyerHeader showNavigation />
                 <div className="animate-pulse max-w-7xl mx-auto px-4 py-8 space-y-6">
                     <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-2xl" />
                     <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
@@ -186,7 +172,7 @@ const SellerStorefrontPage: React.FC = () => {
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
-            <BuyerHeader cartCount={checkoutStore.cartItems.length} showNavigation />
+            <BuyerHeader showNavigation />
 
             <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
 
@@ -195,7 +181,7 @@ const SellerStorefrontPage: React.FC = () => {
                     {/* Cover */}
                     <div className="h-48 md:h-64 relative">
                         <img
-                            src={PLACEHOLDER_BANNER}
+                            src={profile?.anhBiaUrl || PLACEHOLDER_BANNER}
                             alt="Cover"
                             className="w-full h-full object-cover"
                         />
@@ -297,7 +283,7 @@ const SellerStorefrontPage: React.FC = () => {
                                 Về cửa hàng
                             </h3>
                             <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                                <p className="leading-relaxed">Cam kết nông nghiệp bền vững, không hoá chất, trực tiếp từ vùng trồng.</p>
+                                <p className="leading-relaxed">{profile?.moTaCuaHang || 'Cam kết nông nghiệp bền vững, không hoá chất, trực tiếp từ vùng trồng.'}</p>
                                 {profile?.diaChi && (
                                     <div className="flex items-start gap-2">
                                         <span className="material-symbols-outlined text-primary text-[18px] mt-0.5">location_on</span>
@@ -478,9 +464,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick
                 />
 
                 {/* Blockchain badge */}
-                <div className="absolute top-2 left-2 bg-green-600/90 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[11px]">link</span>
-                    Blockchain
+                <div className="absolute top-2 left-2 flex flex-col gap-1.5 items-start">
+                    {product.isGhim && (
+                        <div className="bg-amber-500/90 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1 shadow-sm">
+                            <span className="material-symbols-outlined text-[11px] filled">push_pin</span>
+                            Nổi bật
+                        </div>
+                    )}
+                    <div className="bg-green-600/90 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-sm flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[11px]">link</span>
+                        Blockchain
+                    </div>
                 </div>
 
                 {/* Out of stock overlay */}

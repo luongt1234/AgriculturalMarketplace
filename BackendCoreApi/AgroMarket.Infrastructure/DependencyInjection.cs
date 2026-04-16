@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.Common.Interfaces;
+using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Infrastructure.Persistence;
 using AgroMarket.Infrastructure.Repositories;
@@ -34,6 +34,8 @@ namespace AgroMarket.Infrastructure
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddScoped<ISanPhamChungRepository, SanPhamChungRepository>();
             services.AddScoped<ISanPhamDangRepository, SanPhamDangRepository>();
+            services.AddScoped<IDonHangRepository, DonHangRepository>();
+            services.AddScoped<IGioHangRepository, GioHangRepository>();
             services.AddScoped<INguoiDungRepository, NguoiDungRepository>();
             services.AddScoped<ILoaiDanhMucRepository, LoaiDanhMucRepository>();
             services.AddScoped<IGHNService, GHNService>();

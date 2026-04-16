@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.Interfaces.Repositories;
+using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Domain.Entities;
 using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +27,7 @@ namespace AgroMarket.Infrastructure.Repositories
             return (items, total);
         }
 
-        public async Task<(IEnumerable<SanPhamDang> Items, int TotalRecords)> GetPagedWithIncludesAsync(int pageNumber, int pageSize)
+        public async Task<(IEnumerable<SanPhamDang> Items, int TotalRecords)> GetPagedWithIncludesAsync(int pageNumber, int pageSize, string? keyword = null)
         {
             // Base query with necessary includes for mapping
             var baseQuery = _dbSet.Where(x => !x.IsDeleted).AsNoTracking()
@@ -36,7 +36,23 @@ namespace AgroMarket.Infrastructure.Repositories
                 .Include(x => x.SanPhamChung)
                     .ThenInclude(spc => spc.Loai)
                 .Include(x => x.NguoiBan)
-                .Include(x => x.ChatLuong);
+                .Include(x => x.ChatLuong)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var terms = keyword.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var t in terms)
+                {
+                    var term = t.ToLower();
+                    baseQuery = baseQuery.Where(x =>
+                        x.TenHienThi.ToLower().Contains(term) ||
+                        (x.MoTaChiTiet != null && x.MoTaChiTiet.ToLower().Contains(term)) ||
+                        (x.SanPhamChung != null && x.SanPhamChung.TenSanPham.ToLower().Contains(term)) ||
+                        (x.SanPhamChung != null && x.SanPhamChung.Loai != null && x.SanPhamChung.Loai.TenHienThi.ToLower().Contains(term))
+                    );
+                }
+            }
 
             var total = await baseQuery.CountAsync();
 
@@ -95,6 +111,33 @@ namespace AgroMarket.Infrastructure.Repositories
                 .ToListAsync();
 
             return (items, total);
+        }
+
+        public async Task<IEnumerable<SanPhamDang>> SearchSuggestionsAsync(string keyword, int limit)
+        {
+            if (string.IsNullOrWhiteSpace(keyword)) return new List<SanPhamDang>();
+
+            var baseQuery = _dbSet.Where(x => !x.IsDeleted).AsNoTracking()
+                .Include(x => x.SanPhamChung)
+                    .ThenInclude(spc => spc.Loai)
+                .AsQueryable();
+
+            var terms = keyword.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var t in terms)
+            {
+                var term = t.ToLower();
+                baseQuery = baseQuery.Where(x =>
+                    x.TenHienThi.ToLower().Contains(term) ||
+                    (x.MoTaChiTiet != null && x.MoTaChiTiet.ToLower().Contains(term)) ||
+                    (x.SanPhamChung != null && x.SanPhamChung.TenSanPham.ToLower().Contains(term)) ||
+                    (x.SanPhamChung != null && x.SanPhamChung.Loai != null && x.SanPhamChung.Loai.TenHienThi.ToLower().Contains(term))
+                );
+            }
+
+            return await baseQuery
+                .OrderByDescending(x => x.NgayDang)
+                .Take(limit)
+                .ToListAsync();
         }
     }
 }

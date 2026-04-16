@@ -4,7 +4,7 @@ import { useSetPageTitle } from '../../hooks/useSetPageTitle';
 import type { Product } from '../../types/product.types';
 import { ProductFormModal } from '../../features/products/components/ProductFormModal';
 import { DeleteProductModal } from '../../features/products/components/DeleteProductModal';
-import { getProducts } from '../../features/products/api/product.api';
+import { getProducts, togglePinProduct } from '../../features/products/api/product.api';
 import { DataTable, type Column } from '../../components/common/DataTable';
 
 export const MyProductPage = () => {
@@ -101,6 +101,9 @@ export const MyProductPage = () => {
                     <div className="flex flex-col">
                         <span className="font-medium text-[#131613] dark:text-white truncate max-w-[200px]" title={product.tenHienThi}>
                             {product.tenHienThi}
+                            {product.isGhim && (
+                                <span className="material-symbols-outlined text-[14px] text-amber-500 filled ml-1" title="Sản phẩm ghim">push_pin</span>
+                            )}
                         </span>
                         <span className="text-xs text-[#6b806c] font-mono mt-0.5">SKU: {product.sku || 'N/A'}</span>
                     </div>
@@ -139,6 +142,22 @@ export const MyProductPage = () => {
             className: 'text-right',
             render: (product) => (
                 <div className="flex items-center justify-end gap-2">
+                    <button
+                        className={`p-2 rounded-lg transition-colors ${product.isGhim ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-[#6b806c] hover:text-amber-500'}`}
+                        title={product.isGhim ? "Bỏ ghim" : "Ghim lên đầu"}
+                        onClick={async () => {
+                            try {
+                                const toastId = toast.loading('Đang xử lý...');
+                                await togglePinProduct(product.id);
+                                toast.success('Cập nhật trạng thái ghim thành công', { id: toastId });
+                                loadProducts(); // Reload sau khi ghim
+                            } catch (e) {
+                                toast.error('Lỗi khi thao tác');
+                            }
+                        }}
+                    >
+                        <span className={`material-symbols-outlined text-[20px] ${product.isGhim ? 'filled' : ''}`}>push_pin</span>
+                    </button>
                     <button
                         className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-[#6b806c] hover:text-primary transition-colors"
                         title="Chỉnh sửa"

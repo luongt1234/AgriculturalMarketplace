@@ -1,32 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { CheckoutState } from '../types/checkout.types';
 import type { DeliveryAddress, ShippingMethod, PaymentMethod, CartItem, OrderSummary } from '../types/checkout.types';
-
-const mockAddresses: DeliveryAddress[] = [
-    {
-        id: '1',
-        fullName: 'Nguyen Van A',
-        phone: '+84 90 123 4567',
-        city: 'Ho Chi Minh City',
-        district: 'District 1',
-        ward: 'Ben Nghe Ward',
-        detailedAddress: '123 Le Loi Street, Ben Nghe Ward, District 1, Ho Chi Minh City',
-        label: 'home',
-        isDefault: true,
-    },
-    {
-        id: '2',
-        fullName: 'Nguyen Van A (Work)',
-        phone: '+84 91 888 9999',
-        city: 'Ho Chi Minh City',
-        district: 'District 7',
-        ward: 'Tan Thuan Ward',
-        detailedAddress: '4th Floor, Tech Park Building, Tan Thuan EPZ, District 7, HCMC',
-        label: 'office',
-        isDefault: false,
-    },
-];
 
 const mockShippingMethods: ShippingMethod[] = [
     {
@@ -87,116 +61,111 @@ const mockPaymentMethods: PaymentMethod[] = [
 ];
 
 export const useCheckoutStore = create<CheckoutState>()(
-    persist(
-        (set) => ({
-            currentStep: 1,
-            selectedAddress: mockAddresses[0],
-            selectedShippingMethod: null,
-            selectedPaymentMethod: null,
-            addresses: mockAddresses,
-            shippingMethods: mockShippingMethods,
-            paymentMethods: mockPaymentMethods,
-            cartItems: [],
-            orderSummary: null,
-            loading: false,
-            error: null,
+    (set) => ({
+        currentStep: 1,
+        selectedAddress: null,
+        selectedShippingMethod: null,
+        selectedPaymentMethod: null,
+        addresses: [],
+        shippingMethods: mockShippingMethods,
+        paymentMethods: mockPaymentMethods,
+        cartItems: [],
+        orderSummary: null,
+        loading: false,
+        error: null,
 
-            setStep: (step) => {
-                set({ currentStep: step });
-            },
+        setStep: (step) => {
+            set({ currentStep: step });
+        },
 
-            setSelectedAddress: (address) => {
-                set({ selectedAddress: address });
-            },
+        setSelectedAddress: (address) => {
+            set({ selectedAddress: address });
+        },
 
-            setSelectedShippingMethod: (method) => {
-                set({ selectedShippingMethod: method });
-            },
+        setSelectedShippingMethod: (method) => {
+            set({ selectedShippingMethod: method });
+        },
 
-            setSelectedPaymentMethod: (method) => {
-                set({ selectedPaymentMethod: method });
-            },
+        setSelectedPaymentMethod: (method) => {
+            set({ selectedPaymentMethod: method });
+        },
 
-            addAddress: (address) => {
-                set((state) => ({
-                    addresses: [...state.addresses, { ...address, id: String(state.addresses.length + 1) }],
-                }));
-            },
+        addAddress: (address) => {
+            set((state) => ({
+                addresses: [...state.addresses, { ...address, id: String(state.addresses.length + 1) }],
+            }));
+        },
 
-            removeAddress: (id) => {
-                set((state) => ({
-                    addresses: state.addresses.filter((addr) => addr.id !== id),
-                }));
-            },
+        removeAddress: (id) => {
+            set((state) => ({
+                addresses: state.addresses.filter((addr) => addr.id !== id),
+            }));
+        },
 
-            updateAddress: (id, updatedAddress) => {
-                set((state) => ({
-                    addresses: state.addresses.map((addr) => (addr.id === id ? { ...addr, ...updatedAddress } : addr)),
-                }));
-            },
+        updateAddress: (id, updatedAddress) => {
+            set((state) => ({
+                addresses: state.addresses.map((addr) => (addr.id === id ? { ...addr, ...updatedAddress } : addr)),
+            }));
+        },
 
-            setAddresses: (addresses) => {
-                set({ addresses });
-            },
+        setAddresses: (addresses) => {
+            set({ addresses });
+        },
 
-            setShippingMethods: (methods) => {
-                set({ shippingMethods: methods });
-            },
+        setShippingMethods: (methods) => {
+            set({ shippingMethods: methods });
+        },
 
-            setPaymentMethods: (methods) => {
-                set({ paymentMethods: methods });
-            },
+        setPaymentMethods: (methods) => {
+            set({ paymentMethods: methods });
+        },
 
-            setCartItems: (items) => {
-                set({ cartItems: items });
-            },
+        setCartItems: (items) => {
+            set({ cartItems: items });
+        },
 
-            setOrderSummary: (summary) => {
-                set({ orderSummary: summary });
-            },
+        setOrderSummary: (summary) => {
+            set({ orderSummary: summary });
+        },
 
-            setLoading: (loading) => {
-                set({ loading });
-            },
+        setLoading: (loading) => {
+            set({ loading });
+        },
 
-            setError: (error) => {
-                set({ error });
-            },
+        setError: (error) => {
+            set({ error });
+        },
 
-            goToNextStep: () => {
-                set((state) => {
-                    if (state.currentStep < 4) {
-                        return { currentStep: (state.currentStep + 1) as 1 | 2 | 3 | 4 };
-                    }
-                    return state;
-                });
-            },
+        goToNextStep: () => {
+            set((state) => {
+                if (state.currentStep < 4) {
+                    return { currentStep: (state.currentStep + 1) as 1 | 2 | 3 | 4 };
+                }
+                return state;
+            });
+        },
 
-            goToPreviousStep: () => {
-                set((state) => {
-                    if (state.currentStep > 1) {
-                        return { currentStep: (state.currentStep - 1) as 1 | 2 | 3 | 4 };
-                    }
-                    return state;
-                });
-            },
+        goToPreviousStep: () => {
+            set((state) => {
+                if (state.currentStep > 1) {
+                    return { currentStep: (state.currentStep - 1) as 1 | 2 | 3 | 4 };
+                }
+                return state;
+            });
+        },
 
-            reset: () => {
-                set({
-                    currentStep: 1,
-                    selectedAddress: mockAddresses[0],
-                    selectedShippingMethod: null,
-                    selectedPaymentMethod: null,
-                    addresses: mockAddresses,
-                    cartItems: [],
-                    orderSummary: null,
-                    loading: false,
-                    error: null,
-                });
-            },
-        }),
-        {
-            name: 'checkout-storage',
-        }
-    )
+        reset: () => {
+            set({
+                currentStep: 1,
+                selectedAddress: null,
+                selectedShippingMethod: null,
+                selectedPaymentMethod: null,
+                addresses: [],
+                cartItems: [],
+                orderSummary: null,
+                loading: false,
+                error: null,
+            });
+        },
+    })
 );

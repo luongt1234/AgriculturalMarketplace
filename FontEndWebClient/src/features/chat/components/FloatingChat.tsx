@@ -148,6 +148,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
 
             {/* ── BUBBLE BUTTON ─────────────────────────────────────────── */}
             <button
+                id="floating-chat-trigger"
                 onClick={handleToggle}
                 className="
                     relative w-14 h-14 rounded-full bg-primary text-white

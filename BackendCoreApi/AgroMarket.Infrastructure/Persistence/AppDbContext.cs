@@ -28,6 +28,8 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<LoaiDanhMuc> LoaiDanhMucs { get; set; }
         public DbSet<DiaChiNguoiDung> DiaChiNguoiDungs { get; set; }
         public DbSet<TheoDoiNguoiBan> TheoDoiNguoiBans { get; set; }
+        public DbSet<GioHang> GioHangs { get; set; }
+        public DbSet<ChiTietGioHang> ChiTietGioHangs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,6 +57,8 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<LoaiDanhMuc>().ToTable("loai_danh_muc");
             modelBuilder.Entity<DiaChiNguoiDung>().ToTable("dia_chi_nguoi_dung");
             modelBuilder.Entity<TheoDoiNguoiBan>().ToTable("theo_doi_nguoi_ban");
+            modelBuilder.Entity<GioHang>().ToTable("gio_hang");
+            modelBuilder.Entity<ChiTietGioHang>().ToTable("chi_tiet_gio_hang");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -236,6 +240,8 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<LoaiDanhMuc>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<DiaChiNguoiDung>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<TheoDoiNguoiBan>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<GioHang>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<ChiTietGioHang>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

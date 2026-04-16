@@ -79,6 +79,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCors("AllowAll");
+app.UseStaticFiles(); // Allow serving uploads from wwwroot
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -1,4 +1,4 @@
-﻿using AgroMarket.Domain.Common;
+using AgroMarket.Domain.Common;
 using AgroMarket.Domain.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,6 +24,7 @@ namespace AgroMarket.Domain.Entities
         public int SoLuong { get; set; }       // so_luong
 
         public TrangThaiSanPham TrangThai { get; set; } = TrangThaiSanPham.ConHang; // trang_thai
+        public bool IsGhim { get; set; } = false; // ghim san pham lenn dau trang
         public string? DiaChi { get; set; } // dia_chi (địa chỉ người bán, có thể lấy từ thông tin người bán hoặc cho phép người bán nhập riêng)
         public string? DiaChiChiTiet { get; set; }
         public string? HinhAnhUrl { get; set; }   // hinh_anh

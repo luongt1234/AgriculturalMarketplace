@@ -15,6 +15,12 @@ namespace AgroMarket.Application.Interfaces.Services
             string? search = null,
             string? tenSanPhamChung = null);
 
+        /// <summary>Lấy thông tin cấu hình shop</summary>
+        Task<StoreSettingsDto?> GetMyShopAsync(Guid sellerId);
+
+        /// <summary>Cập nhật thông tin cấu hình shop</summary>
+        Task UpdateMyShopAsync(Guid sellerId, StoreSettingsDto dto);
+
         /// <summary>Theo dõi người bán (CREATE)</summary>
         Task TheoDoiAsync(Guid nguoiTheoDoiId, Guid nguoiBanId);
 

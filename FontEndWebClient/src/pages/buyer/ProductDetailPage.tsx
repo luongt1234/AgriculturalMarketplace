@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../lip/axiosInstance';
+import { useCartStore } from '../../store/useCartStore';
 import { useCheckoutStore } from '../../store/useCheckoutStore';
 import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
@@ -64,6 +65,7 @@ interface ProductDetail {
 const ProductDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { addToCart } = useCartStore();
     const checkoutStore = useCheckoutStore();
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -126,69 +128,56 @@ const ProductDetailPage: React.FC = () => {
     };
     // ==========================================
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!product) return;
 
         const finalQuantity = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
-        const existingItemIndex = checkoutStore.cartItems.findIndex((item) => item.productId === product.id);
 
-        const newItem = {
-            id: product.id,
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            quantity: finalQuantity,
-            image: product.image,
-            unit: product.unit,
-        };
-
-        if (existingItemIndex >= 0) {
-            const updatedItems = [...checkoutStore.cartItems];
-            const newTotalQty = updatedItems[existingItemIndex].quantity + finalQuantity;
-
-            // Check thêm tồn kho khi cộng dồn giỏ hàng
-            if (newTotalQty > product.availableQuantity) {
-                toast.error(`Không thể thêm. Bạn đã có tổng cộng ${product.availableQuantity} ${product.unit} trong giỏ.`);
-                return;
-            }
-
-            updatedItems[existingItemIndex] = {
-                ...updatedItems[existingItemIndex],
-                quantity: newTotalQty,
-            };
-            checkoutStore.setCartItems(updatedItems);
-        } else {
-            checkoutStore.setCartItems([...checkoutStore.cartItems, newItem]);
+        try {
+            await addToCart({ sanPhamDangId: product.id, soLuong: finalQuantity });
+            toast.success('Đã thêm sản phẩm vào giỏ hàng');
+        } catch (error) {
+            toast.error('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
         }
-
-        toast.success('Đã thêm sản phẩm vào giỏ hàng');
     };
 
-    const handleBuyNow = () => {
+    const handleBuyNow = async () => {
         if (!product) return;
 
         const finalQuantity = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
-        const item = {
-            id: product.id,
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            quantity: finalQuantity,
-            image: product.image,
-            unit: product.unit,
-        };
 
-        checkoutStore.setCartItems([item]);
-        checkoutStore.setOrderSummary({
-            items: [item],
-            subtotal: item.price * item.quantity,
-            shippingFee: checkoutStore.selectedShippingMethod?.baseFee || 0,
-            total: item.price * item.quantity + (checkoutStore.selectedShippingMethod?.baseFee || 0),
-        });
-        checkoutStore.setSelectedShippingMethod(null);
-        checkoutStore.setSelectedPaymentMethod(null);
-        checkoutStore.setStep(1);
-        navigate('/checkout');
+        try {
+            await addToCart({ sanPhamDangId: product.id, soLuong: finalQuantity });
+            checkoutStore.setCartItems([{
+                id: product.id,
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: finalQuantity,
+                image: product.image,
+                unit: product.unit,
+            }]);
+            checkoutStore.setOrderSummary({
+                items: [{
+                    id: product.id,
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: finalQuantity,
+                    image: product.image,
+                    unit: product.unit,
+                }],
+                subtotal: product.price * finalQuantity,
+                shippingFee: checkoutStore.selectedShippingMethod?.baseFee || 0,
+                total: product.price * finalQuantity + (checkoutStore.selectedShippingMethod?.baseFee || 0),
+            });
+            checkoutStore.setSelectedShippingMethod(null);
+            checkoutStore.setSelectedPaymentMethod(null);
+            checkoutStore.setStep(1);
+            navigate('/checkout');
+        } catch (error) {
+            toast.error('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
+        }
     };
 
     useEffect(() => {
@@ -258,7 +247,7 @@ const ProductDetailPage: React.FC = () => {
     if (loading) {
         return (
             <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 min-h-screen">
-                <BuyerHeader cartCount={checkoutStore.cartItems.length} showNavigation={true} />
+                <BuyerHeader showNavigation={true} />
                 <div className="flex items-center justify-center h-[calc(100vh-64px)] px-4">
                     <div className="text-center text-gray-600 dark:text-gray-300">Đang tải chi tiết sản phẩm...</div>
                 </div>
@@ -269,7 +258,7 @@ const ProductDetailPage: React.FC = () => {
     if (error || !product) {
         return (
             <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 min-h-screen">
-                <BuyerHeader cartCount={checkoutStore.cartItems.length} showNavigation={true} />
+                <BuyerHeader showNavigation={true} />
                 <div className="flex items-center justify-center h-[calc(100vh-64px)] px-4">
                     <div className="text-center text-red-600 dark:text-red-400">
                         {error ?? 'Không tìm thấy sản phẩm.'}
@@ -283,7 +272,6 @@ const ProductDetailPage: React.FC = () => {
         <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 flex flex-col min-h-screen">
             {/* Header */}
             <BuyerHeader
-                cartCount={checkoutStore.cartItems.length}
                 showNavigation={true}
             />
 
@@ -395,7 +383,7 @@ const ProductDetailPage: React.FC = () => {
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">{product.location}</p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => sellerInfo?.id && navigate(`/shop/${sellerInfo.id}`)}
                                     className="text-xs font-bold text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                                     View Profile

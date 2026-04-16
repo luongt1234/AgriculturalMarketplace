@@ -70,6 +70,49 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.ToTable("chi_tiet_don_hang", (string)null);
                 });
 
+            modelBuilder.Entity("AgroMarket.Domain.Entities.ChiTietGioHang", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("GioHangId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("gio_hang_id");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("NgayChinhSua")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("ngay_chinh_sua");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("ngay_tao");
+
+                    b.Property<Guid>("SanPhamDangId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("san_pham_dang_id");
+
+                    b.Property<int>("SoLuong")
+                        .HasColumnType("int")
+                        .HasColumnName("so_luong");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chi_tiet_gio_hang");
+
+                    b.HasIndex("GioHangId")
+                        .HasDatabaseName("ix_chi_tiet_gio_hang_gio_hang_id");
+
+                    b.HasIndex("SanPhamDangId")
+                        .HasDatabaseName("ix_chi_tiet_gio_hang_san_pham_dang_id");
+
+                    b.ToTable("chi_tiet_gio_hang", (string)null);
+                });
+
             modelBuilder.Entity("AgroMarket.Domain.Entities.DanhGia", b =>
                 {
                     b.Property<Guid>("Id")
@@ -325,6 +368,38 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.ToTable("don_hang", (string)null);
                 });
 
+            modelBuilder.Entity("AgroMarket.Domain.Entities.GioHang", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("NgayChinhSua")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("ngay_chinh_sua");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("ngay_tao");
+
+                    b.Property<Guid>("NguoiDungId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("nguoi_dung_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_gio_hang");
+
+                    b.HasIndex("NguoiDungId")
+                        .HasDatabaseName("ix_gio_hang_nguoi_dung_id");
+
+                    b.ToTable("gio_hang", (string)null);
+                });
+
             modelBuilder.Entity("AgroMarket.Domain.Entities.HoaDonDienTu", b =>
                 {
                     b.Property<Guid>("Id")
@@ -534,6 +609,10 @@ namespace AgroMarket.Infrastructure.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("id");
 
+                    b.Property<string>("AnhBiaUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("anh_bia_url");
+
                     b.Property<string>("AnhDaiDienUrl")
                         .HasColumnType("longtext")
                         .HasColumnName("anh_dai_dien_url");
@@ -568,6 +647,10 @@ namespace AgroMarket.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("mat_khau_hash");
+
+                    b.Property<string>("MoTaCuaHang")
+                        .HasColumnType("longtext")
+                        .HasColumnName("mo_ta_cua_hang");
 
                     b.Property<DateTime?>("NgayChinhSua")
                         .HasColumnType("datetime(6)")
@@ -765,6 +848,10 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsGhim")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_ghim");
 
                     b.Property<string>("MoTaChiTiet")
                         .HasColumnType("longtext")
@@ -1103,6 +1190,27 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.Navigation("SanPhamDang");
                 });
 
+            modelBuilder.Entity("AgroMarket.Domain.Entities.ChiTietGioHang", b =>
+                {
+                    b.HasOne("AgroMarket.Domain.Entities.GioHang", "GioHang")
+                        .WithMany("ChiTiet")
+                        .HasForeignKey("GioHangId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_chi_tiet_gio_hang_gio_hang_gio_hang_id");
+
+                    b.HasOne("AgroMarket.Domain.Entities.SanPhamDang", "SanPhamDang")
+                        .WithMany()
+                        .HasForeignKey("SanPhamDangId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_chi_tiet_gio_hang_san_pham_dang_san_pham_dang_id");
+
+                    b.Navigation("GioHang");
+
+                    b.Navigation("SanPhamDang");
+                });
+
             modelBuilder.Entity("AgroMarket.Domain.Entities.DanhGia", b =>
                 {
                     b.HasOne("AgroMarket.Domain.Entities.DonHang", "DonHang")
@@ -1192,6 +1300,18 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.Navigation("NguoiBan");
 
                     b.Navigation("NguoiMua");
+                });
+
+            modelBuilder.Entity("AgroMarket.Domain.Entities.GioHang", b =>
+                {
+                    b.HasOne("AgroMarket.Domain.Entities.NguoiDung", "NguoiDung")
+                        .WithMany()
+                        .HasForeignKey("NguoiDungId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_gio_hang_nguoi_dung_nguoi_dung_id");
+
+                    b.Navigation("NguoiDung");
                 });
 
             modelBuilder.Entity("AgroMarket.Domain.Entities.HoaDonDienTu", b =>
@@ -1438,6 +1558,11 @@ namespace AgroMarket.Infrastructure.Migrations
                     b.Navigation("CacThanhToan");
 
                     b.Navigation("ChiTietDonHang");
+                });
+
+            modelBuilder.Entity("AgroMarket.Domain.Entities.GioHang", b =>
+                {
+                    b.Navigation("ChiTiet");
                 });
 
             modelBuilder.Entity("AgroMarket.Domain.Entities.LoaiDanhMuc", b =>

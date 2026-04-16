@@ -59,6 +59,8 @@ export interface CartItem {
     quantity: number;
     image: string;
     unit: string;
+    sellerId?: string;
+    sellerName?: string;
 }
 
 export interface OrderSummary {

@@ -48,6 +48,8 @@ namespace AgroMarket.Application.Services
                 Id = seller.Id,
                 HoTen = seller.HoTen,
                 AnhDaiDienUrl = BuildImageUrl(seller.AnhDaiDienUrl),
+                AnhBiaUrl = BuildImageUrl(seller.AnhBiaUrl),
+                MoTaCuaHang = seller.MoTaCuaHang,
                 DiaChi = seller.DiaChi,
                 SoDienThoai = seller.SoDienThoai,
                 DiemUyTin = seller.DiemUyTin,
@@ -82,7 +84,8 @@ namespace AgroMarket.Application.Services
             var total = await query.CountAsync();
 
             var items = await query
-                .OrderByDescending(sp => sp.NgayTao)
+                .OrderByDescending(sp => sp.IsGhim)
+                .ThenByDescending(sp => sp.NgayDang)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -98,10 +101,44 @@ namespace AgroMarket.Application.Services
                 TenSanPhamChung = sp.SanPhamChung?.TenSanPham,
                 SoLuong = sp.SoLuong,
                 TrangThai = sp.TrangThai.ToString(),
+                IsGhim = sp.IsGhim,
                 NgayDang = sp.NgayDang,
             }).ToList();
 
             return (dtos, total);
+        }
+
+        // ─── Settings ────────────────────────────────────────────────────────
+        public async Task<StoreSettingsDto?> GetMyShopAsync(Guid sellerId)
+        {
+            var seller = await _nguoiDungRepo.GetByIdAsync(sellerId);
+            if (seller is null) return null;
+
+            return new StoreSettingsDto
+            {
+                HoTen = seller.HoTen,
+                AnhDaiDienUrl = seller.AnhDaiDienUrl,
+                AnhBiaUrl = seller.AnhBiaUrl,
+                MoTaCuaHang = seller.MoTaCuaHang,
+                DiaChi = seller.DiaChi,
+                SoDienThoai = seller.SoDienThoai
+            };
+        }
+
+        public async Task UpdateMyShopAsync(Guid sellerId, StoreSettingsDto dto)
+        {
+            var seller = await _nguoiDungRepo.GetByIdAsync(sellerId);
+            if (seller is null) throw new Exception("Không tìm thấy người bán");
+
+            seller.HoTen = dto.HoTen;
+            seller.AnhDaiDienUrl = dto.AnhDaiDienUrl;
+            seller.AnhBiaUrl = dto.AnhBiaUrl;
+            seller.MoTaCuaHang = dto.MoTaCuaHang;
+            seller.DiaChi = dto.DiaChi;
+            seller.SoDienThoai = dto.SoDienThoai;
+
+            _nguoiDungRepo.Update(seller);
+            await _uow.CommitAsync();
         }
 
         // ─── Follow ───────────────────────────────────────────────────────────

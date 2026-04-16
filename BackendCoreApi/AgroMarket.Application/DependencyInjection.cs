@@ -26,6 +26,8 @@ namespace AgroMarket.Application
             services.AddScoped<INguoiDungService, NguoiDungService>();
             services.AddScoped<ITinNhanService, TinNhanService>();
             services.AddScoped<ICuaHangService, CuaHangService>();
+            services.AddScoped<IDonHangService, DonHangService>();
+            services.AddScoped<IGioHangService, GioHangService>();
 
             return services;
         }

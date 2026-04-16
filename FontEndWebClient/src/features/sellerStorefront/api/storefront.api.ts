@@ -6,6 +6,8 @@ export interface SellerProfile {
     id: string;
     hoTen: string;
     anhDaiDienUrl?: string;
+    anhBiaUrl?: string;
+    moTaCuaHang?: string;
     diaChi?: string;
     soDienThoai?: string;
     diemUyTin: number;
@@ -27,6 +29,7 @@ export interface SellerProduct {
     tenSanPhamChung?: string;
     soLuong: number;
     trangThai: string;
+    isGhim: boolean;
     ngayDang: string;
 }
 
@@ -72,4 +75,23 @@ export const unfollowSeller = async (sellerId: string): Promise<void> => {
 export const checkFollow = async (sellerId: string): Promise<boolean> => {
     const res = await axiosInstance.get<boolean>(`${BASE}/${sellerId}/theo-doi/check`);
     return (res as any).data ?? false;
+};
+
+// ─── SETTINGS ───────────────────────────────────────────────────────────────
+export interface StoreSettings {
+    hoTen: string;
+    anhDaiDienUrl?: string;
+    anhBiaUrl?: string;
+    moTaCuaHang?: string;
+    diaChi?: string;
+    soDienThoai?: string;
+}
+
+export const getMyShop = async (): Promise<StoreSettings> => {
+    const res = await axiosInstance.get<StoreSettings>(`${BASE}/my-shop`);
+    return (res as any).data;
+};
+
+export const updateMyShop = async (dto: StoreSettings): Promise<void> => {
+    await axiosInstance.put(`${BASE}/my-shop`, dto);
 };

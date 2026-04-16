@@ -20,6 +20,7 @@ export interface Product {
     donViId?: string;
     loaiId?: string;
     anhSanPham?: string;
+    isGhim?: boolean; // Ghim sản phẩm lên đầu trang
     diaChi?: string;
     diaChiChiTiet?: string;
 }

@@ -6,7 +6,11 @@ interface ShippingStepProps {
     onSelectMethod: (method: ShippingMethod) => void;
 }
 
-export function ShippingStep({ methods, selectedMethod, onSelectMethod }: ShippingStepProps) {
+export const ShippingStep: React.FC<ShippingStepProps> = ({
+    methods,
+    selectedMethod,
+    onSelectMethod
+}) => {
     return (
         <section className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ring-1 ring-primary/10">
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">

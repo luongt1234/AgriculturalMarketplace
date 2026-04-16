@@ -60,6 +60,12 @@ export const createProduct = async (data: ProductFormRequest) => {
     return response.data;
 };
 
+// API Ghim Sản phẩm
+export const togglePinProduct = async (id: string) => {
+    const response = await axiosInstance.put(`/api/SanPhamDang/${id}/toggle-ghim`);
+    return response.data;
+};
+
 // API Cập nhật sản phẩm đăng
 export const updateProduct = async (id: string, data: ProductFormRequest) => {
     const formData = buildFormData(data);
@@ -149,6 +155,7 @@ export interface DisplayProduct {
 export interface GetDisplayProductsParams {
     pageNumber?: number;
     pageSize?: number;
+    keyword?: string;
 }
 
 export interface DisplayProductsResponse {
@@ -166,6 +173,17 @@ export const getDisplayProducts = async (params?: GetDisplayProductsParams) => {
     const queryString = new URLSearchParams();
     if (params?.pageNumber !== undefined) queryString.append('pageNumber', params.pageNumber.toString());
     if (params?.pageSize !== undefined) queryString.append('pageSize', params.pageSize.toString());
+    if (params?.keyword) queryString.append('keyword', params.keyword);
 
     return await axiosInstance.get(`/api/SanPhamDang/display?${queryString.toString()}`);
+};
+
+// API Lấy danh sách gợi ý tìm kiếm
+export const getSearchSuggestions = async (keyword: string, limit: number = 5) => {
+    const queryString = new URLSearchParams();
+    queryString.append('keyword', keyword);
+    queryString.append('limit', limit.toString());
+
+    const response = await axiosInstance.get(`/api/SanPhamDang/search-suggestions?${queryString.toString()}`);
+    return response.data;
 };

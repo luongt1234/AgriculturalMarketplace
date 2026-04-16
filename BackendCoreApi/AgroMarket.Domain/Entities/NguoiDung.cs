@@ -1,4 +1,4 @@
-﻿using AgroMarket.Domain.Common;
+using AgroMarket.Domain.Common;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AgroMarket.Domain.Entities
@@ -12,6 +12,8 @@ namespace AgroMarket.Domain.Entities
         public string? SoDienThoai { get; set; } // so_dien_thoai
         public string? DiaChi { get; set; }     // dia_chi
         public string? AnhDaiDienUrl { get; set; }   // anh_dai_dien_url
+        public string? AnhBiaUrl { get; set; }       // anh_bia_url cho shop
+        public string? MoTaCuaHang { get; set; }     // mo_ta_cua_hang cho shop
         public string? ThongTinNganHang { get; set; } // thong_tin_ngan_hang (JSON)
 
         // Tài chính

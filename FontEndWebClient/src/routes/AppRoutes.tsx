@@ -17,6 +17,7 @@ import AdminManagement from '../pages/admin/AdminManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
 import BuyerPage from '../pages/buyer/BuyerPage';
+import SearchResultsPage from '../pages/buyer/SearchResultsPage';
 import ProductDetailPage from '../pages/buyer/ProductDetailPage';
 import { CheckoutPage } from '../pages/buyer/CheckoutPage';
 import AboutPage from '../pages/public/AboutPage';
@@ -24,6 +25,9 @@ import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/public/TermsOfServicePage';
 import FarmerChatPage from '../pages/farmer/ChatPage';
 import SellerStorefrontPage from '../pages/buyer/SellerStorefrontPage';
+import SellerSettingsPage from '../pages/farmer/SellerSettingsPage';
+import UserProfilePage from '../pages/public/UserProfilePage';
+import OrdersPage from '../pages/public/OrdersPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -36,6 +40,7 @@ export default function AppRoutes() {
                 {/* ================= PUBLIC ROUTES ================= */}
                 <Route>
                     <Route path="/" element={<BuyerPage />} />
+                    <Route path="/search" element={<SearchResultsPage />} />
                     <Route path="/product/:id" element={<ProductDetailPage />} />
                     <Route path="/shop/:sellerId" element={<SellerStorefrontPage />} />
                     {/* <Route path="/buyer" element={<BuyerPage />} /> */}
@@ -50,6 +55,10 @@ export default function AppRoutes() {
                 {/* ================= PROTECTED ROUTES ================= */}
 
                 <Route element={<PrivateRoute />}>
+                    {/* GENERAL PROTECTED ROUTES */}
+                    <Route path="/profile" element={<UserProfilePage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+
                     {/* BUYER ROUTES */}
                     <Route path="/checkout" element={<CheckoutPage />} />
                     {/* 1. NÔNG DÂN (FARMER) */}
@@ -63,7 +72,7 @@ export default function AppRoutes() {
                             <Route path="contracts" element={<div>Quản lý Hợp đồng</div>} />
                             <Route path="logs" element={<FarmingLogsPage />} />
                             <Route path="chat" element={<FarmerChatPage />} />
-                            <Route path="settings" element={<div>Cài đặt</div>} />
+                            <Route path="settings" element={<SellerSettingsPage />} />
                         </Route>
                     </Route>
                     {/* 2. THƯƠNG LÁI (TRADER) */}

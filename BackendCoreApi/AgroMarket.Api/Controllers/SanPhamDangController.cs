@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.Common.Interfaces;
+using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.DTOs.SanPhamChuDtos;
 using AgroMarket.Application.DTOs.SanPhamDangDtos;
 using AgroMarket.Application.Interfaces.Services;
@@ -68,16 +68,32 @@ namespace AgroMarket.Api.Controllers
 
         [HttpGet("display")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetProductForDisplay([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetProductForDisplay([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
         {
             try
             {
-                var result = await _sanPhamDangService.GetAllProductsForDisplayAsync(pageNumber, pageSize);
+                var result = await _sanPhamDangService.GetAllProductsForDisplayAsync(pageNumber, pageSize, keyword);
                 return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
             }
             catch (Exception ex)
             {
                 return Error($"Lỗi khi lấy danh sách sản phẩm cho hiển thị: {ex.Message}");
+            }
+        }
+
+        [HttpGet("search-suggestions")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetSearchSuggestions([FromQuery] string keyword, [FromQuery] int limit = 5)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(keyword)) return Success(new List<SanPhamDangDto>());
+                var items = await _sanPhamDangService.GetSearchSuggestionsAsync(keyword, limit);
+                return Success(items);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy danh sách gợi ý: {ex.Message}");
             }
         }
 
@@ -115,6 +131,24 @@ namespace AgroMarket.Api.Controllers
             catch (Exception ex)
             {
                 return Error($"Lỗi khi lấy chi tiết sản phẩm: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/toggle-ghim")]
+        public async Task<IActionResult> ToggleGhim([FromRoute] Guid id)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                    return Forbid();
+
+                var newStatus = await _sanPhamDangService.ToggleGhimAsync(id, userId);
+                return Success(new { isGhim = newStatus }, "Cập nhật trạng thái ghim thành công");
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi ghim sản phẩm: {ex.Message}");
             }
         }
     }

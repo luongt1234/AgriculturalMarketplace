@@ -61,6 +61,46 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
+        // ─── SETTINGS: Shop ──────────────────────────────────────────────────
+        /// <summary>GET /api/CuaHang/my-shop</summary>
+        [HttpGet("my-shop")]
+        [Authorize]
+        public async Task<IActionResult> GetMyShop()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (!userId.HasValue) return Error("Chưa xác thực.", 401);
+
+                var shop = await _cuaHangService.GetMyShopAsync(userId.Value);
+                if (shop is null) return Error("Không tìm thấy người bán.", 404);
+                return Success(shop, "Lấy thông tin shop thành công.");
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message);
+            }
+        }
+
+        /// <summary>PUT /api/CuaHang/my-shop</summary>
+        [HttpPut("my-shop")]
+        [Authorize]
+        public async Task<IActionResult> UpdateMyShop([FromBody] AgroMarket.Application.DTOs.CuaHangDtos.StoreSettingsDto dto)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (!userId.HasValue) return Error("Chưa xác thực.", 401);
+
+                await _cuaHangService.UpdateMyShopAsync(userId.Value, dto);
+                return Success("Cập nhật thông tin shop thành công.");
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message);
+            }
+        }
+
         // ─── CHECK: isFollowing ───────────────────────────────────────────────
         /// <summary>GET /api/CuaHang/{sellerId}/theo-doi/check</summary>
         [HttpGet("{sellerId:guid}/theo-doi/check")]

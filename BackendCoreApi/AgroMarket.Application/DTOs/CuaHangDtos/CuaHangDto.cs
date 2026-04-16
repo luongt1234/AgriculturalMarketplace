@@ -8,6 +8,8 @@ namespace AgroMarket.Application.DTOs.CuaHangDtos
         public string? AnhDaiDienUrl { get; set; }
         public string? DiaChi { get; set; }
         public string? SoDienThoai { get; set; }
+        public string? AnhBiaUrl { get; set; }
+        public string? MoTaCuaHang { get; set; }
         public int DiemUyTin { get; set; }
         public DateTime NgayThamGia { get; set; }
 
@@ -31,6 +33,18 @@ namespace AgroMarket.Application.DTOs.CuaHangDtos
         public string? TenSanPhamChung { get; set; }
         public int SoLuong { get; set; }
         public string TrangThai { get; set; } = null!;
+        public bool IsGhim { get; set; }
         public DateTime NgayDang { get; set; }
+    }
+
+    /// <summary>Config của shop</summary>
+    public class StoreSettingsDto
+    {
+        public string HoTen { get; set; } = null!;
+        public string? AnhDaiDienUrl { get; set; }
+        public string? AnhBiaUrl { get; set; }
+        public string? MoTaCuaHang { get; set; }
+        public string? DiaChi { get; set; }
+        public string? SoDienThoai { get; set; }
     }
 }
