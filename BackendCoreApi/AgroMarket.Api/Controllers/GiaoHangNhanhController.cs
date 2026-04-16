@@ -61,8 +61,15 @@ namespace AgroMarket.Api.Controllers
         [HttpGet("services")]
         public async Task<IActionResult> GetAvailableServices([FromQuery] int fromDistrict, [FromQuery] int toDistrict)
         {
-            var services = await _ghnService.GetAvailableServicesAsync(fromDistrict, toDistrict);
-            return Ok(services);
+            try
+            {
+                var services = await _ghnService.GetAvailableServicesAsync(fromDistrict, toDistrict);
+                return Ok(services);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new { Message = "Không thể lấy gói dịch vụ giao hàng", Details = ex.Message });
+            }
         }
 
         // POST: api/shipping/ghn/calculate-fee

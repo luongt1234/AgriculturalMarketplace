@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { DeliveryAddress } from '../../../types/checkout.types';
 
 interface AddressStepProps {
@@ -10,14 +10,14 @@ interface AddressStepProps {
     onDelete: (id: string) => void;
 }
 
-export function AddressStep({
+export const AddressStep: React.FC<AddressStepProps> = ({
     addresses,
     selectedAddress,
     onSelectAddress,
     onAddNew,
     onEdit,
     onDelete,
-}: AddressStepProps) {
+}) => {
     return (
         <section className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ring-1 ring-primary/10">
             <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">

@@ -6,7 +6,7 @@ interface PaymentStepProps {
     onSelectMethod: (method: PaymentMethod) => void;
 }
 
-export function PaymentStep({ methods, selectedMethod, onSelectMethod }: PaymentStepProps) {
+export const PaymentStep: React.FC<PaymentStepProps> = ({ methods, selectedMethod, onSelectMethod }) =>  {
     return (
         <section className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ring-1 ring-primary/10">
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">

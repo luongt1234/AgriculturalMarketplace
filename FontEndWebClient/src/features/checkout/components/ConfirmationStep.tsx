@@ -9,14 +9,14 @@ interface ConfirmationStepProps {
     loading?: boolean;
 }
 
-export function ConfirmationStep({
+export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
     address,
     shippingMethod,
     paymentMethod,
     orderSummary,
     onConfirm,
     loading = false,
-}: ConfirmationStepProps) {
+}) => {
     return (
         <section className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ring-1 ring-primary/10">
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">

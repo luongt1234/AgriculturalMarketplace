@@ -5,7 +5,7 @@ interface OrderSummaryPanelProps {
     summary: OrderSummary | null;
 }
 
-export function OrderSummaryPanel({ items, summary }: OrderSummaryPanelProps) {
+export const OrderSummaryPanel: React.FC<OrderSummaryPanelProps> = ({ items, summary }) => {
     return (
         <div>
             <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-soft border border-gray-200 dark:border-gray-700 sticky top-24">

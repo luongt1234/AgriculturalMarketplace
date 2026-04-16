@@ -5,6 +5,9 @@ export interface DeliveryAddress {
     city: string;
     district: string;
     ward: string;
+    provinceId?: number;
+    districtCode?: number;
+    wardCode?: string;
     detailedAddress: string;
     label?: 'home' | 'office' | string;
     isDefault?: boolean;
@@ -36,6 +39,7 @@ export interface DiaChiNguoiDungFormDto {
 
 export interface ShippingMethod {
     id: string;
+    serviceId?: number;
     name: string;
     description: string;
     estimatedDays: string;
@@ -61,6 +65,8 @@ export interface CartItem {
     unit: string;
     sellerId?: string;
     sellerName?: string;
+    originDistrictCode?: number;
+    productType?: string;
 }
 
 export interface OrderSummary {

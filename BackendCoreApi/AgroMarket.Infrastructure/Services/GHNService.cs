@@ -1,5 +1,6 @@
 ﻿using AgroMarket.Application.Interfaces; // Điều chỉnh lại đường dẫn interface cho chuẩn
 using AgroMarket.Application.Interfaces.Repositories;
+using AgroMarket.Application.Wrappers;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Net.Http.Json;
@@ -10,13 +11,21 @@ namespace AgroMarket.Infrastructure.Services
     public class GHNService : IGHNService
     {
         private readonly HttpClient _httpClient;
-        private readonly IConfiguration _config; // Bổ sung field này để lấy cấu hình (ShopId)
+        private readonly IConfiguration _configuration; // Bổ sung field này để lấy cấu hình (ShopId)
 
-        public GHNService(HttpClient httpClient, IConfiguration config)
+        public GHNService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _config = config; // Gán biến
+            _configuration = configuration; // Gán biến
             // Base address và Token được cấu hình sẵn khi register HttpClient trong Program.cs
+            _httpClient = httpClient;
+            _configuration = configuration;
+
+            if (_httpClient.BaseAddress == null)
+            {
+                _httpClient.BaseAddress = new Uri(_configuration["GHNConfig:BaseUrl"]);
+                _httpClient.DefaultRequestHeaders.Add("Token", _configuration["GHNConfig:Token"]);
+            }
         }
 
         public async Task<object> GetProvincesAsync()
@@ -45,7 +54,7 @@ namespace AgroMarket.Infrastructure.Services
         public async Task<object> GetAvailableServicesAsync(int fromDistrictId, int toDistrictId)
         {
             // API lấy dịch vụ của GHN dùng method POST và cần shop_id
-            int shopId = int.Parse(_config["GHNConfig:ShopId"] ?? "0");
+            int shopId = int.Parse(_configuration["GHNConfig:ShopId"] ?? "0");
 
             var payload = new
             {
@@ -61,12 +70,19 @@ namespace AgroMarket.Infrastructure.Services
 
         public async Task<object> CalculateFeeAsync(int fromDistrictId, int toDistrictId, string toWardCode, int weight, int serviceId)
         {
-            int shopId = int.Parse(_config["GHNConfig:ShopId"] ?? "0");
+            int shopId = int.Parse(_configuration["GHNConfig:ShopId"] ?? "0");
+
+            if (weight > 50000)
+            {
+                throw new Exception("Đơn hàng có khối lượng lớn (2 thương lượng với người bán để thống nhất vận chuyển");
+            }
+            int autoServiceTypeId = weight <= 20000 ? 2 : 5;
 
             var payload = new
             {
-                shop_id = shopId, // Thêm shop_id cho chắc chắn vì một số tài khoản GHN yêu cầu
-                service_type_id = serviceId,
+                shop_id = shopId,
+                service_type_id = autoServiceTypeId,
+                // service_id = serviceId, 
                 from_district_id = fromDistrictId,
                 to_district_id = toDistrictId,
                 to_ward_code = toWardCode,
@@ -74,7 +90,13 @@ namespace AgroMarket.Infrastructure.Services
             };
 
             var response = await _httpClient.PostAsJsonAsync("/shiip/public-api/v2/shipping-order/fee", payload);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"[LỖI TỪ GHN] HTTP {(int)response.StatusCode}: {errorContent}");
+            }
+
             return await response.Content.ReadFromJsonAsync<object>();
         }
 

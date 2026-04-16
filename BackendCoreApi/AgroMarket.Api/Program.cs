@@ -23,6 +23,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<HttpClient>();
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

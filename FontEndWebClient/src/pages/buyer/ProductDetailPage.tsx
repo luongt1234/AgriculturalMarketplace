@@ -31,6 +31,7 @@ interface ProductDetailApiData {
     anhSanPham: string | null;
     displayScore: number;
     isFeatured: boolean;
+    diaChi?: string;
 }
 
 interface ApiResponse<T> {
@@ -60,6 +61,7 @@ interface ProductDetail {
     rating: number;
     reviews: number;
     sold: string;
+    sellerDistrictCode?: number;
 }
 
 const ProductDetailPage: React.FC = () => {
@@ -133,8 +135,41 @@ const ProductDetailPage: React.FC = () => {
 
         const finalQuantity = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
 
+        const existingItemIndex = checkoutStore.cartItems.findIndex((item) => item.productId === product.id);
+        const newItem = {
+            id: product.id,
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: finalQuantity,
+            image: product.image,
+            unit: product.unit,
+            originDistrictCode: product.sellerDistrictCode,
+        };
+
+        const newTotalQty = existingItemIndex >= 0
+            ? checkoutStore.cartItems[existingItemIndex].quantity + finalQuantity
+            : finalQuantity;
+
+        if (newTotalQty > product.availableQuantity) {
+            toast.error(`Không thể thêm. Bạn đã có tổng cộng ${product.availableQuantity} ${product.unit} trong giỏ.`);
+            return;
+        }
+
         try {
             await addToCart({ sanPhamDangId: product.id, soLuong: finalQuantity });
+
+            if (existingItemIndex >= 0) {
+                const updatedItems = [...checkoutStore.cartItems];
+                updatedItems[existingItemIndex] = {
+                    ...updatedItems[existingItemIndex],
+                    quantity: newTotalQty,
+                };
+                checkoutStore.setCartItems(updatedItems);
+            } else {
+                checkoutStore.setCartItems([...checkoutStore.cartItems, newItem]);
+            }
+
             toast.success('Đã thêm sản phẩm vào giỏ hàng');
         } catch (error) {
             toast.error('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
@@ -145,28 +180,22 @@ const ProductDetailPage: React.FC = () => {
         if (!product) return;
 
         const finalQuantity = typeof quantity === 'number' ? quantity : parseInt(quantity || '1', 10);
+        const item = {
+            id: product.id,
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: finalQuantity,
+            image: product.image,
+            unit: product.unit,
+            originDistrictCode: product.sellerDistrictCode,
+        };
 
         try {
             await addToCart({ sanPhamDangId: product.id, soLuong: finalQuantity });
-            checkoutStore.setCartItems([{
-                id: product.id,
-                productId: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: finalQuantity,
-                image: product.image,
-                unit: product.unit,
-            }]);
+            checkoutStore.setCartItems([item]);
             checkoutStore.setOrderSummary({
-                items: [{
-                    id: product.id,
-                    productId: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: finalQuantity,
-                    image: product.image,
-                    unit: product.unit,
-                }],
+                items: [item],
                 subtotal: product.price * finalQuantity,
                 shippingFee: checkoutStore.selectedShippingMethod?.baseFee || 0,
                 total: product.price * finalQuantity + (checkoutStore.selectedShippingMethod?.baseFee || 0),
@@ -198,6 +227,18 @@ const ProductDetailPage: React.FC = () => {
                         : `${axiosInstance.defaults.baseURL}${item.hinhAnhUrl}`
                     : '';
 
+                let sellerDistrictCode: number | undefined;
+                if (item.diaChi) {
+                    try {
+                        const diaChiObj = JSON.parse(item.diaChi);
+                        if (diaChiObj.districts && diaChiObj.districts.length > 0) {
+                            sellerDistrictCode = diaChiObj.districts[0].district_code ?? diaChiObj.districts[0].code;
+                        }
+                    } catch (err) {
+                        console.error('Error parsing seller address for product:', err);
+                    }
+                }
+
                 setProduct({
                     id: item.id,
                     name: item.tenHienThi,
@@ -221,7 +262,8 @@ const ProductDetailPage: React.FC = () => {
                     certifications: [item.tenChatLuong, item.tenSanPhamChung].filter(Boolean),
                     rating: 4.8,
                     reviews: 128,
-                    sold: item.soLuong ? `${item.soLuong}+` : 'N/A'
+                    sold: item.soLuong ? `${item.soLuong}+` : 'N/A',
+                    sellerDistrictCode,
                 });
                 // Lưu thông tin người bán cho FloatingChat
                 setSellerInfo({
