@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.Common.Interfaces;
+using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.Common.Services;
 using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Application.Interfaces.Services;
@@ -24,6 +24,8 @@ namespace AgroMarket.Application
             services.AddScoped<ISanPhamChungService, SanPhamChungService>();
             services.AddScoped<ISanPhamDangService, SanPhamDangService>();
             services.AddScoped<INguoiDungService, NguoiDungService>();
+            services.AddScoped<ITinNhanService, TinNhanService>();
+            services.AddScoped<ICuaHangService, CuaHangService>();
 
             return services;
         }

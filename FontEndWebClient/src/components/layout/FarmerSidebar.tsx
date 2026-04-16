@@ -8,6 +8,7 @@ const MENU_ITEMS = [
     { path: '/farmer/orders', icon: 'shopping_cart', label: 'Đơn hàng' },
     { path: '/farmer/contracts', icon: 'history_edu', label: 'Hợp đồng' },
     { path: '/farmer/logs', icon: 'menu_book', label: 'Nhật kí canh tác' },
+    { path: '/farmer/chat', icon: 'chat', label: 'Tin nhắn' },
 ];
 
 export const FarmerSidebar: React.FC = () => {

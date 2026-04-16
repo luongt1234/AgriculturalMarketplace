@@ -22,6 +22,8 @@ import { CheckoutPage } from '../pages/buyer/CheckoutPage';
 import AboutPage from '../pages/public/AboutPage';
 import PrivacyPolicyPage from '../pages/public/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/public/TermsOfServicePage';
+import FarmerChatPage from '../pages/farmer/ChatPage';
+import SellerStorefrontPage from '../pages/buyer/SellerStorefrontPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -35,6 +37,7 @@ export default function AppRoutes() {
                 <Route>
                     <Route path="/" element={<BuyerPage />} />
                     <Route path="/product/:id" element={<ProductDetailPage />} />
+                    <Route path="/shop/:sellerId" element={<SellerStorefrontPage />} />
                     {/* <Route path="/buyer" element={<BuyerPage />} /> */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
@@ -59,6 +62,7 @@ export default function AppRoutes() {
                             <Route path="orders" element={<div>Quản lý Đơn hàng</div>} />
                             <Route path="contracts" element={<div>Quản lý Hợp đồng</div>} />
                             <Route path="logs" element={<FarmingLogsPage />} />
+                            <Route path="chat" element={<FarmerChatPage />} />
                             <Route path="settings" element={<div>Cài đặt</div>} />
                         </Route>
                     </Route>

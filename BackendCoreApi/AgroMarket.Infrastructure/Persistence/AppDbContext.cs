@@ -1,4 +1,4 @@
-﻿using AgroMarket.Domain.Entities;
+using AgroMarket.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AgroMarket.Infrastructure.Persistence
@@ -27,6 +27,7 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<YeuCauDangKy> YeuCauDangKys { get; set; }
         public DbSet<LoaiDanhMuc> LoaiDanhMucs { get; set; }
         public DbSet<DiaChiNguoiDung> DiaChiNguoiDungs { get; set; }
+        public DbSet<TheoDoiNguoiBan> TheoDoiNguoiBans { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<YeuCauDangKy>().ToTable("yeu_cau_dang_ky");
             modelBuilder.Entity<LoaiDanhMuc>().ToTable("loai_danh_muc");
             modelBuilder.Entity<DiaChiNguoiDung>().ToTable("dia_chi_nguoi_dung");
+            modelBuilder.Entity<TheoDoiNguoiBan>().ToTable("theo_doi_nguoi_ban");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -162,6 +164,24 @@ namespace AgroMarket.Infrastructure.Persistence
                 .HasForeignKey(x => x.NguoiDungId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // TheoDoiNguoiBan relationships
+            modelBuilder.Entity<TheoDoiNguoiBan>()
+                .HasOne(td => td.NguoiTheoDoi)
+                .WithMany()
+                .HasForeignKey(td => td.NguoiTheoDoiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TheoDoiNguoiBan>()
+                .HasOne(td => td.NguoiBan)
+                .WithMany()
+                .HasForeignKey(td => td.NguoiBanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Unique: mỗi người chỉ follow một shop 1 lần
+            modelBuilder.Entity<TheoDoiNguoiBan>()
+                .HasIndex(td => new { td.NguoiTheoDoiId, td.NguoiBanId })
+                .IsUnique();
+
             // =========================================================
             // 4. CẤU HÌNH ENUM (CONVERSION)
             // =========================================================
@@ -215,6 +235,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<YeuCauDangKy>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<LoaiDanhMuc>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<DiaChiNguoiDung>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<TheoDoiNguoiBan>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

@@ -1,10 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-    /* Khai báo màu sắc cho dự án của bạn */
     --color-primary: #2f7f34;
+    --color-primary-dark: #1b5e20;
+    --color-primary-light: #e8f5e9;
     --color-background-light: #f6f8f6;
     --color-background-dark: #141e15;
+    --color-surface-light: #ffffff;
+    --color-surface-dark: #1a261c;
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 
     /* Khai báo font */
     --font-display: "Work Sans", "Inter", sans-serif;

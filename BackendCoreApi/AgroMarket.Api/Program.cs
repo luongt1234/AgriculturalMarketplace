@@ -1,7 +1,9 @@
+using AgroMarket.Api.Hubs;
 using AgroMarket.Api.Middlewares;
 using AgroMarket.Application;
 using AgroMarket.Infrastructure;
 using AgroMarket.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +28,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// SignalR
+builder.Services.AddSignalR();
+
+// Cho phép SignalR đọc JWT từ query string (cần cho WebSocket)
+builder.Services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+{
+    var existingOnMessageReceived = options.Events?.OnMessageReceived;
+    options.Events ??= new JwtBearerEvents();
+    options.Events.OnMessageReceived = async context =>
+    {
+        if (existingOnMessageReceived != null)
+            await existingOnMessageReceived(context);
+
+        var accessToken = context.Request.Query["access_token"];
+        var path = context.HttpContext.Request.Path;
+        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+        {
+            context.Token = accessToken;
+        }
+    };
+});
 
 var app = builder.Build();
 
@@ -59,5 +83,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();

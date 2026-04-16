@@ -5,6 +5,7 @@ import { useCheckoutStore } from '../../store/useCheckoutStore';
 import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
+import { FloatingChat } from '../../features/chat/components/FloatingChat';
 
 interface ProductDetailApiData {
     id: string;
@@ -16,7 +17,7 @@ interface ProductDetailApiData {
     moTaChiTiet: string;
     ngayDang: string;
     sanPhamChungId: string;
-    nguoiBanId: string;
+    nguoiBanId: string;      // ← ID người bán
     chatLuongId: string;
     tenSanPhamChung: string;
     tenNguoiBan: string;
@@ -67,6 +68,8 @@ const ProductDetailPage: React.FC = () => {
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Thông tin người bán cho FloatingChat
+    const [sellerInfo, setSellerInfo] = useState<{ id: string; name: string; avatar?: string } | null>(null);
 
     // Sử dụng number | string để cho phép người dùng xóa trắng input khi gõ
     const [quantity, setQuantity] = useState<number | string>(1);
@@ -231,6 +234,16 @@ const ProductDetailPage: React.FC = () => {
                     reviews: 128,
                     sold: item.soLuong ? `${item.soLuong}+` : 'N/A'
                 });
+                // Lưu thông tin người bán cho FloatingChat
+                setSellerInfo({
+                    id: item.nguoiBanId,
+                    name: item.tenNguoiBan,
+                    avatar: item.anhDaiDienNguoiBan
+                        ? item.anhDaiDienNguoiBan.startsWith('http')
+                            ? item.anhDaiDienNguoiBan
+                            : `${axiosInstance.defaults.baseURL}${item.anhDaiDienNguoiBan}`
+                        : undefined,
+                });
             } catch (fetchError) {
                 console.error(fetchError);
                 setError('Lỗi khi tải chi tiết sản phẩm. Vui lòng thử lại.');
@@ -382,7 +395,9 @@ const ProductDetailPage: React.FC = () => {
                                     </h3>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">{product.location}</p>
                                 </div>
-                                <button className="text-xs font-bold text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <button 
+                                    onClick={() => sellerInfo?.id && navigate(`/shop/${sellerInfo.id}`)}
+                                    className="text-xs font-bold text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                                     View Profile
                                 </button>
                             </div>
@@ -540,22 +555,12 @@ const ProductDetailPage: React.FC = () => {
                 </section>
             </main>
 
-            {/* Chat Button */}
-            <div className="fixed bottom-6 right-6 z-40">
-                <button className="bg-primary hover:bg-primary-dark text-white rounded-full pl-4 pr-6 py-4 shadow-float hover:scale-105 transition-all duration-300 flex items-center gap-3 group">
-                    <div className="relative">
-                        <span className="material-symbols-outlined text-[24px]">chat</span>
-                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </span>
-                    </div>
-                    <div className="flex flex-col items-start">
-                        <span className="text-xs font-normal text-green-100">Questions?</span>
-                        <span className="font-bold text-sm leading-none">Chat with Farmer</span>
-                    </div>
-                </button>
-            </div>
+            {/* Floating Chat with seller */}
+            <FloatingChat
+                targetSellerId={sellerInfo?.id}
+                targetSellerName={sellerInfo?.name}
+                targetSellerAvatar={sellerInfo?.avatar}
+            />
 
             {/* Footer */}
             <BuyerFooter />

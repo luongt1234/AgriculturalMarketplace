@@ -6,6 +6,7 @@ import { HeroBanner } from '../../components/buyer/HeroBanner';
 import { CategoriesSection } from '../../components/buyer/CategoriesSection';
 import { FlashDealsSection } from '../../components/buyer/FlashDealsSection';
 import { FreshArrivalsSection } from '../../components/buyer/FreshArrivalsSection';
+import { FloatingChat } from '../../features/chat/components/FloatingChat';
 import type { BuyerProduct, Category } from '../../types/buyer.types';
 
 export const BuyerPage = () => {
@@ -202,6 +203,9 @@ export const BuyerPage = () => {
 
             {/* Footer */}
             <BuyerFooter />
+
+            {/* Floating Chat */}
+            <FloatingChat />
         </div>
     );
 };
