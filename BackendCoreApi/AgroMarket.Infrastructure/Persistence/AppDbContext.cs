@@ -30,6 +30,7 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<TheoDoiNguoiBan> TheoDoiNguoiBans { get; set; }
         public DbSet<GioHang> GioHangs { get; set; }
         public DbSet<ChiTietGioHang> ChiTietGioHangs { get; set; }
+        public DbSet<SanPhamYeuThich> SanPhamYeuThiches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,7 +38,6 @@ namespace AgroMarket.Infrastructure.Persistence
 
             // =========================================================
             // 2. CẤU HÌNH TÊN BẢNG (MAPPING TABLE NAMES)
-            // Quan trọng: Ép tên bảng về số ít chuẩn tiếng Việt
             // =========================================================
             modelBuilder.Entity<DanhMuc>().ToTable("danh_muc");
             modelBuilder.Entity<NguoiDung>().ToTable("nguoi_dung");
@@ -59,6 +59,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<TheoDoiNguoiBan>().ToTable("theo_doi_nguoi_ban");
             modelBuilder.Entity<GioHang>().ToTable("gio_hang");
             modelBuilder.Entity<ChiTietGioHang>().ToTable("chi_tiet_gio_hang");
+            modelBuilder.Entity<SanPhamYeuThich>().ToTable("san_pham_yeu_thich");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -186,6 +187,23 @@ namespace AgroMarket.Infrastructure.Persistence
                 .HasIndex(td => new { td.NguoiTheoDoiId, td.NguoiBanId })
                 .IsUnique();
 
+            // SanPhamYeuThich relationships
+            modelBuilder.Entity<SanPhamYeuThich>()
+                .HasOne(yt => yt.NguoiDung)
+                .WithMany()
+                .HasForeignKey(yt => yt.NguoiDungId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SanPhamYeuThich>()
+                .HasOne(yt => yt.SanPhamDang)
+                .WithMany()
+                .HasForeignKey(yt => yt.SanPhamDangId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SanPhamYeuThich>()
+                .HasIndex(yt => new { yt.NguoiDungId, yt.SanPhamDangId })
+                .IsUnique();
+
             // =========================================================
             // 4. CẤU HÌNH ENUM (CONVERSION)
             // =========================================================
@@ -242,6 +260,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<TheoDoiNguoiBan>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<GioHang>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<ChiTietGioHang>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<SanPhamYeuThich>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

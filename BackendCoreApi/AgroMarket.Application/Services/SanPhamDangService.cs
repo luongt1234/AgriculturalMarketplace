@@ -91,11 +91,11 @@ namespace AgroMarket.Application.Services
             }
         }
 
-        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10, string? keyword = null)
+        public async Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsForDisplayAsync(int pageNumber = 1, int pageSize = 10, string? keyword = null, Guid? sanPhamChungId = null)
         {
             try
             {
-                var (items, total) = await _sanPhamDangRepository.GetPagedWithIncludesAsync(pageNumber, pageSize, keyword);
+                var (items, total) = await _sanPhamDangRepository.GetPagedWithIncludesAsync(pageNumber, pageSize, keyword, sanPhamChungId);
 
                 // Thuật toán hiển thị: tính một điểm cho mỗi sản phẩm dựa trên uy tín người bán, độ mới, và tồn kho
                 var now = DateTime.UtcNow;

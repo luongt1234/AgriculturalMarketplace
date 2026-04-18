@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { BuyerProduct } from '../../../types/buyer.types';
+
+import { useFavoriteStore } from '../../../store/useFavoriteStore';
+import { toast } from 'sonner';
 
 interface ProductCardProps {
     product: BuyerProduct;
@@ -16,7 +19,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     onClick,
     variant = 'default'
 }) => {
-    const [isFavorite, setIsFavorite] = useState(false);
+    const { toggleFavorite, isFavorite } = useFavoriteStore();
+    const isFav = isFavorite(product.id.toString());
+
+    const handleToggleFavorite = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await toggleFavorite(product.id.toString());
+            if (isFav) {
+                toast.info('Đã bỏ yêu thích sản phẩm');
+            } else {
+                toast.success('Đã thêm sản phẩm vào danh sách yêu thích');
+            }
+        } catch (error) {
+            toast.error('Có lỗi xảy ra khi thay đổi yêu thích');
+        }
+    };
 
     if (variant === 'compact') {
         return (
@@ -28,17 +46,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         src={product.image}
                     />
                     <button
-                        onClick={() => setIsFavorite(!isFavorite)}
-                        className={`absolute top-3 right-3 bg-white/90 dark:bg-gray-800/80 p-2 rounded-full shadow-sm transition-colors backdrop-blur-sm z-10 ${isFavorite ? 'text-red-500' : 'text-gray-400 dark:text-white hover:text-red-500'
+                        onClick={handleToggleFavorite}
+                        className={`absolute top-3 right-3 w-10 h-10 flex items-center justify-center bg-white/90 dark:bg-gray-800/80 rounded-full shadow-sm transition-colors backdrop-blur-sm z-10 ${isFav ? 'text-red-500' : 'text-gray-400 dark:text-white hover:text-red-500'
                             }`}
                     >
-                        <span className={`material-symbols-outlined text-[20px] ${isFavorite ? 'filled' : ''}`}>
+                        <span className={`material-symbols-outlined text-[20px] ${isFav ? 'filled' : ''}`}>
                             favorite
                         </span>
                     </button>
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-semibold z-20">
+                    {/* <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-semibold z-20">
                         Xem chi tiết
-                    </div>
+                    </div> */}
                 </div>
                 <div className="p-4">
                     <div className="text-xs text-green-600 font-bold mb-1 uppercase tracking-wide">
@@ -69,11 +87,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 )}
             </div>
             <button
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={`absolute top-3 right-3 z-10 p-2 rounded-full bg-white/80 dark:bg-black/50 shadow-sm backdrop-blur-sm transition-all ${isFavorite ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                onClick={handleToggleFavorite}
+                className={`absolute top-3 right-3 w-10 h-10 flex items-center justify-center bg-white/90 dark:bg-gray-800/80 rounded-full shadow-sm transition-colors backdrop-blur-sm z-10 ${isFav ? 'text-red-500' : 'text-gray-400 dark:text-white hover:text-red-500'
                     }`}
             >
-                <span className={`material-symbols-outlined text-[20px] ${isFavorite ? 'filled' : ''}`}>
+                <span className={`material-symbols-outlined text-[20px] ${isFav ? 'filled' : ''}`}>
                     favorite
                 </span>
             </button>
@@ -84,9 +102,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     src={product.image}
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-semibold z-20">
+                {/* <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-semibold z-20">
                     Xem chi tiết
-                </div>
+                </div> */}
             </div>
 
             <div className="p-4">

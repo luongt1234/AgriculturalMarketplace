@@ -68,11 +68,11 @@ namespace AgroMarket.Api.Controllers
 
         [HttpGet("display")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetProductForDisplay([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null)
+        public async Task<IActionResult> GetProductForDisplay([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? keyword = null, [FromQuery] Guid? sanPhamChungId = null)
         {
             try
             {
-                var result = await _sanPhamDangService.GetAllProductsForDisplayAsync(pageNumber, pageSize, keyword);
+                var result = await _sanPhamDangService.GetAllProductsForDisplayAsync(pageNumber, pageSize, keyword, sanPhamChungId);
                 return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
             }
             catch (Exception ex)

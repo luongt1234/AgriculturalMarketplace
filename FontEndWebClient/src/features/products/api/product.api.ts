@@ -156,6 +156,7 @@ export interface GetDisplayProductsParams {
     pageNumber?: number;
     pageSize?: number;
     keyword?: string;
+    sanPhamChungId?: string;
 }
 
 export interface DisplayProductsResponse {
@@ -174,6 +175,7 @@ export const getDisplayProducts = async (params?: GetDisplayProductsParams) => {
     if (params?.pageNumber !== undefined) queryString.append('pageNumber', params.pageNumber.toString());
     if (params?.pageSize !== undefined) queryString.append('pageSize', params.pageSize.toString());
     if (params?.keyword) queryString.append('keyword', params.keyword);
+    if (params?.sanPhamChungId) queryString.append('sanPhamChungId', params.sanPhamChungId);
 
     return await axiosInstance.get(`/api/SanPhamDang/display?${queryString.toString()}`);
 };

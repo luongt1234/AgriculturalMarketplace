@@ -27,7 +27,7 @@ namespace AgroMarket.Infrastructure.Repositories
             return (items, total);
         }
 
-        public async Task<(IEnumerable<SanPhamDang> Items, int TotalRecords)> GetPagedWithIncludesAsync(int pageNumber, int pageSize, string? keyword = null)
+        public async Task<(IEnumerable<SanPhamDang> Items, int TotalRecords)> GetPagedWithIncludesAsync(int pageNumber, int pageSize, string? keyword = null, Guid? sanPhamChungId = null)
         {
             // Base query with necessary includes for mapping
             var baseQuery = _dbSet.Where(x => !x.IsDeleted).AsNoTracking()
@@ -38,6 +38,13 @@ namespace AgroMarket.Infrastructure.Repositories
                 .Include(x => x.NguoiBan)
                 .Include(x => x.ChatLuong)
                 .AsQueryable();
+
+            if (sanPhamChungId.HasValue && sanPhamChungId.Value != Guid.Empty)
+            {
+                baseQuery = baseQuery.Where(x => 
+                    x.SanPhamChungId == sanPhamChungId.Value || 
+                    (x.SanPhamChung != null && x.SanPhamChung.ChaId == sanPhamChungId.Value));
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {

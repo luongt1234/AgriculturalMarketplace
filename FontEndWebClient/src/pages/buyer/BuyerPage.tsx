@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { HeroBanner } from '../../components/buyer/HeroBanner';
@@ -12,15 +13,15 @@ import type { BuyerProduct, Category } from '../../types/buyer.types';
 export const BuyerPage = () => {
     const [cartCount, setCartCount] = useState(3);
     const [searchQuery, setSearchQuery] = useState('');
+    const navigate = useNavigate();
 
     const handleAddToCart = (product: BuyerProduct) => {
         setCartCount((prev) => prev + 1);
         toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
     };
 
-    const handleCategoryClick = (category: Category) => {
-        toast.info(`Đang xem danh mục ${category.name}`);
-        // Navigate to category page or filter products
+    const handleCategoryClick = (category: Partial<Category> & { id: string, name: string }) => {
+        navigate(`/category/${category.id}`);
     };
 
     const handleHeroBannerClick = () => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useCartStore } from '../../store/useCartStore';
+import { useFavoriteStore } from '../../store/useFavoriteStore';
 import { getSearchSuggestions, type DisplayProduct } from '../../features/products/api/product.api';
 import { CartDrawer } from '../../features/cart/components/CartDrawer';
 
@@ -22,6 +23,7 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
     const [isCartOpen, setIsCartOpen] = useState(false);
     const { user } = useAuthStore();
     const { cart } = useCartStore();
+    const { fetchFavoriteIds } = useFavoriteStore();
     const navigate = useNavigate();
     const searchRef = useRef<HTMLDivElement>(null);
 
@@ -34,6 +36,12 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        if (user) {
+            fetchFavoriteIds();
+        }
+    }, [user, fetchFavoriteIds]);
 
     useEffect(() => {
         const timeoutId = setTimeout(async () => {
@@ -243,6 +251,9 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                                 </a>
                                                 <a href="/orders" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                     Đơn hàng
+                                                </a>
+                                                <a href="/favorites" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                    Sản phẩm yêu thích
                                                 </a>
                                                 <hr className="my-1 border-gray-200 dark:border-gray-700" />
                                                 <button

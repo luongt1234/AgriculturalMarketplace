@@ -28,6 +28,8 @@ import SellerStorefrontPage from '../pages/buyer/SellerStorefrontPage';
 import SellerSettingsPage from '../pages/farmer/SellerSettingsPage';
 import UserProfilePage from '../pages/public/UserProfilePage';
 import OrdersPage from '../pages/public/OrdersPage';
+import FavoriteProductsPage from '../pages/buyer/FavoriteProductsPage';
+import CategoryProductPage from '../pages/buyer/CategoryProductPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -42,6 +44,7 @@ export default function AppRoutes() {
                     <Route path="/" element={<BuyerPage />} />
                     <Route path="/search" element={<SearchResultsPage />} />
                     <Route path="/product/:id" element={<ProductDetailPage />} />
+                    <Route path="/category/:categoryId" element={<CategoryProductPage />} />
                     <Route path="/shop/:sellerId" element={<SellerStorefrontPage />} />
                     {/* <Route path="/buyer" element={<BuyerPage />} /> */}
                     <Route path="/login" element={<LoginPage />} />
@@ -58,6 +61,7 @@ export default function AppRoutes() {
                     {/* GENERAL PROTECTED ROUTES */}
                     <Route path="/profile" element={<UserProfilePage />} />
                     <Route path="/orders" element={<OrdersPage />} />
+                    <Route path="/favorites" element={<FavoriteProductsPage />} />
 
                     {/* BUYER ROUTES */}
                     <Route path="/checkout" element={<CheckoutPage />} />

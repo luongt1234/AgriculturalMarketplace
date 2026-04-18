@@ -1,5 +1,6 @@
 using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.Interfaces.Repositories;
+using AgroMarket.Application.Interfaces.Services;
 using AgroMarket.Infrastructure.Persistence;
 using AgroMarket.Infrastructure.Repositories;
 using AgroMarket.Infrastructure.Services;
@@ -39,6 +40,7 @@ namespace AgroMarket.Infrastructure
             services.AddScoped<INguoiDungRepository, NguoiDungRepository>();
             services.AddScoped<ILoaiDanhMucRepository, LoaiDanhMucRepository>();
             services.AddScoped<IGHNService, GHNService>();
+            services.AddScoped<ISanPhamYeuThichService, SanPhamYeuThichService>();
 
             // cấu hình jwt
             services.AddAuthentication(options =>

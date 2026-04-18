@@ -3,7 +3,6 @@ import type { CartDto, CartItemDto, AddToCartDto, UpdateQuantityDto } from '../.
 
 export const cartApi = {
     getCart: async (): Promise<CartDto> => {
-        debugger
         const response = await axiosInstance.get<CartDto>('/api/GioHang');
         return response.data;
     },
