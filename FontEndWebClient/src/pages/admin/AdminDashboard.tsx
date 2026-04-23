@@ -1,7 +1,16 @@
 import React from 'react';
 import { AdminHeader } from '../../layouts/components/AdminHeader';
+import { useAdminStats } from '../../features/stats/hooks/useStats';
 
 const AdminDashboard: React.FC = () => {
+    const { data: statsData, isLoading } = useAdminStats();
+
+    if (isLoading) {
+        return <div className="p-6">Đang tải dữ liệu...</div>;
+    }
+
+    // const { data } = statsData || {};
+    const data: any = statsData || {};
     return (
         <div className="flex-1 overflow-y-auto p-6 scrollbar-hide bg-white dark:bg-[#131613]">
             <AdminHeader
@@ -37,7 +46,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="flex justify-between items-start z-10">
                             <div>
                                 <p className="text-xs font-bold text-[#6b806c] dark:text-gray-400 uppercase tracking-widest">Tổng GMV</p>
-                                <h3 className="text-2xl font-bold text-[#131613] dark:text-white mt-1 tracking-tight">4.250.000đ</h3>
+                                <h3 className="text-2xl font-bold text-[#131613] dark:text-white mt-1 tracking-tight">{data?.tongGmv?.toLocaleString('vi-VN')}đ</h3>
                             </div>
                             <div className="bg-primary/10 p-1.5 rounded-md text-primary">
                                 <span className="material-symbols-outlined text-xl">payments</span>
@@ -60,7 +69,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="flex justify-between items-start z-10">
                             <div>
                                 <p className="text-xs font-bold text-[#6b806c] dark:text-gray-400 uppercase tracking-widest">Doanh thu thuần</p>
-                                <h3 className="text-2xl font-bold text-[#131613] dark:text-white mt-1 tracking-tight">340.000đ</h3>
+                                <h3 className="text-2xl font-bold text-[#131613] dark:text-white mt-1 tracking-tight">{data?.doanhThuThuan?.toLocaleString('vi-VN')}đ</h3>
                             </div>
                             <div className="bg-blue-50 dark:bg-blue-900/20 p-1.5 rounded-md text-blue-600">
                                 <span className="material-symbols-outlined text-xl">account_balance_wallet</span>
@@ -83,7 +92,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="flex justify-between items-start z-10">
                             <div>
                                 <p className="text-xs font-bold text-[#6b806c] dark:text-gray-400 uppercase tracking-widest">Người bán hoạt động</p>
-                                <h3 className="text-2xl font-bold text-[#131613] dark:text-white mt-1 tracking-tight">1,240</h3>
+                                <h3 className="text-2xl font-bold text-[#131613] dark:text-white mt-1 tracking-tight">{data?.nguoiBanHoatDong?.toLocaleString('vi-VN')}</h3>
                             </div>
                             <div className="bg-orange-50 dark:bg-orange-900/20 p-1.5 rounded-md text-orange-600">
                                 <span className="material-symbols-outlined text-xl">store</span>
@@ -106,7 +115,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="flex justify-between items-start z-10">
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Người dùng mới</p>
-                                <h3 className="text-2xl font-bold text-white mt-1 tracking-tight">35</h3>
+                                <h3 className="text-2xl font-bold text-white mt-1 tracking-tight">{data?.nguoiDungMoi?.toLocaleString('vi-VN')}</h3>
                             </div>
                             <div className="bg-white/10 p-1.5 rounded-md text-white">
                                 <span className="material-symbols-outlined text-xl">group_add</span>

@@ -1,3 +1,4 @@
+using AgroMarket.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,6 @@ namespace AgroMarket.Application.Interfaces.Repositories
         Task<IEnumerable<AgroMarket.Domain.Entities.SanPhamDang>> SearchSuggestionsAsync(string keyword, int limit);
         // Lấy chi tiết 1 SanPhamDang kèm các relation để hiển thị
         Task<AgroMarket.Domain.Entities.SanPhamDang?> GetByIdWithIncludesAsync(Guid id);
+        Task<IEnumerable<SanPhamDang>> GetTopActiveProductsAsync(int count);
     }
 }

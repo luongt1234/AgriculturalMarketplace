@@ -19,12 +19,15 @@ interface FloatingChatProps {
     targetSellerId?: string;
     targetSellerName?: string;
     targetSellerAvatar?: string;
+    /** Nếu true: component không tự set fixed positioning (được bọc bởi container ngoài) */
+    embedded?: boolean;
 }
 
 export const FloatingChat: React.FC<FloatingChatProps> = ({
     targetSellerId,
     targetSellerName,
     targetSellerAvatar,
+    embedded = false,
 }) => {
     const { user, isAuthenticated } = useAuthStore();
     const [phase, setPhase] = useState<Phase>('closed');
@@ -93,7 +96,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
     if (!isAuthenticated || !user) return null;
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <div className={embedded ? 'flex flex-col items-end gap-3' : 'fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3'}>
             {/* ── PANEL (list hoặc chat) ─────────────────────────────────── */}
             {phase !== 'closed' && (
                 <div

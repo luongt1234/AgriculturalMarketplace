@@ -13,7 +13,6 @@ export const SearchResultsPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    // Filters state
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
 
@@ -32,17 +31,15 @@ export const SearchResultsPage = () => {
 
     useEffect(() => {
         fetchProducts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [keyword]); // fetch again if keyword changes
+    }, [keyword]);
 
-    // Dummy mapper for now based on what we expected on BuyerProduct
     const mapToBuyerProduct = (p: DisplayProduct): BuyerProduct => ({
         id: p.id,
         name: p.tenHienThi,
         price: p.gia,
-        originalPrice: p.gia * 1.1, // mock
-        rating: 4.5, // mock
-        location: 'Hà Nội', // mock or parse from somewhere
+        originalPrice: p.gia * 1.1,
+        rating: 4.5,
+        location: 'Hà Nội',
         seller: p.tenNguoiBan || 'Người bán',
         image: p.hinhAnhUrl ? `http://localhost:5000${p.hinhAnhUrl}` : 'https://placehold.co/400x300?text=Product',
         unit: p.tenDonVi || '/kg',
@@ -51,8 +48,6 @@ export const SearchResultsPage = () => {
     });
 
     const handleApplyFilter = () => {
-        // Implement filter application logic locally or re-fetch depending on backend
-        // For local simulation:
         let list = [...products];
         if (minPrice) list = list.filter(p => p.gia >= parseInt(minPrice));
         if (maxPrice) list = list.filter(p => p.gia <= parseInt(maxPrice));
@@ -72,7 +67,6 @@ export const SearchResultsPage = () => {
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Sidebar Filters */}
                     <div className="w-full lg:w-64 flex-shrink-0">
                         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm sticky top-24">
                             <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -81,7 +75,6 @@ export const SearchResultsPage = () => {
                             </h3>
 
                             <div className="space-y-6">
-                                {/* Price Range */}
                                 <div>
                                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Khoảng giá (₫)</h4>
                                     <div className="flex items-center gap-2">
@@ -103,7 +96,6 @@ export const SearchResultsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Applied filter button */}
                                 <button
                                     onClick={handleApplyFilter}
                                     className="w-full py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary-dark transition"
@@ -114,7 +106,6 @@ export const SearchResultsPage = () => {
                         </div>
                     </div>
 
-                    {/* Results Grid */}
                     <div className="flex-1">
                         {isLoading ? (
                             <div className="flex justify-center p-12">

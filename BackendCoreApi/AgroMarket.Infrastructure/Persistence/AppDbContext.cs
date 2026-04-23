@@ -31,6 +31,7 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<GioHang> GioHangs { get; set; }
         public DbSet<ChiTietGioHang> ChiTietGioHangs { get; set; }
         public DbSet<SanPhamYeuThich> SanPhamYeuThiches { get; set; }
+        public DbSet<CaiDatGiaoDien> CaiDatGiaoDiens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<GioHang>().ToTable("gio_hang");
             modelBuilder.Entity<ChiTietGioHang>().ToTable("chi_tiet_gio_hang");
             modelBuilder.Entity<SanPhamYeuThich>().ToTable("san_pham_yeu_thich");
+            modelBuilder.Entity<CaiDatGiaoDien>().ToTable("cai_dat_giao_dien");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -261,6 +263,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<GioHang>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<ChiTietGioHang>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<SanPhamYeuThich>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<CaiDatGiaoDien>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

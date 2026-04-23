@@ -1,6 +1,9 @@
 import React from 'react';
+import { useSettingsStore } from '../../stores/useSettingsStore';
 
 export const BuyerFooter: React.FC = () => {
+    const { settings } = useSettingsStore();
+
     return (
         <footer className="bg-surface-light dark:bg-surface-dark border-t border-gray-200 dark:border-gray-700 pt-16 pb-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -9,22 +12,29 @@ export const BuyerFooter: React.FC = () => {
                     <div className="col-span-1 md:col-span-1">
                         <div className="flex items-center gap-2 mb-4">
                             <span className="material-symbols-outlined text-primary text-3xl">eco</span>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">PeachyMarket</h3>
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{settings?.footerCompanyName || 'PeachyMarket'}</h3>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed mb-6">
                             Kết nối nông dân Việt Nam với người tiêu dùng. Tươi ngon, minh bạch và giá cả công bằng cho mọi nhà.
                         </p>
+                        {settings?.footerAddress && <p className="text-gray-500 text-sm mb-2"><span className="material-symbols-outlined text-[16px] mr-1 align-middle">location_on</span>{settings.footerAddress}</p>}
+                        {settings?.footerPhone && <p className="text-gray-500 text-sm mb-2"><span className="material-symbols-outlined text-[16px] mr-1 align-middle">call</span>{settings.footerPhone}</p>}
+                        {settings?.footerEmail && <p className="text-gray-500 text-sm mb-6"><span className="material-symbols-outlined text-[16px] mr-1 align-middle">mail</span>{settings.footerEmail}</p>}
                         <div className="flex gap-4">
-                            <a href="#" className="text-gray-400 hover:text-primary transition-colors">
-                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-xs font-bold">
-                                    f
-                                </div>
-                            </a>
-                            <a href="#" className="text-gray-400 hover:text-primary transition-colors">
-                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-xs font-bold">
-                                    in
-                                </div>
-                            </a>
+                            {settings?.footerFacebookUrl && (
+                                <a href={settings.footerFacebookUrl} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-primary transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-xs font-bold">
+                                        fb
+                                    </div>
+                                </a>
+                            )}
+                            {settings?.footerYoutubeUrl && (
+                                <a href={settings.footerYoutubeUrl} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-primary transition-colors">
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-xs font-bold">
+                                        yt
+                                    </div>
+                                </a>
+                            )}
                             <a href="#" className="text-gray-400 hover:text-primary transition-colors">
                                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-xs font-bold">
                                     ig
@@ -127,7 +137,7 @@ export const BuyerFooter: React.FC = () => {
 
                 {/* Bottom Section */}
                 <div className="border-t border-gray-200 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-sm text-gray-400">© 2026 PeachyMarket. Bảo lưu mọi quyền.</p>
+                    <p className="text-sm text-gray-400">© 2026 {settings?.footerCompanyName || 'PeachyMarket'}. Bảo lưu mọi quyền.</p>
                     <div className="flex gap-6 text-sm text-gray-400">
                         <a href="/privacy-policy" className="hover:text-primary">
                             Chính sách bảo mật

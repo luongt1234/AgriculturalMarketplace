@@ -53,7 +53,7 @@ export const FavoriteProductsPage = () => {
                                 name: fav.tenHienThi,
                                 price: fav.gia,
                                 image: `http://localhost:5182${fav.hinhAnhUrl}`,
-                                category: '', // Optionally from DTO if added
+                                category: '',
                                 location: 'Việt Nam',
                                 seller: fav.tenCuaHang,
                                 unit: '',

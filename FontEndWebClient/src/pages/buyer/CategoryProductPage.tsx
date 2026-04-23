@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
+import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
 import { ProductCard } from '../../features/products/components/ProductCard';
 import { getDisplayProducts, getCommonProducts } from '../../features/products/api/product.api';
 import type { BuyerProduct } from '../../types/buyer.types';
@@ -217,6 +218,7 @@ export const CategoryProductPage = () => {
             </main>
 
             <BuyerFooter />
+            <BuyerFloatingButtons />
         </div>
     );
 };

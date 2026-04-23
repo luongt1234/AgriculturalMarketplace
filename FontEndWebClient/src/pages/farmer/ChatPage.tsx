@@ -23,11 +23,9 @@ export const FarmerChatPage: React.FC = () => {
         setActiveUserId,
     } = useChat({ autoConnect: true });
 
-    // Active conversation object
     const activeConversation: Conversation | null =
         conversations.find((c) => c.otherUserId === activeUserId) ?? null;
 
-    // Load conversations khi mount
     useEffect(() => {
         loadConversations();
     }, []);
@@ -47,14 +45,12 @@ export const FarmerChatPage: React.FC = () => {
     return (
         <div className="flex h-full bg-white dark:bg-[#1a261c] rounded-xl border border-[#e0e2e0] dark:border-[#2f3a30] shadow-sm overflow-hidden">
 
-            {/* ── Sidebar: Danh sách hội thoại ─────────────────────────────── */}
             <div
                 className={`
                     ${isMobileView ? 'hidden md:flex' : 'flex'}
                     flex-col w-full md:w-[300px] lg:w-[340px] border-r border-gray-100 dark:border-gray-700 shrink-0
                 `}
             >
-                {/* Header sidebar */}
                 <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-[#1a261c]">
                     <div className="flex items-center justify-between">
                         <h2 className="text-base font-bold text-gray-900 dark:text-white">Tin nhắn</h2>
@@ -62,7 +58,6 @@ export const FarmerChatPage: React.FC = () => {
                             {conversations.length} cuộc trò chuyện
                         </span>
                     </div>
-                    {/* Search (UI only) */}
                     <div className="mt-3 relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="material-symbols-outlined text-gray-400 text-[18px]">search</span>
@@ -83,7 +78,6 @@ export const FarmerChatPage: React.FC = () => {
                 />
             </div>
 
-            {/* ── Main: Cửa sổ chat ────────────────────────────────────────── */}
             <div className={`${!isMobileView ? 'hidden md:flex' : 'flex'} flex-1 flex-col`}>
                 <ChatWindow
                     currentUserId={user.id}

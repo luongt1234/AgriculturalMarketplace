@@ -21,7 +21,6 @@ export function CheckoutPage() {
     const store = useCheckoutStore();
     const { cart, fetchCart } = useCartStore();
 
-    // Map cart items to CartItem[] format for checkout
     const checkoutItems: CartItem[] = cart?.chiTiet?.map(item => ({
         id: item.id,
         productId: item.sanPhamDangId,
@@ -46,7 +45,6 @@ export function CheckoutPage() {
         const loadAddresses = async () => {
             try {
                 const addresses = await getUserAddresses();
-                // Convert DiaChiNguoiDungDto[] to DeliveryAddress[]
                 const deliveryAddresses: DeliveryAddress[] = addresses.map(addr => {
                     let city = '', district = '', ward = '';
                     let provinceId: number | undefined;
@@ -275,7 +273,6 @@ export function CheckoutPage() {
     const handleConfirmOrder = async () => {
         store.setLoading(true);
         try {
-            // Simulate API call
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.log('Order submitted:', {
@@ -382,7 +379,6 @@ export function CheckoutPage() {
                             </>
                         )}
 
-                        {/* Step 2: Shipping Selection */}
                         {store.currentStep >= 2 && (
                             <>
                                 <ShippingStep
@@ -412,7 +408,6 @@ export function CheckoutPage() {
                             </>
                         )}
 
-                        {/* Step 3: Payment Selection */}
                         {store.currentStep >= 3 && (
                             <>
                                 <PaymentStep
@@ -441,7 +436,6 @@ export function CheckoutPage() {
                             </>
                         )}
 
-                        {/* Step 4: Confirmation */}
                         {store.currentStep === 4 && (
                             <>
                                 <ConfirmationStep
@@ -464,7 +458,6 @@ export function CheckoutPage() {
                             </>
                         )}
 
-                        {/* Inactive Steps Display */}
                         {store.currentStep < 2 && (
                             <section className="opacity-60 grayscale pointer-events-none">
                                 <div className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -509,14 +502,12 @@ export function CheckoutPage() {
                         )}
                     </div>
 
-                    {/* RIGHT COLUMN: Order Summary Panel */}
                     <div className="lg:w-1/3 sticky top-40 h-fit z-30 w-full">
                         <OrderSummaryPanel items={checkoutItems} summary={store.orderSummary} />
                     </div>
                 </div>
             </main>
 
-            {/* Address Modal */}
             <AddressModal
                 isOpen={showAddressModal}
                 onClose={() => setShowAddressModal(false)}

@@ -146,6 +146,16 @@ namespace AgroMarket.Infrastructure.Repositories
                 .Take(limit)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<SanPhamDang>> GetTopActiveProductsAsync(int count)
+        {
+            return await _context.SanPhamDangs
+                .Where(sp => !sp.IsDeleted && sp.TrangThai == Domain.Enums.TrangThaiSanPham.ConHang && sp.SoLuong > 0)
+                .OrderByDescending(sp => sp.NgayDang)
+                .Take(count)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }
 

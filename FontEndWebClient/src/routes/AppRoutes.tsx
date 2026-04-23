@@ -15,6 +15,7 @@ import BuyerManagement from '../pages/admin/BuyerManagement';
 import SellerManagement from '../pages/admin/SellerManagement';
 import AdminManagement from '../pages/admin/AdminManagement';
 import CategoryManagement from '../pages/admin/CategoryManagement';
+import SettingsPage from '../pages/admin/SettingsPage';
 import { UnauthorizedPage } from '../pages/public/UnauthorizedPage';
 import BuyerPage from '../pages/buyer/BuyerPage';
 import SearchResultsPage from '../pages/buyer/SearchResultsPage';
@@ -95,6 +96,7 @@ export default function AppRoutes() {
                             <Route path="dashboard" element={<AdminDashboard />} /> bn
                             <Route path="category" element={<CategoryManagement />} />
                             <Route path="users" element={<div>Quản lý User</div>} />
+                            <Route path="settings" element={<SettingsPage />} />
 
                         </Route>
                     </Route>

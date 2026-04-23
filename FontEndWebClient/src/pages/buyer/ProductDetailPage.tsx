@@ -6,7 +6,7 @@ import { useCheckoutStore } from '../../store/useCheckoutStore';
 import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
-import { FloatingChat } from '../../features/chat/components/FloatingChat';
+import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
 
 interface ProductDetailApiData {
     id: string;
@@ -585,8 +585,7 @@ const ProductDetailPage: React.FC = () => {
                 </section>
             </main>
 
-            {/* Floating Chat with seller */}
-            <FloatingChat
+            <BuyerFloatingButtons
                 targetSellerId={sellerInfo?.id}
                 targetSellerName={sellerInfo?.name}
                 targetSellerAvatar={sellerInfo?.avatar}

@@ -40,11 +40,9 @@ const MOCK_LOGS: FarmingLog[] = [
 ];
 
 export const FarmingLogsPage = () => {
-    // State chọn sản phẩm
     const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Giả lập Fetch Logs dựa trên Product ID
     const [logs, setLogs] = useState<FarmingLog[]>(MOCK_LOGS);
 
     const headerAction = useMemo(() => (
@@ -61,7 +59,6 @@ export const FarmingLogsPage = () => {
 
     useSetPageTitle('Nhật ký Canh tác', headerAction);
 
-    // Lọc sản phẩm theo tìm kiếm
     const filteredProducts = MOCK_PRODUCTS.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.sku.toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,7 +67,6 @@ export const FarmingLogsPage = () => {
     return (
         <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-6">
 
-            {/* CỘT TRÁI: DANH SÁCH SẢN PHẨM (Master) */}
             <div className="w-full md:w-80 flex flex-col bg-white dark:bg-[#1a261c] rounded-xl border border-[#dee3de] dark:border-gray-700 shadow-sm overflow-hidden shrink-0">
                 <div className="p-4 border-b border-[#f1f3f1] dark:border-gray-700">
                     <h3 className="font-bold text-[#131613] dark:text-white mb-3">Chọn Lô hàng / Sản phẩm</h3>
@@ -115,10 +111,8 @@ export const FarmingLogsPage = () => {
                 </div>
             </div>
 
-            {/* CỘT PHẢI: CHI TIẾT LOG (Detail) */}
             <div className="flex-1 flex flex-col gap-6 overflow-hidden">
                 {!selectedProduct ? (
-                    // Màn hình trống (Empty State) khi chưa chọn sản phẩm
                     <div className="flex-1 flex flex-col items-center justify-center bg-white dark:bg-[#1a261c] rounded-xl border border-[#dee3de] dark:border-gray-700 shadow-sm">
                         <span className="material-symbols-outlined text-6xl text-[#dee3de] dark:text-gray-600 mb-4">qr_code_scanner</span>
                         <h3 className="text-lg font-bold text-[#131613] dark:text-white">Chưa chọn lô hàng</h3>
@@ -127,10 +121,8 @@ export const FarmingLogsPage = () => {
                         </p>
                     </div>
                 ) : (
-                    // Nội dung Log khi ĐÃ CHỌN sản phẩm
                     <div className="flex flex-col h-full gap-6 overflow-y-auto custom-scrollbar pr-2">
 
-                        {/* Header thông tin sản phẩm đang chọn */}
                         <div className="bg-white dark:bg-[#1a261c] rounded-xl p-4 border border-[#dee3de] dark:border-gray-700 shadow-sm flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-4">
                                 <div className="size-12 rounded-lg bg-cover bg-center border border-gray-200" style={{ backgroundImage: `url('${selectedProduct.imageUrl}')` }} />
@@ -144,17 +136,14 @@ export const FarmingLogsPage = () => {
                             </button>
                         </div>
 
-                        {/* Thống kê Log */}
                         <LogStatCards />
 
-                        {/* Bảng Dữ liệu Log */}
                         <div className="bg-white dark:bg-[#1a261c] rounded-xl border border-[#dee3de] dark:border-gray-700 shadow-sm flex flex-col flex-1 min-h-[400px] overflow-hidden">
                             <div className="p-4 border-b border-[#f1f3f1] dark:border-gray-700 flex justify-between items-center bg-[#f9faf9] dark:bg-[#1f2d21]">
                                 <h3 className="font-bold text-[#131613] dark:text-white">Lịch sử sự kiện ({logs.length})</h3>
                                 <button className="text-sm text-primary hover:underline font-medium">Xem Smart Contract</button>
                             </div>
 
-                            {/* Kế thừa LogTable từ component bạn đã tách */}
                             <LogTable logs={logs} />
                         </div>
                     </div>

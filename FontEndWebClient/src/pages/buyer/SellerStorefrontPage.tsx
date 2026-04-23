@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
-import { FloatingChat } from '../../features/chat/components/FloatingChat';
 import { useAuthStore } from '../../store/useAuthStore';
+import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
 import { useCartStore } from '../../store/useCartStore';
 import {
     checkFollow,
@@ -19,7 +19,6 @@ const PLACEHOLDER_BANNER = 'https://images.unsplash.com/photo-1500382017468-9049
 const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?background=2f7f34&color=fff&size=128&name=';
 const PLACEHOLDER_PRODUCT = 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=70';
 
-// ─── Skeleton helpers ─────────────────────────────────────────────────────
 const SkeletonCard = () => (
     <div className="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
         <div className="aspect-[4/3] bg-gray-200 dark:bg-gray-700" />
@@ -34,7 +33,6 @@ const SkeletonCard = () => (
     </div>
 );
 
-// ─── Star rating ──────────────────────────────────────────────────────────
 const StarRating = ({ rating, size = 16 }: { rating: number; size?: number }) => (
     <div className="flex text-amber-400">
         {[1, 2, 3, 4, 5].map((s) => (
@@ -44,7 +42,6 @@ const StarRating = ({ rating, size = 16 }: { rating: number; size?: number }) =>
     </div>
 );
 
-// ─── Main Component ───────────────────────────────────────────────────────
 const SellerStorefrontPage: React.FC = () => {
     const { sellerId } = useParams<{ sellerId: string }>();
     const navigate = useNavigate();
@@ -127,7 +124,6 @@ const SellerStorefrontPage: React.FC = () => {
         finally { setFollowLoading(false); }
     };
 
-    // ─── Add to cart ──────────────────────────────────────────────────────
     const handleAddToCart = async (product: SellerProduct) => {
         try {
             await addToCart({ sanPhamDangId: product.id, soLuong: 1 });
@@ -137,7 +133,6 @@ const SellerStorefrontPage: React.FC = () => {
         }
     };
 
-    // ─── Search ───────────────────────────────────────────────────────────
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setSearch(searchInput);
@@ -149,7 +144,6 @@ const SellerStorefrontPage: React.FC = () => {
         setPage(1);
     };
 
-    // Joined years ago
     const joinedYears = profile
         ? Math.max(0, new Date().getFullYear() - new Date(profile.ngayThamGia).getFullYear())
         : 0;
@@ -175,10 +169,7 @@ const SellerStorefrontPage: React.FC = () => {
             <BuyerHeader showNavigation />
 
             <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-
-                {/* ── SELLER BANNER + PROFILE ────────────────────────────── */}
                 <section className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-soft overflow-hidden border border-gray-100 dark:border-gray-700">
-                    {/* Cover */}
                     <div className="h-48 md:h-64 relative">
                         <img
                             src={profile?.anhBiaUrl || PLACEHOLDER_BANNER}
@@ -188,11 +179,8 @@ const SellerStorefrontPage: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     </div>
 
-                    {/* Profile row */}
                     <div className="px-6 pb-6 relative">
                         <div className="flex flex-col md:flex-row items-start md:items-end -mt-12 md:-mt-16 mb-4 gap-4 md:gap-6">
-
-                            {/* Avatar */}
                             <div className="relative shrink-0">
                                 <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-surface-dark bg-surface-light shadow-md overflow-hidden">
                                     <img
@@ -203,8 +191,6 @@ const SellerStorefrontPage: React.FC = () => {
                                 </div>
                                 <span className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-2 border-white rounded-full" />
                             </div>
-
-                            {/* Name + badge */}
                             <div className="flex-1 text-white md:text-gray-900 md:dark:text-white pt-2 md:pt-0 md:mb-2">
                                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
                                     <h1 className="text-2xl md:text-3xl font-extrabold drop-shadow md:drop-shadow-none">
@@ -220,7 +206,6 @@ const SellerStorefrontPage: React.FC = () => {
                                 </p>
                             </div>
 
-                            {/* Follow + Chat buttons */}
                             <div className="flex gap-3 mt-2 md:mt-0 md:mb-4 w-full md:w-auto">
                                 <button
                                     id="btn-follow-seller"
@@ -250,7 +235,6 @@ const SellerStorefrontPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Stats grid */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 py-4 border-t border-gray-100 dark:border-gray-700">
                             {[
                                 { bg: 'bg-orange-100 text-orange-600', icon: 'star', label: 'Đánh giá', value: `${profile?.danhGiaTrungBinh?.toFixed(1)} / 5.0` },
@@ -272,12 +256,8 @@ const SellerStorefrontPage: React.FC = () => {
                     </div>
                 </section>
 
-                {/* ── BODY: SIDEBAR + PRODUCTS ──────────────────────────── */}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-
-                    {/* Sidebar */}
                     <aside className="lg:col-span-1 space-y-6">
-                        {/* About */}
                         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-soft border border-gray-100 dark:border-gray-700 sticky top-24">
                             <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
                                 Về cửa hàng
@@ -307,7 +287,6 @@ const SellerStorefrontPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Certifications */}
                         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-soft border border-gray-100 dark:border-gray-700">
                             <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4">Chứng nhận</h3>
                             <div className="flex flex-wrap gap-2">
@@ -320,10 +299,7 @@ const SellerStorefrontPage: React.FC = () => {
                         </div>
                     </aside>
 
-                    {/* Product area */}
                     <div className="lg:col-span-3 space-y-6">
-
-                        {/* Search + Filters */}
                         <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-soft border border-gray-100 dark:border-gray-700">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <form onSubmit={handleSearch} className="relative flex-grow max-w-md">
@@ -429,8 +405,7 @@ const SellerStorefrontPage: React.FC = () => {
 
             <BuyerFooter />
 
-            {/* Floating Chat với seller */}
-            <FloatingChat
+            <BuyerFloatingButtons
                 targetSellerId={sellerId}
                 targetSellerName={profile?.hoTen}
                 targetSellerAvatar={profile?.anhDaiDienUrl}
@@ -439,7 +414,6 @@ const SellerStorefrontPage: React.FC = () => {
     );
 };
 
-// ─── ProductCard component ────────────────────────────────────────────────
 interface ProductCardProps {
     product: SellerProduct;
     onAddToCart: () => void;
@@ -494,26 +468,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick
                 </button>
             </div>
 
-            {/* Info */}
             <div className="p-4 flex flex-col flex-grow" onClick={onClick}>
                 <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1 truncate" title={product.tenHienThi}>
                     {product.tenHienThi}
                 </h3>
 
-                {/* Quality badge */}
                 {product.tenChatLuong && (
                     <span className="inline-block w-fit text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded font-semibold mb-2">
                         {product.tenChatLuong}
                     </span>
                 )}
 
-                {/* Stars (static) */}
                 <div className="flex items-center gap-1 mb-2">
                     <StarRating rating={4.5} size={13} />
                     <span className="text-xs text-gray-400">({product.soLuong} còn)</span>
                 </div>
 
-                {/* Price + Cart */}
                 <div className="mt-auto flex items-end justify-between">
                     <div>
                         <span className="block font-bold text-base text-primary">

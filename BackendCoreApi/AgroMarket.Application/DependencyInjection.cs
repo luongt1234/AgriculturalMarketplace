@@ -28,6 +28,8 @@ namespace AgroMarket.Application
             services.AddScoped<ICuaHangService, CuaHangService>();
             services.AddScoped<IDonHangService, DonHangService>();
             services.AddScoped<IGioHangService, GioHangService>();
+            services.AddScoped<IChatbotService, ChatbotService>();
+            services.AddScoped<IThongKeService, ThongKeService>();
 
             return services;
         }

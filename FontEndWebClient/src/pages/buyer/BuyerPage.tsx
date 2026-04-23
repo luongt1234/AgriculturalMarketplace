@@ -7,13 +7,19 @@ import { HeroBanner } from '../../components/buyer/HeroBanner';
 import { CategoriesSection } from '../../components/buyer/CategoriesSection';
 import { FlashDealsSection } from '../../components/buyer/FlashDealsSection';
 import { FreshArrivalsSection } from '../../components/buyer/FreshArrivalsSection';
-import { FloatingChat } from '../../features/chat/components/FloatingChat';
+import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
+import { useSettingsStore } from '../../stores/useSettingsStore';
 import type { BuyerProduct, Category } from '../../types/buyer.types';
 
 export const BuyerPage = () => {
     const [cartCount, setCartCount] = useState(3);
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
+    const { settings, fetchSettings } = useSettingsStore();
+
+    React.useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
 
     const handleAddToCart = (product: BuyerProduct) => {
         setCartCount((prev) => prev + 1);
@@ -26,12 +32,10 @@ export const BuyerPage = () => {
 
     const handleHeroBannerClick = () => {
         toast.info('Đang chuyển đến cửa hàng...');
-        // Navigate to shop/products page
     };
 
     const handleSearchChange = (query: string) => {
         setSearchQuery(query);
-        // Implement search logic if needed
     };
 
     return (
@@ -47,12 +51,12 @@ export const BuyerPage = () => {
             <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
                 {/* Hero Banner */}
                 <HeroBanner
-                    title="Trái vải Lục Ngạn tươi ngon\nThu hoạch sáng nay"
-                    subtitle="Từ nông trại"
-                    description="Trải nghiệm vị ngọt thanh của vải Lục Ngạn cao cấp. Nguồn gốc trực tiếp từ nông dân đạt chuẩn tỉnh Bắc Giang."
-                    imageUrl="https://lh3.googleusercontent.com/aida-public/AB6AXuCpy2mZAcN5k6BzX_bURHyi3XojFDm1o-Gnx38QJopkLMz2EqKfHDGt7LHFLC41xw6TyrqvLVrjU4kwQCSmPthQ52mXKZtB9RgpReLKgGwiskVB0S5PGURESydMoHJVIv9QRIb-uiI90HKRXRlTzogTVAewTAMrXXq5wJGsbfJ3zfJ2dBakZs7veYoTG7g5pgDnABlLHz_DMoaLgH1CX7_xQq5RvF2-YgVUe1J5K_X7PWnMl7OS5_tPepeyS4Sbjhny1QptTPF-VA"
-                    ctaText="Mua ngay"
-                    ctaSecondaryText="Tìm hiểu thêm"
+                    title={settings?.heroBannerTitle || "Trái vải Lục Ngạn tươi ngon\nThu hoạch sáng nay"}
+                    subtitle={settings?.heroBannerSubtitle || "Từ nông trại"}
+                    description={settings?.heroBannerDescription || "Trải nghiệm vị ngọt thanh của vải Lục Ngạn cao cấp. Nguồn gốc trực tiếp từ nông dân đạt chuẩn tỉnh Bắc Giang."}
+                    imageUrl={settings?.heroBannerImageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCpy2mZAcN5k6BzX_bURHyi3XojFDm1o-Gnx38QJopkLMz2EqKfHDGt7LHFLC41xw6TyrqvLVrjU4kwQCSmPthQ52mXKZtB9RgpReLKgGwiskVB0S5PGURESydMoHJVIv9QRIb-uiI90HKRXRlTzogTVAewTAMrXXq5wJGsbfJ3zfJ2dBakZs7veYoTG7g5pgDnABlLHz_DMoaLgH1CX7_xQq5RvF2-YgVUe1J5K_X7PWnMl7OS5_tPepeyS4Sbjhny1QptTPF-VA"}
+                    ctaText={settings?.heroBannerCtaText || "Mua ngay"}
+                    ctaSecondaryText={settings?.heroBannerCtaSecondaryText || "Tìm hiểu thêm"}
                     onCtaClick={handleHeroBannerClick}
                 />
 
@@ -205,8 +209,7 @@ export const BuyerPage = () => {
             {/* Footer */}
             <BuyerFooter />
 
-            {/* Floating Chat */}
-            <FloatingChat />
+            <BuyerFloatingButtons />
         </div>
     );
 };
