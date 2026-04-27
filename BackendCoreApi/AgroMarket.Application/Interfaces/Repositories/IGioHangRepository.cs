@@ -18,5 +18,8 @@ namespace AgroMarket.Application.Interfaces.Repositories
 
         /// <summary>Xoá hết giỏ hàng.</summary>
         Task ClearCartAsync(Guid nguoiDungId);
+
+        /// <summary>Xoá các item theo danh sách SanPhamDangId (dùng sau khi tạo đơn).</summary>
+        Task RemoveItemsByProductIdsAsync(Guid nguoiDungId, IEnumerable<Guid> sanPhamDangIds);
     }
 }

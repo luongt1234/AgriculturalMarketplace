@@ -30,20 +30,20 @@ const mockShippingMethods: ShippingMethod[] = [
 ];
 
 const mockPaymentMethods: PaymentMethod[] = [
-    {
-        id: '1',
-        name: 'Credit/Debit Card',
-        description: 'Visa, Mastercard, JCB',
-        available: true,
-        icon: 'credit_card',
-    },
-    {
-        id: '2',
-        name: 'Bank Transfer',
-        description: 'Direct bank transfer',
-        available: true,
-        icon: 'account_balance',
-    },
+    // {
+    //     id: '1',
+    //     name: 'Credit/Debit Card',
+    //     description: 'Visa, Mastercard, JCB',
+    //     available: true,
+    //     icon: 'credit_card',
+    // },
+    // {
+    //     id: '2',
+    //     name: 'Bank Transfer',
+    //     description: 'Direct bank transfer',
+    //     available: true,
+    //     icon: 'account_balance',
+    // },
     {
         id: '3',
         name: 'Mobile Wallet',

@@ -43,6 +43,7 @@ namespace AgroMarket.Infrastructure
             services.AddScoped<IGHNService, GHNService>();
             services.AddScoped<ISanPhamYeuThichService, SanPhamYeuThichService>();
             services.AddScoped<ICaiDatGiaoDienService, CaiDatGiaoDienService>();
+            services.AddScoped<IVoucherService, VoucherService>();
 
             // cấu hình jwt
             services.AddAuthentication(options =>

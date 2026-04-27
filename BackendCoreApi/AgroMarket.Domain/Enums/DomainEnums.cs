@@ -1,12 +1,24 @@
-﻿namespace AgroMarket.Domain.Enums
+namespace AgroMarket.Domain.Enums
 {
     public enum TrangThaiDonHang
     {
-        ChoXuLy,    // cho_xu_ly
-        XacNhan,    // xac_nhan
-        DangGiao,   // dang_giao
-        HoanTat,    // hoan_tat
-        Huy         // huy
+        // ── Giai đoạn 1: Khởi tạo ───────────────────────────────────────────────
+        ChoXuLy,            // PENDING   – Buyer vừa đặt, chờ seller xác nhận
+        XacNhan,            // CONFIRMED – Seller đã bấm "Chuẩn bị hàng"
+        Huy,                // CANCELLED – Seller từ chối hoặc buyer huỷ
+
+        // ── Giai đoạn 2: Giao hàng ──────────────────────────────────────────────
+        DangGiao,           // SHIPPING  – Đã tạo vận đơn GHN
+        DaGiao,             // DELIVERED – GHN webhook báo giao thành công
+
+        // ── Giai đoạn 3a: Hoàn tất ──────────────────────────────────────────────
+        HoanTat,            // COMPLETED – Buyer xác nhận đã nhận hàng
+
+        // ── Giai đoạn 3b: Hoàn hàng ─────────────────────────────────────────────
+        YeuCauHoan,         // RETURN_REQUESTED – Buyer yêu cầu hoàn trả
+        DangHoan,           // RETURNING        – Seller đồng ý, GHN lấy hàng ngược
+        DaHoan,             // RETURNED         – Seller nhận lại hàng
+        TraChanh,           // DISPUTED         – Seller từ chối hoàn, Admin can thiệp
     }
 
     public enum PhuongThucGiaoHang

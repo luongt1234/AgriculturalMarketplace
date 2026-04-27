@@ -7,7 +7,8 @@ const AdminSidebar: React.FC = () => {
         { name: 'Quản lý người mua', icon: 'group', path: '/admin/buyer' },
         { name: 'Quản lý người bán', icon: 'storefront', path: '/admin/seller' },
         { name: 'Quản lý tài khoản quản trị', icon: 'admin_panel_settings', path: '/admin/admin-managenent' },
-        { name: 'Quản lý danh mục', icon: 'category', path: '/admin/category' }
+        { name: 'Quản lý danh mục', icon: 'category', path: '/admin/category' },
+        { name: 'Quản lý Voucher', icon: 'confirmation_number', path: '/admin/vouchers' },
         // { name: 'Sản phẩm', icon: 'inventory_2', path: '/admin/products' },
         // { name: 'Khu vực', icon: 'map', path: '/admin/regions' },
         // { name: 'Doanh thu', icon: 'payments', path: '/admin/finances' },

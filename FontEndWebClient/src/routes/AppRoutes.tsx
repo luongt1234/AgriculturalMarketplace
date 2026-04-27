@@ -31,6 +31,8 @@ import UserProfilePage from '../pages/public/UserProfilePage';
 import OrdersPage from '../pages/public/OrdersPage';
 import FavoriteProductsPage from '../pages/buyer/FavoriteProductsPage';
 import CategoryProductPage from '../pages/buyer/CategoryProductPage';
+import VoucherManagement from '../pages/admin/VoucherManagement';
+import VoucherPage from '../pages/farmer/VoucherPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -78,6 +80,7 @@ export default function AppRoutes() {
                             <Route path="logs" element={<FarmingLogsPage />} />
                             <Route path="chat" element={<FarmerChatPage />} />
                             <Route path="settings" element={<SellerSettingsPage />} />
+                            <Route path="vouchers" element={<VoucherPage />} />
                         </Route>
                     </Route>
                     {/* 2. THƯƠNG LÁI (TRADER) */}
@@ -97,6 +100,7 @@ export default function AppRoutes() {
                             <Route path="category" element={<CategoryManagement />} />
                             <Route path="users" element={<div>Quản lý User</div>} />
                             <Route path="settings" element={<SettingsPage />} />
+                            <Route path="vouchers" element={<VoucherManagement />} />
 
                         </Route>
                     </Route>

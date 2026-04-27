@@ -14,6 +14,8 @@ import {
     unfollowSeller,
 } from '../../features/sellerStorefront/api/storefront.api';
 import type { SellerProduct, SellerProfile } from '../../features/sellerStorefront/api/storefront.api';
+import { voucherApi } from '../../features/voucher/api/voucherApi';
+import type { VoucherPublicDto } from '../../types/voucher.types';
 
 const PLACEHOLDER_BANNER = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80';
 const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?background=2f7f34&color=fff&size=128&name=';
@@ -66,6 +68,12 @@ const SellerStorefrontPage: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState('');
     const PAGE_SIZE = 9;
 
+    // Voucher tab
+    type MainTab = 'products' | 'vouchers';
+    const [activeTab, setActiveTab] = useState<MainTab>('products');
+    const [shopVouchers, setShopVouchers] = useState<VoucherPublicDto[]>([]);
+    const [voucherLoading, setVoucherLoading] = useState(false);
+
     // ─── Load profile ─────────────────────────────────────────────────────
     useEffect(() => {
         if (!sellerId) return;
@@ -102,6 +110,19 @@ const SellerStorefrontPage: React.FC = () => {
     }, [sellerId, page, search, activeCategory]);
 
     useEffect(() => { loadProducts(); }, [loadProducts]);
+
+    // Load vouchers when tab switches
+    useEffect(() => {
+        if (activeTab !== 'vouchers' || !sellerId) return;
+        (async () => {
+            setVoucherLoading(true);
+            try {
+                const data = await voucherApi.getShopVouchers(sellerId);
+                setShopVouchers(data);
+            } catch { toast.error('Không thể tải voucher.'); }
+            finally { setVoucherLoading(false); }
+        })();
+    }, [activeTab, sellerId]);
 
     // ─── Follow / Unfollow ────────────────────────────────────────────────
     const handleFollowToggle = async () => {
@@ -142,6 +163,15 @@ const SellerStorefrontPage: React.FC = () => {
     const handleCategory = (cat: string) => {
         setActiveCategory(cat);
         setPage(1);
+    };
+
+    const handleClaimVoucher = async (voucherId: string) => {
+        if (!isAuthenticated) { toast.error('Vui lòng đăng nhập để lấy voucher.'); return; }
+        try {
+            const res = await voucherApi.claimVoucher(voucherId);
+            toast.success(`Đã lấy voucher! Mã: ${res.code}`);
+            setShopVouchers(prev => prev.map(v => v.id === voucherId ? { ...v, daLay: true, soLuongConLai: Math.max(0, v.soLuongConLai - 1) } : v));
+        } catch (err: any) { toast.error(err?.response?.data?.message || 'Không thể lấy voucher.'); }
     };
 
     const joinedYears = profile
@@ -258,6 +288,7 @@ const SellerStorefrontPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <aside className="lg:col-span-1 space-y-6">
+                        {/* sidebar unchanged */}
                         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl shadow-soft border border-gray-100 dark:border-gray-700 sticky top-24">
                             <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
                                 Về cửa hàng
@@ -300,103 +331,181 @@ const SellerStorefrontPage: React.FC = () => {
                     </aside>
 
                     <div className="lg:col-span-3 space-y-6">
-                        <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-soft border border-gray-100 dark:border-gray-700">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <form onSubmit={handleSearch} className="relative flex-grow max-w-md">
-                                    <input
-                                        id="shop-search-input"
-                                        type="text"
-                                        value={searchInput}
-                                        onChange={e => setSearchInput(e.target.value)}
-                                        placeholder="Tìm trong cửa hàng..."
-                                        className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
-                                    />
-                                    <span className="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
-                                </form>
-
-                                {/* Category filters */}
-                                <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-                                    {['', 'Rau củ', 'Trái cây', 'Đặc sản'].map((cat) => (
-                                        <button
-                                            key={cat || 'all'}
-                                            id={`filter-${cat || 'all'}`}
-                                            onClick={() => handleCategory(cat)}
-                                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
-                                                ${activeCategory === cat
-                                                    ? 'bg-primary text-white shadow-sm'
-                                                    : 'bg-surface-light dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                                                }`}
-                                        >
-                                            {cat || 'Tất cả'}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                        {/* Main Tab Bar: Products | Vouchers */}
+                        <div className="flex gap-2 bg-surface-light dark:bg-surface-dark p-1 rounded-xl border border-gray-100 dark:border-gray-700 w-fit">
+                            {[{ id: 'products', label: 'Sản phẩm', icon: 'inventory_2' }, { id: 'vouchers', label: 'Voucher', icon: 'confirmation_number' }].map(t => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => setActiveTab(t.id as MainTab)}
+                                    className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === t.id
+                                        ? 'bg-primary text-white shadow-sm'
+                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                        }`}
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">{t.icon}</span>
+                                    {t.label}
+                                </button>
+                            ))}
                         </div>
 
-                        {/* Product Grid */}
-                        {loadingProducts ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
-                            </div>
-                        ) : products.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-24 text-gray-400 gap-3">
-                                <span className="material-symbols-outlined text-6xl text-gray-300">inventory_2</span>
-                                <p className="font-medium">Không tìm thấy sản phẩm nào.</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                {products.map((product) => (
-                                    <ProductCard
-                                        key={product.id}
-                                        product={product}
-                                        onAddToCart={() => handleAddToCart(product)}
-                                        onClick={() => navigate(`/product/${product.id}`)}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        {/* Products tab */}
+                        {activeTab === 'products' && (
+                            <div className="space-y-4">
+                                <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-soft border border-gray-100 dark:border-gray-700">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                        <form onSubmit={handleSearch} className="relative flex-grow max-w-md">
+                                            <input
+                                                id="shop-search-input"
+                                                type="text"
+                                                value={searchInput}
+                                                onChange={e => setSearchInput(e.target.value)}
+                                                placeholder="Tìm trong cửa hàng..."
+                                                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+                                            />
+                                            <span className="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-[18px]">search</span>
+                                        </form>
 
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="flex justify-center mt-8">
-                                <nav className="flex items-center gap-2">
-                                    <button
-                                        id="pagination-prev"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                        className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px]">chevron_left</span>
-                                    </button>
+                                        {/* Category filters */}
+                                        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+                                            {['', 'Rau củ', 'Trái cây', 'Đặc sản'].map((cat) => (
+                                                <button
+                                                    key={cat || 'all'}
+                                                    id={`filter-${cat || 'all'}`}
+                                                    onClick={() => handleCategory(cat)}
+                                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap
+                                                ${activeCategory === cat
+                                                            ? 'bg-primary text-white shadow-sm'
+                                                            : 'bg-surface-light dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                        }`}
+                                                >
+                                                    {cat || 'Tất cả'}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    {[...Array(Math.min(totalPages, 5))].map((_, i) => {
-                                        const p = i + 1;
-                                        return (
+                                {/* Product Grid */}
+                                {loadingProducts ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                        {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+                                    </div>
+                                ) : products.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-24 text-gray-400 gap-3">
+                                        <span className="material-symbols-outlined text-6xl text-gray-300">inventory_2</span>
+                                        <p className="font-medium">Không tìm thấy sản phẩm nào.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                        {products.map((product) => (
+                                            <ProductCard
+                                                key={product.id}
+                                                product={product}
+                                                onAddToCart={() => handleAddToCart(product)}
+                                                onClick={() => navigate(`/product/${product.id}`)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="flex justify-center mt-8">
+                                        <nav className="flex items-center gap-2">
                                             <button
-                                                key={p}
-                                                id={`pagination-page-${p}`}
-                                                onClick={() => setPage(p)}
-                                                className={`w-10 h-10 rounded-lg text-sm font-semibold transition-colors
-                                                    ${page === p
-                                                        ? 'bg-primary text-white'
-                                                        : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                                                    }`}
+                                                id="pagination-prev"
+                                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                                disabled={page === 1}
+                                                className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
                                             >
-                                                {p}
+                                                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
                                             </button>
-                                        );
-                                    })}
 
-                                    <button
-                                        id="pagination-next"
-                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={page === totalPages}
-                                        className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
-                                    >
-                                        <span className="material-symbols-outlined text-[20px]">chevron_right</span>
-                                    </button>
-                                </nav>
+                                            {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                                                const p = i + 1;
+                                                return (
+                                                    <button
+                                                        key={p}
+                                                        id={`pagination-page-${p}`}
+                                                        onClick={() => setPage(p)}
+                                                        className={`w-10 h-10 rounded-lg text-sm font-semibold transition-colors
+                                                    ${page === p
+                                                                ? 'bg-primary text-white'
+                                                                : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                                            }`}
+                                                    >
+                                                        {p}
+                                                    </button>
+                                                );
+                                            })}
+
+                                            <button
+                                                id="pagination-next"
+                                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={page === totalPages}
+                                                className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                                            >
+                                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                                            </button>
+                                        </nav>
+                                    </div>
+                                )}
+                            </div>
+                        )} {/* end products tab */}
+
+                        {/* Vouchers tab */}
+                        {activeTab === 'vouchers' && (
+                            <div>
+                                {voucherLoading ? (
+                                    <div className="flex items-center justify-center py-20 text-primary">
+                                        <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span> Đang tải voucher...
+                                    </div>
+                                ) : shopVouchers.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
+                                        <span className="material-symbols-outlined text-6xl text-gray-300">confirmation_number</span>
+                                        <p className="font-medium">Cửa hàng chưa có voucher nào.</p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {shopVouchers.map(v => (
+                                            <div key={v.id} className="relative bg-white dark:bg-surface-dark border-2 border-dashed border-primary/30 rounded-2xl overflow-hidden p-5 flex gap-4">
+                                                {/* Left discount badge */}
+                                                <div className="flex-shrink-0 w-20 h-20 bg-primary/10 rounded-xl flex flex-col items-center justify-center">
+                                                    <span className="text-2xl font-black text-primary">
+                                                        {v.loaiGiamGia === 'PHAN_TRAM' ? `${v.giaTriGiam}%` : `${(v.giaTriGiam / 1000).toFixed(0)}k`}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-500">giảm</span>
+                                                </div>
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-[#131613] dark:text-white truncate">{v.tenVoucher}</p>
+                                                    {v.moTa && <p className="text-xs text-gray-500 truncate">{v.moTa}</p>}
+                                                    <p className="text-xs text-gray-400 mt-1">
+                                                        HSD: {new Date(v.ngayHetHan).toLocaleDateString('vi-VN')}
+                                                        {v.giaTriDonHangToiThieu > 0 && ` • Đơn tối thiểu ${v.giaTriDonHangToiThieu.toLocaleString('vi-VN')}₫`}
+                                                    </p>
+                                                    <p className="text-xs font-bold text-primary mt-1 font-mono">{v.maCode}</p>
+                                                    <p className="text-xs text-gray-400">
+                                                        {v.soLuongConLai === 9999 ? 'Không giới hạn' : `Còn lại: ${v.soLuongConLai}`}
+                                                    </p>
+                                                </div>
+                                                {/* Claim button */}
+                                                <button
+                                                    onClick={() => handleClaimVoucher(v.id)}
+                                                    disabled={v.daLay || v.soLuongConLai === 0}
+                                                    className={`absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${v.daLay
+                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                        : v.soLuongConLai === 0
+                                                            ? 'bg-red-50 text-red-400 cursor-not-allowed'
+                                                            : 'bg-primary text-white hover:bg-[#246328] shadow-sm'
+                                                        }`}
+                                                >
+                                                    {v.daLay ? 'Đã lấy ✓' : v.soLuongConLai === 0 ? 'Hết lượt' : 'Lấy ngay'}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

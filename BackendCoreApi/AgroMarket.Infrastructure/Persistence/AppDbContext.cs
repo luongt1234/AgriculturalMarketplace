@@ -32,6 +32,8 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<ChiTietGioHang> ChiTietGioHangs { get; set; }
         public DbSet<SanPhamYeuThich> SanPhamYeuThiches { get; set; }
         public DbSet<CaiDatGiaoDien> CaiDatGiaoDiens { get; set; }
+        public DbSet<Voucher> Vouchers { get; set; }
+        public DbSet<VoucherNguoiDung> VoucherNguoiDungs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -62,6 +64,8 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<ChiTietGioHang>().ToTable("chi_tiet_gio_hang");
             modelBuilder.Entity<SanPhamYeuThich>().ToTable("san_pham_yeu_thich");
             modelBuilder.Entity<CaiDatGiaoDien>().ToTable("cai_dat_giao_dien");
+            modelBuilder.Entity<Voucher>().ToTable("voucher");
+            modelBuilder.Entity<VoucherNguoiDung>().ToTable("voucher_nguoi_dung");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -206,11 +210,37 @@ namespace AgroMarket.Infrastructure.Persistence
                 .HasIndex(yt => new { yt.NguoiDungId, yt.SanPhamDangId })
                 .IsUnique();
 
+            // Voucher
+            modelBuilder.Entity<Voucher>()
+                .HasOne(v => v.NguoiBan)
+                .WithMany()
+                .HasForeignKey(v => v.NguoiBanId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<VoucherNguoiDung>()
+                .HasOne(vnd => vnd.Voucher)
+                .WithMany(v => v.VoucherNguoiDungs)
+                .HasForeignKey(vnd => vnd.VoucherId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<VoucherNguoiDung>()
+                .HasOne(vnd => vnd.NguoiDung)
+                .WithMany()
+                .HasForeignKey(vnd => vnd.NguoiDungId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique: mỗi người chỉ lấy 1 voucher 1 lần
+            modelBuilder.Entity<VoucherNguoiDung>()
+                .HasIndex(vnd => new { vnd.VoucherId, vnd.NguoiDungId })
+                .IsUnique();
+
             // =========================================================
             // 4. CẤU HÌNH ENUM (CONVERSION)
             // =========================================================
             modelBuilder.Entity<DonHang>().Property(x => x.TrangThai).HasConversion<string>();
             modelBuilder.Entity<DonHang>().Property(x => x.PhuongThucNhanHang).HasConversion<string>();
+            modelBuilder.Entity<Voucher>().Property(x => x.LoaiVoucher).HasConversion<string>();
+            modelBuilder.Entity<Voucher>().Property(x => x.LoaiGiamGia).HasConversion<string>();
             modelBuilder.Entity<SanPhamDang>().Property(x => x.TrangThai).HasConversion<string>();
             modelBuilder.Entity<ThanhToan>().Property(x => x.TrangThai).HasConversion<string>();
             modelBuilder.Entity<ThanhToan>().Property(x => x.PhuongThuc).HasConversion<string>();
@@ -264,6 +294,8 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<ChiTietGioHang>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<SanPhamYeuThich>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<CaiDatGiaoDien>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<Voucher>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<VoucherNguoiDung>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

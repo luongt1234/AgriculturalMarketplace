@@ -122,5 +122,19 @@ namespace AgroMarket.Infrastructure.Repositories
             _context.ChiTietGioHangs.RemoveRange(cart.ChiTiet);
             await _context.SaveChangesAsync();
         }
+
+        public async Task RemoveItemsByProductIdsAsync(Guid nguoiDungId, IEnumerable<Guid> sanPhamDangIds)
+        {
+            var cart = await GetOrCreateEntityAsync(nguoiDungId);
+            var toRemove = cart.ChiTiet
+                .Where(ct => sanPhamDangIds.Contains(ct.SanPhamDangId))
+                .ToList();
+
+            if (toRemove.Count > 0)
+            {
+                _context.ChiTietGioHangs.RemoveRange(toRemove);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

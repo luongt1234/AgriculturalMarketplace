@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ProductCard } from '../../features/products/components/ProductCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 import { getDisplayProducts, type DisplayProduct } from '../../features/products/api/product.api';
+import { voucherApi } from '../../features/voucher/api/voucherApi';
 
 interface FreshArrivalsSectionProps {
     products?: BuyerProduct[];
@@ -34,6 +35,7 @@ export const FreshArrivalsSection: React.FC<FreshArrivalsSectionProps> = ({
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
+    const [discountMap, setDiscountMap] = useState<Record<string, number>>({});
 
     useEffect(() => {
         if (propProducts) {
@@ -46,6 +48,10 @@ export const FreshArrivalsSection: React.FC<FreshArrivalsSectionProps> = ({
                     const mappedProducts = response.data.map(mapDisplayProductToBuyerProduct);
                     setProducts(mappedProducts);
                     setTotalPages(response.totalPages || 1);
+                    // fetch discount map
+                    const ids = response.data.map((p: DisplayProduct) => p.id);
+                    const dMap = await voucherApi.getDiscountsForProducts(ids);
+                    setDiscountMap(dMap);
                 } catch (error) {
                     console.error('Error fetching products:', error);
                 } finally {
@@ -94,16 +100,28 @@ export const FreshArrivalsSection: React.FC<FreshArrivalsSectionProps> = ({
         <section className="pb-8">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{title}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {products.map((product) => (
-                    <ProductCard
-                        key={product.id}
-                        product={product}
-                        variant="compact"
-                        onAddToCart={onAddToCart}
-                        showDiscount={false}
-                        onClick={() => navigate(`/Product/${product.id}`)}
-                    />
-                ))}
+            {products.map((product) => {
+                const discount = discountMap[product.id];
+                const displayProduct: BuyerProduct = discount
+                    ? { ...product, originalPrice: product.price, price: Math.max(0, product.price - discount), discount: Math.round((discount / product.price) * 100) }
+                    : product;
+                return (
+                    <div key={product.id} className="relative">
+                        {discount && (
+                            <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow">
+                                -{Math.round((discount / product.price) * 100)}%
+                            </div>
+                        )}
+                        <ProductCard
+                            product={displayProduct}
+                            variant="compact"
+                            onAddToCart={onAddToCart}
+                            showDiscount={!!discount}
+                            onClick={() => navigate(`/Product/${product.id}`)}
+                        />
+                    </div>
+                );
+            })}
             </div>
             {currentPage < totalPages && (
                 <div className="flex justify-center mt-8">

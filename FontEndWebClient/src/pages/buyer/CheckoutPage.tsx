@@ -13,6 +13,7 @@ import { ConfirmationStep } from '../../features/checkout/components/Confirmatio
 import { OrderSummaryPanel } from '../../features/checkout/components/OrderSummaryPanel';
 import { getUserAddresses, deleteAddress as deleteAddressApi } from '../../features/checkout/api/address.api';
 import { getAvailableShippingMethods, getShippingFeeForDestination } from '../../features/checkout/api/shipping.api';
+import { taoDonHang } from '../../features/checkout/api/order.api';
 import { toast } from 'sonner';
 
 export function CheckoutPage() {
@@ -271,23 +272,100 @@ export function CheckoutPage() {
     };
 
     const handleConfirmOrder = async () => {
-        store.setLoading(true);
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+        if (!store.selectedPaymentMethod) {
+            toast.error('Vui lòng chọn phương thức thanh toán!');
+            return;
+        }
+        if (!store.selectedAddress) {
+            toast.error('Vui lòng chọn địa chỉ giao hàng!');
+            return;
+        }
+        if (!store.selectedShippingMethod) {
+            toast.error('Vui lòng chọn phương thức vận chuyển!');
+            return;
+        }
+        if (!checkoutItems || checkoutItems.length === 0) {
+            toast.error('Giỏ hàng trống, không thể đặt hàng!');
+            return;
+        }
 
-            console.log('Order submitted:', {
-                address: store.selectedAddress,
-                shipping: store.selectedShippingMethod,
-                payment: store.selectedPaymentMethod,
-                summary: store.orderSummary,
-            });
+        const paymentId = store.selectedPaymentMethod.id;
 
-            toast.success('Đơn hàng đã được gửi thành công!');
-            store.goToNextStep();
-        } catch (error) {
-            store.setError('Gửi đơn hàng thất bại. Vui lòng thử lại.');
-        } finally {
-            store.setLoading(false);
+        // ── Momo (chưa triển khai) ──────────────────────────────────────────────
+        if (paymentId === '3') {
+            toast.info('Tính năng thanh toán Momo đang được phát triển. Sẽ xử lý sau!');
+            return;
+        }
+
+        // ── COD ─────────────────────────────────────────────────────────────────
+        if (paymentId === '4') {
+            store.setLoading(true);
+            store.setError(null);
+
+            try {
+                const addr = store.selectedAddress;
+                const shipping = store.selectedShippingMethod;
+
+                // Nhóm các item theo sellerId (mỗi seller = 1 đơn hàng riêng)
+                // Lọc bỏ item không có sellerId (không nên xảy ra nhưng để TS an toàn)
+                const validItems = checkoutItems.filter((i): i is typeof i & { sellerId: string } =>
+                    typeof i.sellerId === 'string' && i.sellerId.length > 0
+                );
+                const grouped = validItems.reduce<Record<string, typeof validItems>>((acc, item) => {
+                    if (!acc[item.sellerId]) acc[item.sellerId] = [];
+                    acc[item.sellerId].push(item);
+                    return acc;
+                }, {});
+
+                const orderPromises = Object.entries(grouped).map(([sellerId, items]) =>
+                    taoDonHang({
+                        diaChiGiaoHangId : addr.id,
+                        diaChiGiaoHang   : JSON.stringify({
+                            provinceId   : addr.provinceId,
+                            provinceName : addr.city,
+                            districtId   : addr.districtCode,
+                            districtName : addr.district,
+                            wardCode     : addr.wardCode,
+                            wardName     : addr.ward,
+                            diaChiChiTiet: addr.detailedAddress,
+                        }),
+                        tenNguoiNhan  : addr.fullName,
+                        soDienThoai   : addr.phone,
+                        nguoiBanId    : sellerId,
+                        phiVanChuyen  : shipping.baseFee ?? 0,
+                        ghnServiceId  : shipping.serviceId ?? undefined,
+                        ghiChu        : undefined,
+                        items: items.map(i => ({
+                            sanPhamDangId : i.productId,
+                            soLuong       : i.quantity,
+                            donGia        : i.price,
+                        })),
+                    })
+                );
+
+                const results = await Promise.all(orderPromises);
+
+                // Thành công
+                toast.success(
+                    results.length === 1
+                        ? `Đặt hàng thành công! Mã đơn: ${results[0].donHangId.slice(0, 8).toUpperCase()}`
+                        : `Đã tạo ${results.length} đơn hàng thành công!`
+                );
+
+                // Reset store rồi chuyển trang
+                store.goToNextStep();
+
+                // Refresh giỏ hàng (items đã bị xoá phía backend)
+                await fetchCart();
+
+            } catch (error: unknown) {
+                console.error('Lỗi khi đặt hàng:', error);
+                const msg = error instanceof Error ? error.message : 'Gửi đơn hàng thất bại. Vui lòng thử lại.';
+                store.setError(msg);
+                toast.error(msg);
+            } finally {
+                store.setLoading(false);
+            }
         }
     };
 
