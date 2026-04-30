@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.DTOs.NguoiDungDtos;
+using AgroMarket.Application.DTOs.NguoiDungDtos;
 using AgroMarket.Application.Wrappers;
 using System;
 using System.Collections.Generic;
@@ -12,5 +12,6 @@ namespace AgroMarket.Application.Interfaces.Services
     {
         public Task<PagedResponse<IEnumerable<NguoiDungDto>>> GetAllByMaAsync(int pageSize, int pageNumber, string ma);
         public Task CreateUserAsync(NguoiDungFormDto user);
+        public Task RegisterSellerAsync(Guid userId);
     }
 }

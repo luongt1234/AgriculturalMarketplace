@@ -6,11 +6,11 @@ const MENU_ITEMS = [
     { path: '/farmer/dashboard', icon: 'dashboard', label: 'Tổng quan' },
     { path: '/farmer/products', icon: 'inventory_2', label: 'Sản phẩm' },
     { path: '/farmer/orders', icon: 'shopping_cart', label: 'Đơn hàng' },
-    { path: '/farmer/contracts', icon: 'history_edu', label: 'Hợp đồng' },
+    // { path: '/farmer/contracts', icon: 'history_edu', label: 'Hợp đồng' },
     { path: '/farmer/logs', icon: 'menu_book', label: 'Nhật kí canh tác' },
     { path: '/farmer/chat', icon: 'chat', label: 'Tin nhắn' },
     { path: '/farmer/vouchers', icon: 'confirmation_number', label: 'Voucher' },
-    { path: '/farmer/settings', icon: 'settings', label: 'Cấu hình' },
+    // { path: '/farmer/settings', icon: 'settings', label: 'Cấu hình' },
 ];
 
 export const FarmerSidebar: React.FC = () => {

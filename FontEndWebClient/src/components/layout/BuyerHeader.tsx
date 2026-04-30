@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/useCartStore';
 import { useFavoriteStore } from '../../store/useFavoriteStore';
 import { getSearchSuggestions, type DisplayProduct } from '../../features/products/api/product.api';
 import { CartDrawer } from '../../features/cart/components/CartDrawer';
+import { BecomeSellerModal } from '../../features/auth/components/BecomeSellerModal';
 
 interface BuyerHeaderProps {
     cartCount?: number;
@@ -21,16 +22,23 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
     const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
-    const { user } = useAuthStore();
+    const [isBecomeSellerOpen, setIsBecomeSellerOpen] = useState(false);
+    const { user, logout } = useAuthStore();
     const { cart } = useCartStore();
     const { fetchFavoriteIds } = useFavoriteStore();
     const navigate = useNavigate();
     const searchRef = useRef<HTMLDivElement>(null);
+    const profileRef = useRef<HTMLDivElement>(null);
+
+    const isSeller = user?.maVaiTro === 'NONG-DAN';
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
                 setIsSuggestionsOpen(false);
+            }
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -106,10 +114,8 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('auth-storage');
-        // setUser(null);
+        logout();
         setIsProfileOpen(false);
-        // Có thể redirect hoặc refresh page
         window.location.href = '/login';
     };
 
@@ -198,13 +204,13 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                             {/* Navigation */}
                             {showNavigation && (
                                 <nav className="hidden lg:flex gap-6">
-                                    <a href="#" className="text-primary font-semibold text-sm hover:text-primary-dark transition-colors">
+                                    <a href="/" className="text-primary font-semibold text-sm hover:text-primary-dark transition-colors">
                                         Trang chủ
                                     </a>
-                                    <a href="#" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors">
-                                        Thị trường
+                                    <a href="/orders" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors">
+                                        Đơn hàng
                                     </a>
-                                    <a href="#" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors">
+                                    <a href="/analytics" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors">
                                         Thống kê
                                     </a>
                                 </nav>
@@ -232,7 +238,17 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
 
                                 {/* Profile Avatar or Login Button */}
                                 {user ? (
-                                    <div className="relative">
+                                    <div className="relative" ref={profileRef}>
+                                        {/* Seller channel button – only for NONG-DAN */}
+                                        {/* {isSeller && (
+                                            <button
+                                                onClick={() => navigate('/farmer')}
+                                                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700 text-xs font-semibold hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors mr-2"
+                                            >
+                                                <span className="material-symbols-outlined text-[16px]">storefront</span>
+                                                Kênh người bán
+                                            </button>
+                                        )} */}
                                         <button
                                             onClick={() => setIsProfileOpen(!isProfileOpen)}
                                             className="ml-2 w-9 h-9 rounded-full bg-cover bg-center border-2 border-white dark:border-gray-700 shadow-sm cursor-pointer hover:ring-2 hover:ring-primary transition-all"
@@ -241,25 +257,64 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                             }}
                                         />
                                         {isProfileOpen && (
-                                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1a261c] rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
-                                                <div className="px-4 py-2 text-sm text-gray-900 dark:text-white font-medium">
-                                                    {user.hoTen}
+                                            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1a261c] rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50">
+                                                {/* User info */}
+                                                <div className="px-4 py-2">
+                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.hoTen}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                                                    <span className={`mt-1 inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${isSeller
+                                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+                                                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
+                                                        }`}>
+                                                        {isSeller ? '🌾 Người bán' : '🛒 Người mua'}
+                                                    </span>
                                                 </div>
                                                 <hr className="my-1 border-gray-200 dark:border-gray-700" />
-                                                <a href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+
+                                                {/* Seller shortcut (mobile) */}
+                                                {isSeller && (
+                                                    <a
+                                                        href="/farmer"
+                                                        className="flex items-center gap-2 px-4 py-2 text-sm text-green-700 dark:text-green-400 font-semibold hover:bg-green-50 dark:hover:bg-green-900/20"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[18px]">storefront</span>
+                                                        Kênh người bán
+                                                    </a>
+                                                )}
+
+                                                <a href="/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                    <span className="material-symbols-outlined text-[18px]">person</span>
                                                     Hồ sơ
                                                 </a>
-                                                <a href="/orders" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                <a href="/orders" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                    <span className="material-symbols-outlined text-[18px]">receipt_long</span>
                                                     Đơn hàng
                                                 </a>
-                                                <a href="/favorites" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                <a href="/favorites" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                    <span className="material-symbols-outlined text-[18px]">favorite</span>
                                                     Sản phẩm yêu thích
                                                 </a>
+
+                                                {/* Become Seller – only for buyers */}
+                                                {!isSeller && (
+                                                    <>
+                                                        <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                                                        <button
+                                                            onClick={() => { setIsProfileOpen(false); setIsBecomeSellerOpen(true); }}
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-green-700 dark:text-green-400 font-semibold hover:bg-green-50 dark:hover:bg-green-900/20"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">agriculture</span>
+                                                            Đăng ký bán hàng
+                                                        </button>
+                                                    </>
+                                                )}
+
                                                 <hr className="my-1 border-gray-200 dark:border-gray-700" />
                                                 <button
                                                     onClick={handleLogout}
-                                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                                 >
+                                                    <span className="material-symbols-outlined text-[18px]">logout</span>
                                                     Đăng xuất
                                                 </button>
                                             </div>
@@ -299,6 +354,7 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
             </header>
 
             <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+            <BecomeSellerModal isOpen={isBecomeSellerOpen} onClose={() => setIsBecomeSellerOpen(false)} />
         </>
     );
 };

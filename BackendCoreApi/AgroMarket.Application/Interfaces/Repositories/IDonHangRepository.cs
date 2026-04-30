@@ -13,7 +13,7 @@ namespace AgroMarket.Application.Interfaces.Repositories
         // Tạo đơn hàng mới
         Task<DonHang> TaoDonHangAsync(DonHang donHang, List<ChiTietDonHang> chiTiet);
 
-        // Lấy đơn theo Id (bao gồm chi tiết)
+        // Lấy đơn theo Id (bao gồm chi tiết - Dùng để xử lý logic nội bộ)
         Task<DonHang?> GetByIdWithDetailsAsync(Guid donHangId);
 
         // Seller: lấy đơn của shop mình
@@ -22,5 +22,15 @@ namespace AgroMarket.Application.Interfaces.Repositories
 
         // Cập nhật trạng thái
         Task<bool> CapNhatTrangThaiAsync(Guid donHangId, TrangThaiDonHang trangThai, Guid actorId);
+
+        Task<bool> UpdateAsync(DonHang donHang);
+
+        Task<DonHangDto?> GetDonHangDtoByIdAsync(Guid donHangId);
+
+        Task<(IEnumerable<DonHangDto> Items, int TotalRecords)> GetAllPagedAsync(
+            int pageNumber, int pageSize, TrangThaiDonHang? trangThai = null);
+
+        // Lấy đơn theo mã vận đơn GHN (dùng cho webhook)
+        Task<DonHang?> GetByMaVanDonAsync(string maVanDon);
     }
 }

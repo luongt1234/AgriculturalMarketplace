@@ -22,17 +22,7 @@ export function CheckoutPage() {
     const store = useCheckoutStore();
     const { cart, fetchCart } = useCartStore();
 
-    const checkoutItems: CartItem[] = cart?.chiTiet?.map(item => ({
-        id: item.id,
-        productId: item.sanPhamDangId,
-        name: item.tenSanPham || '',
-        price: item.gia,
-        quantity: item.soLuong,
-        image: item.hinhAnhUrl || '',
-        unit: item.donVi || '',
-        sellerId: item.nguoiBanId,
-        sellerName: item.tenNguoiBan || '',
-    })) || [];
+    const checkoutItems = store.cartItems;
 
     useEffect(() => {
         fetchCart();
@@ -232,7 +222,7 @@ export function CheckoutPage() {
     };
 
     const handleContinueToShipping = () => {
-        if (!(cart?.chiTiet && cart.chiTiet.length > 0)) {
+        if (!checkoutItems || checkoutItems.length === 0) {
             toast.warning('Vui lòng chọn sản phẩm trước khi thanh toán');
             return;
         }
@@ -319,26 +309,26 @@ export function CheckoutPage() {
 
                 const orderPromises = Object.entries(grouped).map(([sellerId, items]) =>
                     taoDonHang({
-                        diaChiGiaoHangId : addr.id,
-                        diaChiGiaoHang   : JSON.stringify({
-                            provinceId   : addr.provinceId,
-                            provinceName : addr.city,
-                            districtId   : addr.districtCode,
-                            districtName : addr.district,
-                            wardCode     : addr.wardCode,
-                            wardName     : addr.ward,
+                        diaChiGiaoHangId: addr.id,
+                        diaChiGiaoHang: JSON.stringify({
+                            provinceId: addr.provinceId,
+                            provinceName: addr.city,
+                            districtId: addr.districtCode,
+                            districtName: addr.district,
+                            wardCode: addr.wardCode,
+                            wardName: addr.ward,
                             diaChiChiTiet: addr.detailedAddress,
                         }),
-                        tenNguoiNhan  : addr.fullName,
-                        soDienThoai   : addr.phone,
-                        nguoiBanId    : sellerId,
-                        phiVanChuyen  : shipping.baseFee ?? 0,
-                        ghnServiceId  : shipping.serviceId ?? undefined,
-                        ghiChu        : undefined,
+                        tenNguoiNhan: addr.fullName,
+                        soDienThoai: addr.phone,
+                        nguoiBanId: sellerId,
+                        phiVanChuyen: shipping.baseFee ?? 0,
+                        ghnServiceId: shipping.serviceId ?? undefined,
+                        ghiChu: undefined,
                         items: items.map(i => ({
-                            sanPhamDangId : i.productId,
-                            soLuong       : i.quantity,
-                            donGia        : i.price,
+                            sanPhamDangId: i.productId,
+                            soLuong: i.quantity,
+                            donGia: i.price,
                         })),
                     })
                 );

@@ -1,4 +1,4 @@
-﻿using AgroMarket.Api.Attributes;
+using AgroMarket.Api.Attributes;
 using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.DTOs.NguoiDungDtos;
 using AgroMarket.Application.Interfaces.Services;
@@ -54,6 +54,30 @@ namespace AgroMarket.Api.Controllers
             {
                 return (ActionResult)Error($"Lỗi khi lấy danh sách người dùng: {ex.Message}");
             }
-        } 
+        }
+
+        [HttpPut("register-seller")]
+        [Authorize]
+        public async Task<IActionResult> RegisterSeller()
+        {
+            try
+            {
+                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId))
+                {
+                    return Unauthorized("Không xác định được người dùng.");
+                }
+
+                await _nguoiDungService.RegisterSellerAsync(userId);
+                
+                // Trả về token mới nếu cần, nhưng ở đây có thể bắt frontend logout/login lại 
+                // hoặc refresh token. Tạm thời trả về message thành công.
+                return Ok(new { message = "Đã đăng ký làm người bán thành công. Vui lòng đăng xuất và đăng nhập lại để cập nhật quyền." });
+            }
+            catch (Exception ex)
+            {
+                return (ActionResult)Error($"Lỗi khi đăng ký làm người bán: {ex.Message}");
+            }
+        }
     }
 }

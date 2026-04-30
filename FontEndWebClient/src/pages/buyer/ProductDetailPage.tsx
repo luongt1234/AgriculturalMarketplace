@@ -6,7 +6,8 @@ import { useCheckoutStore } from '../../store/useCheckoutStore';
 import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
-import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
+import { FloatingChat } from '../../features/chat/components/FloatingChat';
+import { AIChatbot } from '../../features/chatbot/components/AIChatbot';
 
 interface ProductDetailApiData {
     id: string;
@@ -18,7 +19,7 @@ interface ProductDetailApiData {
     moTaChiTiet: string;
     ngayDang: string;
     sanPhamChungId: string;
-    nguoiBanId: string;      // ← ID người bán
+    nguoiBanId: string;
     chatLuongId: string;
     tenSanPhamChung: string;
     tenNguoiBan: string;
@@ -56,7 +57,7 @@ interface ProductDetail {
     description: string;
     harvestDate: string;
     stock: string;
-    availableQuantity: number; // Thêm trường này để check tồn kho
+    availableQuantity: number;
     certifications: string[];
     rating: number;
     reviews: number;
@@ -123,12 +124,10 @@ const ProductDetailPage: React.FC = () => {
     };
 
     const handleQuantityBlur = () => {
-        // Khi blur ra ngoài, nếu input đang trống thì set mặc định về 1
         if (quantity === '' || Number(quantity) < 1) {
             setQuantity(1);
         }
     };
-    // ==========================================
 
     const handleAddToCart = async () => {
         if (!product) return;
@@ -144,6 +143,8 @@ const ProductDetailPage: React.FC = () => {
             quantity: finalQuantity,
             image: product.image,
             unit: product.unit,
+            sellerId: sellerInfo?.id || '',
+            sellerName: product.seller,
             originDistrictCode: product.sellerDistrictCode,
         };
 
@@ -188,6 +189,8 @@ const ProductDetailPage: React.FC = () => {
             quantity: finalQuantity,
             image: product.image,
             unit: product.unit,
+            sellerId: sellerInfo?.id || '',
+            sellerName: product.seller,
             originDistrictCode: product.sellerDistrictCode,
         };
 
@@ -265,7 +268,6 @@ const ProductDetailPage: React.FC = () => {
                     sold: item.soLuong ? `${item.soLuong}+` : 'N/A',
                     sellerDistrictCode,
                 });
-                // Lưu thông tin người bán cho FloatingChat
                 setSellerInfo({
                     id: item.nguoiBanId,
                     name: item.tenNguoiBan,
@@ -480,7 +482,6 @@ const ProductDetailPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Reviews Section */}
                 <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
                     <nav aria-label="Tabs" className="flex space-x-8">
                         <a aria-current="page" className="border-b-2 border-primary py-4 px-1 text-sm font-bold text-primary" href="#reviews">Reviews ({product.reviews})</a>
@@ -585,13 +586,13 @@ const ProductDetailPage: React.FC = () => {
                 </section>
             </main>
 
-            <BuyerFloatingButtons
+            <AIChatbot />
+            <FloatingChat
                 targetSellerId={sellerInfo?.id}
                 targetSellerName={sellerInfo?.name}
                 targetSellerAvatar={sellerInfo?.avatar}
             />
 
-            {/* Footer */}
             <BuyerFooter />
         </div>
     );

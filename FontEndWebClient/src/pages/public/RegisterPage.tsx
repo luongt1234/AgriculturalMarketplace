@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 export const RegisterPage = () => {
     const navigate = useNavigate();
 
-    // Quản lý state của Form
+    // Quản lý state của Form – chỉ đăng ký Người mua (THUONG-LAI)
     const [formData, setFormData] = useState({
-        MaVaiTro: 'THUONG-LAI', // Mặc định là Người mua
+        MaVaiTro: 'THUONG-LAI',
         HoVaTen: '',
         Email: '',
         SoDienThoai: '',
@@ -84,7 +84,7 @@ export const RegisterPage = () => {
                                     <path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z"></path>
                                 </svg>
                             </div>
-                            <span className="text-2xl font-bold tracking-tight">AgriMarket</span>
+                            <span className="text-2xl font-bold tracking-tight">PeachyMarket</span>
                         </div>
                         <div className="max-w-md">
                             <h1 className="text-5xl font-black leading-tight mb-4">Đồng hành cùng người nông dân.</h1>
@@ -99,7 +99,7 @@ export const RegisterPage = () => {
                             </div>
                         </div>
                         <div className="text-sm opacity-70">
-                            © 2026 AgriMarket Inc. Đã đăng ký bản quyền.
+                            © 2026 PeachyMarket Inc. Đã đăng ký bản quyền.
                         </div>
                     </div>
                 </div>
@@ -114,7 +114,7 @@ export const RegisterPage = () => {
                                     <path d="M44 11.2727C44 14.0109 39.8386 16.3957 33.69 17.6364C39.8386 18.877 44 21.2618 44 24C44 26.7382 39.8386 29.123 33.69 30.3636C39.8386 31.6043 44 33.9891 44 36.7273C44 40.7439 35.0457 44 24 44C12.9543 44 4 40.7439 4 36.7273C4 33.9891 8.16144 31.6043 14.31 30.3636C8.16144 29.123 4 26.7382 4 24C4 21.2618 8.16144 18.877 14.31 17.6364C8.16144 16.3957 4 14.0109 4 11.2727C4 7.25611 12.9543 4 24 4C35.0457 4 44 7.25611 44 11.2727Z"></path>
                                 </svg>
                             </div>
-                            <span className="text-xl font-bold dark:text-white">AgriMarket</span>
+                            <span className="text-xl font-bold dark:text-white">PeachyMarket</span>
                         </div>
 
                         <div className="space-y-2">
@@ -125,38 +125,12 @@ export const RegisterPage = () => {
                         {/* Registration Form */}
                         <form onSubmit={handleSubmit} className="space-y-6">
 
-                            {/* Chọn Vai trò */}
-                            <div className="space-y-3">
-                                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tôi tham gia với vai trò:</p>
-                                <div className="flex p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl gap-1">
-                                    <label className="relative flex-1 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="MaVaiTro"
-                                            value="THUONG-LAI"
-                                            checked={formData.MaVaiTro === 'THUONG-LAI'}
-                                            onChange={handleChange}
-                                            className="peer hidden"
-                                        />
-                                        <div className="flex items-center justify-center py-2.5 rounded-lg text-sm font-semibold transition-all peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-primary dark:peer-checked:bg-slate-700 text-slate-500 dark:text-slate-400">
-                                            <span className="material-symbols-outlined mr-2 text-[20px]">shopping_basket</span>
-                                            Người mua (Thương lái)
-                                        </div>
-                                    </label>
-                                    <label className="relative flex-1 cursor-pointer">
-                                        <input
-                                            type="radio"
-                                            name="MaVaiTro"
-                                            value="NONG-DAN"
-                                            checked={formData.MaVaiTro === 'NONG-DAN'}
-                                            onChange={handleChange}
-                                            className="peer hidden"
-                                        />
-                                        <div className="flex items-center justify-center py-2.5 rounded-lg text-sm font-semibold transition-all peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-primary dark:peer-checked:bg-slate-700 text-slate-500 dark:text-slate-400">
-                                            <span className="material-symbols-outlined mr-2 text-[20px]">agriculture</span>
-                                            Người bán (Nông dân)
-                                        </div>
-                                    </label>
+                            {/* Thông tin vai trò – cố định Người mua */}
+                            <div className="flex items-center gap-3 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl">
+                                <span className="material-symbols-outlined text-primary text-[22px]">shopping_basket</span>
+                                <div>
+                                    <p className="text-sm font-semibold text-slate-800 dark:text-white">Tài khoản Người mua</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">Muốn bán hàng? Bạn có thể đăng ký trở thành Người bán sau khi đăng nhập.</p>
                                 </div>
                             </div>
 

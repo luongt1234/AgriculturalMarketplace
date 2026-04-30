@@ -24,7 +24,11 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<HttpClient>();
 builder.Services.AddMemoryCache();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();

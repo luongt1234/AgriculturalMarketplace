@@ -33,13 +33,7 @@ export interface GetMyOrdersParams {
     trangThai?: string;
 }
 
-export const getMyOrders = async (params: GetMyOrdersParams = {}): Promise<{
-    data: DonHangDto[];
-    pageNumber: number;
-    pageSize: number;
-    totalRecords: number;
-    totalPages: number;
-}> => {
+export const getMyOrders = async (params: GetMyOrdersParams = {}) => {
     const { pageNumber = 1, pageSize = 10, trangThai } = params;
     const query = new URLSearchParams();
     query.append('pageNumber', pageNumber.toString());
@@ -47,5 +41,10 @@ export const getMyOrders = async (params: GetMyOrdersParams = {}): Promise<{
     if (trangThai) query.append('trangThai', trangThai);
 
     const res = await axiosInstance.get(`/api/DonHang/my-orders?${query.toString()}`);
-    return res.data;
+    return res;
+};
+
+/** Buyer xác nhận đã nhận hàng → HoanTat */
+export const buyerXacNhanDaNhan = async (donHangId: string): Promise<void> => {
+    await axiosInstance.put(`/api/DonHang/${donHangId}/confirm-received`);
 };

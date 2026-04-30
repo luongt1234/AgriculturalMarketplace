@@ -64,7 +64,7 @@ export const LoginPage = () => {
                     <div className="relative z-20 px-12 text-center">
                         <div className="mb-6 inline-flex items-center gap-2 text-primary">
                             <span className="material-symbols-outlined text-4xl">potted_plant</span>
-                            <span className="text-2xl font-black tracking-tight text-white">AgriMarket</span>
+                            <span className="text-2xl font-black tracking-tight text-white">PeachyMarket</span>
                         </div>
                         <h1 className="text-white text-5xl font-black leading-tight tracking-[-0.033em] mb-4">
                             Nền tảng kết nối nông dân, người mua và doanh nghiệp
@@ -74,7 +74,7 @@ export const LoginPage = () => {
                         </p>
                     </div>
                     <div className="absolute bottom-8 left-12 z-20">
-                        <p className="text-slate-300 text-sm">© 2026 AgriMarket Inc. Đã đăng ký bản quyền.</p>
+                        <p className="text-slate-300 text-sm">© 2026 PeachyMarket Inc. Đã đăng ký bản quyền.</p>
                     </div>
                 </div>
 
@@ -85,7 +85,7 @@ export const LoginPage = () => {
                         {/* Mobile Logo */}
                         <div className="lg:hidden flex items-center gap-2 mb-8">
                             <span className="material-symbols-outlined text-primary text-3xl">potted_plant</span>
-                            <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold">AgriMarket</h2>
+                            <h2 className="text-slate-900 dark:text-slate-100 text-xl font-bold">PeachyMarket</h2>
                         </div>
 
                         <div className="mb-10">

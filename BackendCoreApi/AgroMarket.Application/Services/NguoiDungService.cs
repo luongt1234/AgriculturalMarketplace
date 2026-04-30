@@ -1,4 +1,4 @@
-﻿using AgroMarket.Application.Common.Interfaces;
+using AgroMarket.Application.Common.Interfaces;
 using AgroMarket.Application.DTOs.NguoiDungDtos;
 using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Application.Interfaces.Services;
@@ -89,6 +89,31 @@ namespace AgroMarket.Application.Services
             catch(Exception ex)
             {
                 throw new Exception("Lỗi Lấy dữ liệu người dùng");
+            }
+        }
+        public async Task RegisterSellerAsync(Guid userId)
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new Exception("Không tìm thấy người dùng.");
+                }
+
+                var danhMucSeller = await _danhMucRepository.GetDanhMucByMaGiaTriAsync("NONG-DAN");
+                if (danhMucSeller == null)
+                {
+                    throw new Exception("Không tìm thấy cấu hình vai trò NONG-DAN trong hệ thống.");
+                }
+
+                user.VaiTroId = danhMucSeller.Id;
+                _userRepository.Update(user);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi đăng ký làm người bán: {ex.Message}");
             }
         }
     }

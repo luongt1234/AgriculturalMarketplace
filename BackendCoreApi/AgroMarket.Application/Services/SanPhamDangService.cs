@@ -197,6 +197,44 @@ namespace AgroMarket.Application.Services
                 throw new Exception($"Lỗi khi lấy chi tiết sản phẩm: {ex.Message}");
             }
         }
+        public async Task<SanPhamDangDto> UpdateAsync(Guid id, SanPhamDangFormDto request, IFormFile? hinhAnh, Guid currentUserId)
+        {
+            var entity = await _sanPhamDangRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException("Không tìm thấy sản phẩm.");
+
+            if (entity.NguoiBanId != currentUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền chỉnh sửa sản phẩm này.");
+
+            if (!await _sanPhamChungRepository.CheckExistCatagory(request.SanPhamChungId))
+                throw new Exception("Không tìm thấy loại sản phẩm này.");
+
+            // Cập nhật các trường thông tin
+            entity.TenHienThi  = request.TenHienThi;
+            entity.SanPhamChungId = request.SanPhamChungId;
+            entity.ChatLuongId = request.ChatLuongId;
+            entity.Gia         = request.Gia;
+            entity.SoLuong     = request.SoLuong;
+            entity.MoTaChiTiet = request.MoTaChiTiet;
+
+            if (!string.IsNullOrWhiteSpace(request.TrangThai))
+            {
+                entity.TrangThai = request.TrangThai == "het_hang"
+                    ? Domain.Enums.TrangThaiSanPham.HetHang
+                    : Domain.Enums.TrangThaiSanPham.ConHang;
+            }
+
+            // Nếu có ảnh mới thì thay thế
+            if (hinhAnh != null && hinhAnh.Length > 0)
+            {
+                var newPath = await _fileStorageService.SaveFileAsync(hinhAnh, "products");
+                entity.HinhAnhUrl = newPath;
+            }
+
+            await _unitOfWork.CommitAsync();
+
+            return _mapper.Map<SanPhamDangDto>(entity);
+        }
+
         public async Task<bool> ToggleGhimAsync(Guid id, Guid currentUserId)
         {
             var entity = await _sanPhamDangRepository.GetByIdAsync(id);

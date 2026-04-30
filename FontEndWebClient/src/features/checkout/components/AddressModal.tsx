@@ -146,14 +146,37 @@ export function AddressModal({
         }
     };
 
-    // Khởi tạo dữ liệu khi mở Modal
+    // Khởi tạo dữ liệu khi mở Modal — cascade fetch theo thứ tự để đảm bảo đúng
     useEffect(() => {
         if (!isOpen) return;
-        setFormData(editingAddress ?? emptyAddress);
-        fetchProvinces();
+
+        const init = async () => {
+            const provinceList = await fetchProvinces();
+
+            if (editingAddress) {
+                setFormData(editingAddress);
+
+                // Tìm province khớp với city đã lưu
+                const province = provinceList.find(p => p.name === editingAddress.city);
+                if (!province) return;
+
+                const districtList = await fetchDistricts(province.code.toString());
+
+                // Tìm district khớp
+                const district = districtList.find(d => d.name === editingAddress.district);
+                if (!district) return;
+
+                await fetchWards(district.code.toString());
+                // wards sẽ được set, select sẽ hiển thị đúng vì formData.ward đã có sẵn
+            } else {
+                setFormData(emptyAddress);
+            }
+        };
+
+        init();
     }, [isOpen, editingAddress]);
 
-    // Fetch Quận/Huyện khi Tỉnh/Thành thay đổi
+    // Effect: Fetch Quận/Huyện khi Tỉnh/Thành thay đổi do user tự chọn
     useEffect(() => {
         if (!formData.city) {
             setDistricts([]);
@@ -169,7 +192,7 @@ export function AddressModal({
         fetchDistricts(province.code.toString());
     }, [formData.city, provinces]);
 
-    // Fetch Phường/Xã khi Quận/Huyện thay đổi
+    // Effect: Fetch Phường/Xã khi Quận/Huyện thay đổi do user tự chọn
     useEffect(() => {
         if (!formData.district) {
             setWards([]);
@@ -182,6 +205,7 @@ export function AddressModal({
         }
         fetchWards(district.code.toString());
     }, [formData.district, districts]);
+
 
     // Xử lý các Input text thông thường
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

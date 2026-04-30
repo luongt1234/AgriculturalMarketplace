@@ -1,4 +1,5 @@
-﻿using AgroMarket.Application.Interfaces; // Điều chỉnh lại đường dẫn interface cho chuẩn
+﻿using AgroMarket.Application.DTOs.GiaoHangNhanhDtos;
+using AgroMarket.Application.Interfaces;
 using AgroMarket.Application.Interfaces.Repositories;
 using AgroMarket.Application.Wrappers;
 using Microsoft.Extensions.Configuration;
@@ -11,13 +12,10 @@ namespace AgroMarket.Infrastructure.Services
     public class GHNService : IGHNService
     {
         private readonly HttpClient _httpClient;
-        private readonly IConfiguration _configuration; // Bổ sung field này để lấy cấu hình (ShopId)
+        private readonly IConfiguration _configuration;
 
         public GHNService(HttpClient httpClient, IConfiguration configuration)
         {
-            _httpClient = httpClient;
-            _configuration = configuration; // Gán biến
-            // Base address và Token được cấu hình sẵn khi register HttpClient trong Program.cs
             _httpClient = httpClient;
             _configuration = configuration;
 
@@ -42,7 +40,6 @@ namespace AgroMarket.Infrastructure.Services
             return await response.Content.ReadFromJsonAsync<object>();
         }
 
-        // ĐÃ IMPLEMENT: Lấy danh sách Phường/Xã
         public async Task<object> GetWardsAsync(int districtId)
         {
             var response = await _httpClient.GetAsync($"/shiip/public-api/master-data/ward?district_id={districtId}");
@@ -50,10 +47,8 @@ namespace AgroMarket.Infrastructure.Services
             return await response.Content.ReadFromJsonAsync<object>();
         }
 
-        // ĐÃ IMPLEMENT: Lấy các gói dịch vụ (Chuyển phát chuẩn, Giao trong ngày...)
         public async Task<object> GetAvailableServicesAsync(int fromDistrictId, int toDistrictId)
         {
-            // API lấy dịch vụ của GHN dùng method POST và cần shop_id
             int shopId = int.Parse(_configuration["GHNConfig:ShopId"] ?? "0");
 
             var payload = new
@@ -73,16 +68,14 @@ namespace AgroMarket.Infrastructure.Services
             int shopId = int.Parse(_configuration["GHNConfig:ShopId"] ?? "0");
 
             if (weight > 50000)
-            {
-                throw new Exception("Đơn hàng có khối lượng lớn (2 thương lượng với người bán để thống nhất vận chuyển");
-            }
+                throw new Exception("Đơn hàng có khối lượng lớn, vui lòng thương lượng với người bán.");
+
             int autoServiceTypeId = weight <= 20000 ? 2 : 5;
 
             var payload = new
             {
                 shop_id = shopId,
                 service_type_id = autoServiceTypeId,
-                // service_id = serviceId, 
                 from_district_id = fromDistrictId,
                 to_district_id = toDistrictId,
                 to_ward_code = toWardCode,
@@ -90,28 +83,44 @@ namespace AgroMarket.Infrastructure.Services
             };
 
             var response = await _httpClient.PostAsJsonAsync("/shiip/public-api/v2/shipping-order/fee", payload);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"[LỖI TỪ GHN] HTTP {(int)response.StatusCode}: {errorContent}");
-            }
-
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<object>();
         }
 
-        // ĐÃ IMPLEMENT: Tạo đơn hàng
-        public async Task<object> CreateOrderAsync(object orderData)
+        // Đẩy đơn lên GHN và lấy mã vận đơn
+        public async Task<ShippingOrderResponse> CreateShippingOrderAsync(object orderData)
         {
-            // orderData chứa thông tin đầy đủ map với chuẩn của GHN 
-            // (vd: to_name, to_phone, to_address, weight, items...)
-            var response = await _httpClient.PostAsJsonAsync("/shiip/public-api/v2/shipping-order/create", orderData);
+            try
+            {
+                // Truyền thêm Header ShopId vì API này bắt buộc
+                _httpClient.DefaultRequestHeaders.Remove("ShopId");
+                _httpClient.DefaultRequestHeaders.Add("ShopId", _configuration["GHNConfig:ShopId"]);
 
-            // Nếu API bị lỗi (sai dữ liệu, thiếu trường), nó sẽ throw exception ở đây.
-            // Để hệ thống xịn hơn, ở try-catch của Controller, bạn nên xử lý lỗi trả về thay vì sập app.
-            response.EnsureSuccessStatusCode();
+                var response = await _httpClient.PostAsJsonAsync("/shiip/public-api/v2/shipping-order/create", orderData);
 
-            return await response.Content.ReadFromJsonAsync<object>();
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<GhnSuccessResponse>();
+                    return new ShippingOrderResponse
+                    {
+                        IsSuccess = true,
+                        TrackingCode = result?.Data?.Order_code,
+                        Message = "Tạo đơn Giao Hàng Nhanh thành công."
+                    };
+                }
+
+                var errorResult = await response.Content.ReadAsStringAsync();
+                return new ShippingOrderResponse { IsSuccess = false, Message = $"Lỗi từ GHN: {errorResult}" };
+            }
+            catch (Exception ex)
+            {
+                return new ShippingOrderResponse { IsSuccess = false, Message = $"Lỗi kết nối: {ex.Message}" };
+            }
+        }
+
+        public Task<object> CreateOrderAsync(object orderData)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -58,7 +58,7 @@ export async function getSellerOrders(params?: {
     trangThai?: string;
 }) {
     const response = await axiosInstance.get('/api/DonHang/seller-orders', { params });
-    return response.data;
+    return response;
 }
 
 /**

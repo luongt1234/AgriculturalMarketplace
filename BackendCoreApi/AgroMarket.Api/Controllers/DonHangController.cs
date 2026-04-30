@@ -115,10 +115,6 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
-        // ════════════════════════════════════════════════════════════════════════
-        // SELLER ENDPOINTS
-        // ════════════════════════════════════════════════════════════════════════
-
         /// <summary>
         /// Seller lấy danh sách đơn hàng của shop mình.
         /// GET /api/DonHang/seller-orders?pageNumber=1&pageSize=10&trangThai=ChoXuLy

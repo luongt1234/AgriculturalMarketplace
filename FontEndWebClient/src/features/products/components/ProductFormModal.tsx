@@ -47,6 +47,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     const [selectedCity, setSelectedCity] = useState('');
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
+    // Track whether user has manually changed address in edit mode
+    const [addressChanged, setAddressChanged] = useState(false);
 
     const isEditMode = !!initialData;
 
@@ -100,61 +102,26 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         }
     }, [isOpen]);
 
-    // Effect: Load provinces
+    // Effect: Load provinces + pre-fill address khi mở Modal
     useEffect(() => {
-        const loadProvinces = async () => {
+        if (!isOpen) return;
+
+        const init = async () => {
+            // 1. Load provinces
+            let provinceList: FullLocationItem[] = [];
             try {
                 setLoadingProvinces(true);
                 const response = await axios.get(API_ADDRESS);
-                const list = normalizeLocations(response.data);
-                setProvinces(list);
+                provinceList = normalizeLocations(response.data);
+                setProvinces(provinceList);
             } catch (error) {
                 console.error('Error fetching provinces:', error);
-                setProvinces([]);
             } finally {
                 setLoadingProvinces(false);
             }
-        };
 
-        if (isOpen) {
-            loadProvinces();
-        }
-    }, [isOpen]);
-
-    // Effect: Load districts when city changes
-    useEffect(() => {
-        if (!selectedCity) {
-            setDistricts([]);
-            setWards([]);
-            return;
-        }
-        const province = provinces.find((item) => item.name === selectedCity);
-        if (!province) {
-            setDistricts([]);
-            setWards([]);
-            return;
-        }
-        fetchDistricts(province.code.toString());
-    }, [selectedCity, provinces]);
-
-    // Effect: Load wards when district changes
-    useEffect(() => {
-        if (!selectedDistrict) {
-            setWards([]);
-            return;
-        }
-        const district = districts.find((item) => item.name === selectedDistrict);
-        if (!district) {
-            setWards([]);
-            return;
-        }
-        fetchWards(district.code.toString());
-    }, [selectedDistrict, districts]);
-
-    // Effect: Reset form hoặc Fill data khi mở Modal
-    useEffect(() => {
-        if (isOpen) {
             if (initialData) {
+                // 2a. Edit mode: fill form
                 setFormData({
                     tenHienThi: initialData.tenHienThi || '',
                     sanPhamChungId: initialData.sanPhamChungId || '',
@@ -167,12 +134,33 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     diaChiChiTiet: initialData.diaChiChiTiet || '',
                 });
                 setPreviewImage(initialData.hinhAnhUrl || null);
-                // For edit mode, leave selects empty for now
-                setSelectedCity('');
-                setSelectedDistrict('');
-                setSelectedWard('');
+                setAddressChanged(false);
+
+                // 3. Parse địa chỉ cũ rồi cascade fetch districts → wards
+                try {
+                    const parsed = JSON.parse(initialData.diaChi || '{}');
+                    const cityName = parsed.name ?? parsed.provinceName ?? '';
+                    const districtName = parsed.districts?.[0]?.name ?? parsed.districtName ?? '';
+                    const wardName = parsed.districts?.[0]?.wards?.[0]?.name ?? parsed.wardName ?? '';
+
+                    const province = provinceList.find(p => p.name === cityName);
+                    if (province) {
+                        setSelectedCity(cityName);
+                        const districtList = await fetchDistricts(province.code.toString());
+                        const district = districtList.find((d: any) => d.name === districtName);
+                        if (district) {
+                            setSelectedDistrict(districtName);
+                            await fetchWards(district.code.toString());
+                            setSelectedWard(wardName);
+                        }
+                    }
+                } catch {
+                    setSelectedCity('');
+                    setSelectedDistrict('');
+                    setSelectedWard('');
+                }
             } else {
-                // --- CHẾ ĐỘ CREATE: Reset form ---
+                // 2b. Create mode: reset form
                 setFormData({
                     tenHienThi: '',
                     sanPhamChungId: '',
@@ -188,9 +176,34 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 setSelectedCity('');
                 setSelectedDistrict('');
                 setSelectedWard('');
+                setAddressChanged(false);
             }
-        }
+        };
+
+        init();
     }, [isOpen, initialData]);
+
+    // Effect: Load districts khi user tự chọn tỉnh (không phải từ init)
+    useEffect(() => {
+        if (!selectedCity || !provinces.length) return;
+        const province = provinces.find((item) => item.name === selectedCity);
+        if (!province) {
+            setDistricts([]);
+            setWards([]);
+        }
+        // Không fetch districts ở đây vì đã được xử lý trong handleCityChange và init
+    }, [selectedCity, provinces]);
+
+    // Effect: Load wards khi user tự chọn quận
+    useEffect(() => {
+        if (!selectedDistrict || !districts.length) return;
+        const district = districts.find((item) => item.name === selectedDistrict);
+        if (!district) {
+            setWards([]);
+        }
+        // Không fetch wards ở đây vì đã được xử lý trong handleDistrictChange và init
+    }, [selectedDistrict, districts]);
+
 
     if (!isOpen) return null;
 
@@ -220,9 +233,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             const response = await axios.get(`${API_ADDRESS}/p/${provinceCode}?depth=2`);
             const list = normalizeLocations(response.data.districts);
             setDistricts(list);
+            return list;
         } catch (error) {
             console.error('Error fetching districts:', error);
             setDistricts([]);
+            return [];
         } finally {
             setLoadingDistricts(false);
         }
@@ -234,9 +249,11 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             const response = await axios.get(`${API_ADDRESS}/d/${districtCode}?depth=2`);
             const list = normalizeLocations(response.data.wards);
             setWards(list);
+            return list;
         } catch (error) {
             console.error('Error fetching wards:', error);
             setWards([]);
+            return [];
         } finally {
             setLoadingWards(false);
         }
@@ -246,15 +263,18 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         setSelectedCity(cityName);
         setSelectedDistrict('');
         setSelectedWard('');
+        setAddressChanged(true);
     };
 
     const handleDistrictChange = (districtName: string) => {
         setSelectedDistrict(districtName);
         setSelectedWard('');
+        setAddressChanged(true);
     };
 
     const handleWardChange = (wardName: string) => {
         setSelectedWard(wardName);
+        setAddressChanged(true);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -289,31 +309,32 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         }
 
         // Validate địa chỉ
-        if (!selectedCity || !selectedDistrict || !selectedWard || !formData.diaChiChiTiet) {
-            toast.error("Vui lòng điền đầy đủ địa chỉ giao hàng");
-            return;
+        // Trong chế độ edit: nếu user không thay đổi địa chỉ thì dùng lại địa chỉ cũ
+        let diaChiJson = formData.diaChi;
+        if (!isEditMode || addressChanged) {
+            if (!selectedCity || !selectedDistrict || !selectedWard || !formData.diaChiChiTiet) {
+                toast.error("Vui lòng điền đầy đủ địa chỉ giao hàng");
+                return;
+            }
+
+            const selectedProvince = provinces.find(p => p.name === selectedCity);
+            const selectedDistrictObj = districts.find(d => d.name === selectedDistrict);
+            const selectedWardObj = wards.find(w => w.name === selectedWard);
+
+            if (!selectedProvince || !selectedDistrictObj || !selectedWardObj) {
+                toast.error('Không tìm thấy thông tin địa chỉ đã chọn');
+                return;
+            }
+
+            diaChiJson = JSON.stringify({
+                ...selectedProvince,
+                districts: [{ ...selectedDistrictObj, wards: [selectedWardObj] }]
+            });
         }
-
-        const selectedProvince = provinces.find(p => p.name === selectedCity);
-        const selectedDistrictObj = districts.find(d => d.name === selectedDistrict);
-        const selectedWardObj = wards.find(w => w.name === selectedWard);
-
-        if (!selectedProvince || !selectedDistrictObj || !selectedWardObj) {
-            toast.error('Không tìm thấy thông tin địa chỉ đã chọn');
-            return;
-        }
-
-        const diaChiObject = {
-            ...selectedProvince,
-            districts: [{
-                ...selectedDistrictObj,
-                wards: [selectedWardObj]
-            }]
-        };
 
         const submitData = {
             ...formData,
-            diaChi: JSON.stringify(diaChiObject),
+            diaChi: diaChiJson,
             diaChiChiTiet: formData.diaChiChiTiet,
         };
 

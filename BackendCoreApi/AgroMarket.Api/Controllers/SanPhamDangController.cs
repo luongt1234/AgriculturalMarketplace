@@ -134,6 +134,32 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromForm] SanPhamDangFormDto formDto)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                    return Forbid();
+
+                var result = await _sanPhamDangService.UpdateAsync(id, formDto, formDto.HinhAnh, userId);
+                return Success(result, "Cập nhật sản phẩm thành công");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Error(ex.Message, 404);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Error(ex.Message, 403);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi cập nhật sản phẩm: {ex.Message}");
+            }
+        }
+
         [HttpPut("{id}/toggle-ghim")]
         public async Task<IActionResult> ToggleGhim([FromRoute] Guid id)
         {

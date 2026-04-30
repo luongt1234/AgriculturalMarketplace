@@ -8,6 +8,7 @@ namespace AgroMarket.Application.Interfaces.Services
     public interface ISanPhamDangService
     {
         Task<SanPhamDangDto> CreateAsync(SanPhamDangFormDto request, IFormFile? hinhAnh);
+        Task<SanPhamDangDto> UpdateAsync(Guid id, SanPhamDangFormDto request, IFormFile? hinhAnh, Guid currentUserId);
         Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 10);
         Task<PagedResponse<IEnumerable<SanPhamDangDto>>> GetProductsByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 10);
         Task<SanPhamDangDto?> GetByIdAsync(Guid id);

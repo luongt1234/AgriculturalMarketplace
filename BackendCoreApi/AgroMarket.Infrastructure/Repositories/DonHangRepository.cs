@@ -57,7 +57,6 @@ namespace AgroMarket.Infrastructure.Repositories
             }).ToList()
         };
 
-        // ── Buyer: lấy đơn của mình ──────────────────────────────────────────────
         public async Task<(IEnumerable<DonHangDto> Items, int TotalRecords)> GetByNguoiMuaPagedAsync(
             Guid nguoiMuaId, int pageNumber, int pageSize, TrangThaiDonHang? trangThai = null)
         {
@@ -80,7 +79,6 @@ namespace AgroMarket.Infrastructure.Repositories
             return (items.Select(MapDto), total);
         }
 
-        // ── Seller: lấy đơn của shop mình ───────────────────────────────────────
         public async Task<(IEnumerable<DonHangDto> Items, int TotalRecords)> GetByNguoiBanPagedAsync(
             Guid nguoiBanId, int pageNumber, int pageSize, TrangThaiDonHang? trangThai = null)
         {
@@ -89,6 +87,78 @@ namespace AgroMarket.Infrastructure.Repositories
                 .Include(dh => dh.NguoiMua)
                 .Include(dh => dh.ChiTietDonHang).ThenInclude(ct => ct.SanPhamDang)
                 .Where(dh => dh.NguoiBanId == nguoiBanId)
+                .AsQueryable();
+
+            var debug = query.ToList(); // For debugging purposes
+
+            if (trangThai.HasValue)
+                query = query.Where(dh => dh.TrangThai == trangThai.Value);
+
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(dh => dh.NgayTao)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items.Select(MapDto), total);
+        }
+
+        public async Task<DonHang> TaoDonHangAsync(DonHang donHang, List<ChiTietDonHang> chiTiet)
+        {
+            _context.DonHangs.Add(donHang);
+            await _context.SaveChangesAsync();
+
+            foreach (var ct in chiTiet)
+            {
+                ct.DonHangId = donHang.Id;
+                _context.ChiTietDonHangs.Add(ct);
+            }
+            await _context.SaveChangesAsync();
+
+            return await _context.DonHangs
+                .Include(dh => dh.ChiTietDonHang)
+                .Include(dh => dh.NguoiBan)
+                .FirstAsync(dh => dh.Id == donHang.Id);
+        }
+
+        public async Task<DonHang?> GetByIdWithDetailsAsync(Guid donHangId)
+        {
+            return await _context.DonHangs
+                .Include(dh => dh.NguoiBan)
+                .Include(dh => dh.NguoiMua)
+                .Include(dh => dh.ChiTietDonHang).ThenInclude(ct => ct.SanPhamDang)
+                .FirstOrDefaultAsync(dh => dh.Id == donHangId);
+        }
+
+        public async Task<bool> CapNhatTrangThaiAsync(Guid donHangId, TrangThaiDonHang trangThai, Guid actorId)
+        {
+            var donHang = await _context.DonHangs.FindAsync(donHangId);
+            if (donHang == null) return false;
+
+            donHang.TrangThai = trangThai;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<DonHangDto?> GetDonHangDtoByIdAsync(Guid donHangId)
+        {
+            var dh = await _context.DonHangs
+                .Include(dh => dh.NguoiBan)
+                .Include(dh => dh.NguoiMua)
+                .Include(dh => dh.ChiTietDonHang).ThenInclude(ct => ct.SanPhamDang)
+                .FirstOrDefaultAsync(dh => dh.Id == donHangId);
+
+            return dh != null ? MapDto(dh) : null;
+        }
+
+        public async Task<(IEnumerable<DonHangDto> Items, int TotalRecords)> GetAllPagedAsync(
+            int pageNumber, int pageSize, TrangThaiDonHang? trangThai = null)
+        {
+            var query = _context.DonHangs
+                .Include(dh => dh.NguoiBan)
+                .Include(dh => dh.NguoiMua)
+                .Include(dh => dh.ChiTietDonHang).ThenInclude(ct => ct.SanPhamDang)
                 .AsQueryable();
 
             if (trangThai.HasValue)
@@ -104,45 +174,19 @@ namespace AgroMarket.Infrastructure.Repositories
             return (items.Select(MapDto), total);
         }
 
-        // ── Tạo đơn hàng mới ────────────────────────────────────────────────────
-        public async Task<DonHang> TaoDonHangAsync(DonHang donHang, List<ChiTietDonHang> chiTiet)
+        public async Task<bool> UpdateAsync(DonHang donHang)
         {
-            _context.DonHangs.Add(donHang);
-            await _context.SaveChangesAsync();
-
-            foreach (var ct in chiTiet)
-            {
-                ct.DonHangId = donHang.Id;
-                _context.ChiTietDonHangs.Add(ct);
-            }
-            await _context.SaveChangesAsync();
-
-            // Reload with full navigation
-            return await _context.DonHangs
-                .Include(dh => dh.ChiTietDonHang)
-                .Include(dh => dh.NguoiBan)
-                .FirstAsync(dh => dh.Id == donHang.Id);
+            _context.DonHangs.Update(donHang);
+            var rowsAffected = await _context.SaveChangesAsync();
+            return rowsAffected > 0;
         }
 
-        // ── Lấy đơn theo Id ─────────────────────────────────────────────────────
-        public async Task<DonHang?> GetByIdWithDetailsAsync(Guid donHangId)
+        public async Task<DonHang?> GetByMaVanDonAsync(string maVanDon)
         {
             return await _context.DonHangs
-                .Include(dh => dh.NguoiBan)
-                .Include(dh => dh.NguoiMua)
-                .Include(dh => dh.ChiTietDonHang).ThenInclude(ct => ct.SanPhamDang)
-                .FirstOrDefaultAsync(dh => dh.Id == donHangId);
-        }
-
-        // ── Cập nhật trạng thái ──────────────────────────────────────────────────
-        public async Task<bool> CapNhatTrangThaiAsync(Guid donHangId, TrangThaiDonHang trangThai, Guid actorId)
-        {
-            var donHang = await _context.DonHangs.FindAsync(donHangId);
-            if (donHang == null) return false;
-
-            donHang.TrangThai = trangThai;
-            await _context.SaveChangesAsync();
-            return true;
+                .Include(d => d.NguoiMua)
+                .Include(d => d.NguoiBan)
+                .FirstOrDefaultAsync(d => d.MaVanDonGhn == maVanDon);
         }
     }
 }

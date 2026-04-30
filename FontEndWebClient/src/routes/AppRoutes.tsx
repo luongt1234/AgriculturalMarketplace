@@ -33,6 +33,7 @@ import FavoriteProductsPage from '../pages/buyer/FavoriteProductsPage';
 import CategoryProductPage from '../pages/buyer/CategoryProductPage';
 import VoucherManagement from '../pages/admin/VoucherManagement';
 import VoucherPage from '../pages/farmer/VoucherPage';
+import SellerOrdersPage from '../pages/farmer/SellerOrdersPage';
 
 const FarmerDashboard = lazy(() => import('../pages/farmer/FarmerDashboard'));
 
@@ -75,11 +76,11 @@ export default function AppRoutes() {
 
                             <Route path="dashboard" element={<FarmerDashboard />} />
                             <Route path="products" element={<MyProductPage />} />
-                            <Route path="orders" element={<div>Quản lý Đơn hàng</div>} />
-                            <Route path="contracts" element={<div>Quản lý Hợp đồng</div>} />
-                            <Route path="logs" element={<FarmingLogsPage />} />
+                            <Route path="orders" element={<SellerOrdersPage />} />
+                            {/* <Route path="contracts" element={<div>Quản lý Hợp đồng</div>} /> */}
+                            {/* <Route path="logs" element={<FarmingLogsPage />} /> */}
                             <Route path="chat" element={<FarmerChatPage />} />
-                            <Route path="settings" element={<SellerSettingsPage />} />
+                            {/* <Route path="settings" element={<SellerSettingsPage />} /> */}
                             <Route path="vouchers" element={<VoucherPage />} />
                         </Route>
                     </Route>
