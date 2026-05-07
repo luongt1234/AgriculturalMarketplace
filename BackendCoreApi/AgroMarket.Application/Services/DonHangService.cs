@@ -12,12 +12,21 @@ namespace AgroMarket.Application.Services
         private readonly IDonHangRepository _donHangRepository;
         private readonly IGioHangRepository _gioHangRepository;
         private readonly IGHNService _ghnService;
+        private readonly INguoiDungRepository _nguoiDungRepository;
+        private readonly IMoMoService _momoService;
 
-        public DonHangService(IDonHangRepository donHangRepository, IGioHangRepository gioHangRepository, IGHNService ghnService)
+        public DonHangService(
+            IDonHangRepository donHangRepository,
+            IGioHangRepository gioHangRepository,
+            IGHNService ghnService,
+            INguoiDungRepository nguoiDungRepository,
+            IMoMoService momoService)
         {
             _donHangRepository = donHangRepository;
             _gioHangRepository = gioHangRepository;
             _ghnService = ghnService;
+            _nguoiDungRepository = nguoiDungRepository;
+            _momoService = momoService;
         }
 
         // ── Buyer: lấy đơn của mình ─────────────────────────────────────────────
@@ -47,15 +56,20 @@ namespace AgroMarket.Application.Services
             var donHang = new DonHang
             {
                 NguoiMuaId        = nguoiMuaId,
-                NguoiBanId        = request.NguoiBanId,           // FE gửi kèm
+                NguoiBanId        = request.NguoiBanId,
                 TongTien          = tongTien,
                 PhiVanChuyen      = request.PhiVanChuyen,
                 DiaChiGiaoHang    = request.DiaChiGiaoHang,
                 GhiChu            = request.GhiChu,
-                TrangThai         = TrangThaiDonHang.ChoXuLy,
-                PhuongThucNhanHang = PhuongThucGiaoHang.GiaoHang,
+                // MoMo: chờ thanh toán qua QR. COD: vào thẳng ChoXuLy
+                TrangThai           = request.PhuongThucThanhToan == PhuongThucThanhToan.MoMo
+                                        ? TrangThaiDonHang.ChoThanhToan
+                                        : TrangThaiDonHang.ChoXuLy,
+                PhuongThucNhanHang  = PhuongThucGiaoHang.GiaoHang,
+                PhuongThucThanhToan = request.PhuongThucThanhToan,
             };
 
+            // ── Thanh toán MoMo: kiểm tra và trừ số dư ngay khi đặt ─────────────────
             var chiTietList = request.Items.Select(i => new ChiTietDonHang
             {
                 SanPhamDangId = i.SanPhamDangId,
@@ -71,20 +85,43 @@ namespace AgroMarket.Application.Services
                 var orderedIds = request.Items.Select(i => i.SanPhamDangId).ToHashSet();
                 await _gioHangRepository.RemoveItemsByProductIdsAsync(nguoiMuaId, orderedIds);
             }
-            catch
+            catch { /* Không fail toàn bộ nếu xoá giỏ hàng thất bại */ }
+
+            var response = new TaoDonHangResponse
             {
-                // Không fail toàn bộ nếu xoá giỏ hàng thất bại
+                DonHangId     = created.Id,
+                TrangThai     = created.TrangThai.ToString(),
+                TongTien      = created.TongTien,
+                PhiVanChuyen  = created.PhiVanChuyen,
+                TongThanhToan = created.TongThanhToan,
+                NgayTao       = created.NgayTao
+            };
+
+            // ── Nếu MoMo: gọi API lấy QR code ────────────────────────────────────
+            if (request.PhuongThucThanhToan == PhuongThucThanhToan.MoMo)
+            {
+                var tongThanhToan = tongTien + request.PhiVanChuyen;
+                var requestId     = $"{created.Id}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+                var orderInfo     = $"Thanh toán đơn hàng {created.Id.ToString()[..8].ToUpper()} tại PeachyMarket";
+
+                var momoRes = await _momoService.TaoThanhToanAsync(
+                    created.Id.ToString(),
+                    (long)tongThanhToan,
+                    orderInfo,
+                    requestId);
+
+                if (!momoRes.IsSuccess)
+                    throw new Exception($"Không thể tạo thanh toán MoMo: {momoRes.Message}");
+
+                // Lưu requestId để dùng khi refund
+                created.MoMoRequestId = requestId;
+                await _donHangRepository.UpdateAsync(created);
+
+                response.MomoPayUrl    = momoRes.PayUrl;
+                response.MomoQrCodeUrl = momoRes.QrCodeUrl;
             }
 
-            return new TaoDonHangResponse
-            {
-                DonHangId      = created.Id,
-                TrangThai      = created.TrangThai.ToString(),
-                TongTien       = created.TongTien,
-                PhiVanChuyen   = created.PhiVanChuyen,
-                TongThanhToan  = created.TongThanhToan,
-                NgayTao        = created.NgayTao
-            };
+            return response;
         }
 
         // ── Seller: lấy đơn của shop mình ───────────────────────────────────────
@@ -289,7 +326,42 @@ namespace AgroMarket.Application.Services
             if (dh.TrangThai != TrangThaiDonHang.DaGiao && dh.TrangThai != TrangThaiDonHang.DangGiao)
                 throw new InvalidOperationException("Đơn hàng chưa được giao.");
 
+            // ── MoMo: chuyển tiền sang seller khi hoàn tất ─────────────────────
+            if (dh.PhuongThucThanhToan == PhuongThucThanhToan.MoMo)
+            {
+                var seller = await _nguoiDungRepository.GetByIdAsync(dh.NguoiBanId)
+                    ?? throw new KeyNotFoundException("Không tìm thấy thông tin người bán.");
+
+                var soTienChuyen = dh.TongTien + dh.PhiVanChuyen;
+                await _nguoiDungRepository.CapNhatSoDuAsync(dh.NguoiBanId, seller.SoDu + soTienChuyen);
+            }
+
             return await _donHangRepository.CapNhatTrangThaiAsync(donHangId, TrangThaiDonHang.HoanTat, nguoiMuaId);
+        }
+
+        // ── Buyer: hủy đơn (chỉ khi ChoXuLy) ───────────────────────────────────
+        public async Task<bool> BuyerHuyDonHangAsync(Guid donHangId, Guid nguoiMuaId)
+        {
+            var dh = await _donHangRepository.GetByIdWithDetailsAsync(donHangId)
+                ?? throw new KeyNotFoundException("Không tìm thấy đơn hàng.");
+
+            if (dh.NguoiMuaId != nguoiMuaId)
+                throw new UnauthorizedAccessException("Bạn không có quyền thực hiện thao tác này.");
+
+            if (dh.TrangThai != TrangThaiDonHang.ChoXuLy)
+                throw new InvalidOperationException("Chỉ có thể hủy đơn đang ở trạng thái Chờ xử lý.");
+
+            // ── MoMo: hoàn tiền về buyer khi hủy ──────────────────────────────
+            if (dh.PhuongThucThanhToan == PhuongThucThanhToan.MoMo)
+            {
+                var buyer = await _nguoiDungRepository.GetByIdAsync(dh.NguoiMuaId)
+                    ?? throw new KeyNotFoundException("Không tìm thấy thông tin người mua.");
+
+                var soTienHoan = dh.TongTien + dh.PhiVanChuyen;
+                await _nguoiDungRepository.CapNhatSoDuAsync(dh.NguoiMuaId, buyer.SoDu + soTienHoan);
+            }
+
+            return await _donHangRepository.CapNhatTrangThaiAsync(donHangId, TrangThaiDonHang.Huy, nguoiMuaId);
         }
     }
 }

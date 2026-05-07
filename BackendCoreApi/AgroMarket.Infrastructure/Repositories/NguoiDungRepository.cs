@@ -47,5 +47,19 @@ namespace AgroMarket.Infrastructure.Repositories
 
             return (items, total);
         }
+
+        public async Task<NguoiDung?> GetByIdAsync(Guid userId)
+        {
+            return await _dbSet.FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+        }
+
+        public async Task<bool> CapNhatSoDuAsync(Guid userId, decimal soDuMoi)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            if (user == null) return false;
+            user.SoDu = soDuMoi;
+            user.NgayChinhSua = DateTime.UtcNow;
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }

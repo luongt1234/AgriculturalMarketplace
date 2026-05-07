@@ -22,5 +22,8 @@ namespace AgroMarket.Application.Interfaces.Services
 
         // ── Buyer (post-delivery) ────────────────────────────────────────────────
         Task<bool> BuyerXacNhanDaNhanAsync(Guid donHangId, Guid nguoiMuaId);
+
+        /// <summary>Buyer hủy đơn (chỉ khi ChoXuLy). MoMo sẽ hoàn tiền tự động.</summary>
+        Task<bool> BuyerHuyDonHangAsync(Guid donHangId, Guid nguoiMuaId);
     }
 }

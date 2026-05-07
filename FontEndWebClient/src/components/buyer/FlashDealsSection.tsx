@@ -4,59 +4,54 @@ import { ProductCard } from '../../features/products/components/ProductCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 
 interface FlashDealsSectionProps {
-    products?: BuyerProduct[];
     onAddToCart?: (product: BuyerProduct) => void;
     title?: string;
 }
 
-// Mock data for flash deals
+// Giống nông sản cố định với hình ảnh thực tế
 const FLASH_DEALS_PRODUCTS: BuyerProduct[] = [
     {
-        id: '1',
-        name: 'Cà chua hữu cơ',
+        id: 'giong-ca-chua-bi',
+        name: 'Giống cà chua bi Cherry (Giống TN148)',
         price: 20000,
         originalPrice: 25000,
         discount: 20,
-        image:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCybU5rCnrJrAmnuwjJOSUt5m7xcEETO4U8piG2SedI8RrzAYJeIXucDM6ysOijxytsR36LamLKslVZd2Qm4IuYN7T10N4CW9_ytYyCL0cPMchdSEf1znZTSK_cZRNPETTiMTFbwQYZpWaDAe7Q39BkCQjimyPyQLCTHUuUxA7U_Qaek2r4yWUUxcr8_Qvp3FiNRCAHVaKEbS15q7TbnImLvlgKoAdkEKFftx_C6AwmoZRtx6gXqQPDOQ73zCzfQP8jftJczQjZGg',
+        image: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=400&q=80',
         rating: 4.8,
-        location: 'Nông trại Đà Lạt',
+        location: 'Đà Lạt, Lâm Đồng',
         seller: 'Nông trại Đà Lạt',
-        unit: '/kg',
-        category: 'Rau củ'
+        unit: '/gói 50 hạt',
+        category: 'Giống rau'
     },
     {
-        id: '2',
-        name: 'Thanh long ruột trắng',
-        price: 29750,
-        originalPrice: 35000,
-        discount: 15,
-        image:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuBW723Am8KPpguyG8UYH5O9aQRewDZ8qDPamm5Ngw2KEh5jb5KI-AqbRc1MxNq0FoHChwl-UfrtNrEIPICIwCSi4gAKnGg1aMM70t8L5Bv1QWilygyuAfGbNXsvUz8l9dPXu5togszqGRWxH81DU0ETN8-X4wGuEYNskAFLuqknrAUW2P4WN7cIokreLH7AMHMkUbDoTUYttmA-YhllsXM9braXyF7DtDzxSGsA_VdVfl6QRbDByxEsBeSYh6qx3SN4AFpSIrC01A',
-        rating: 4.9,
-        location: 'Bình Thuận',
-        seller: 'Nông trại Bình Thuận',
-        unit: '/kg',
-        category: 'Trái cây'
+        id: 'giong-dua-hau-khong-hat',
+        name: 'Giống dưa hấu không hạt (Giống Rado 689)',
+        price: 35000,
+        originalPrice: 45000,
+        discount: 22,
+        image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=400&q=80',
+        rating: 4.7,
+        location: 'Tiền Giang',
+        seller: 'Viện Cây ăn quả MN',
+        unit: '/gói 20 hạt',
+        category: 'Giống trái cây'
     },
     {
-        id: '3',
-        name: 'Ba chỉ heo tươi',
-        price: 126000,
-        originalPrice: 140000,
-        discount: 10,
-        image:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuCR5ldfXQXjFJ4ohal7krQzQ9q2yUGJA4fe6_7fkt6QUzUDC4RhqUXnvTbT_Xi_ZrhnPE_nZN9CVRU35h0aN42Q1LKyPIfaGcl1g4CpQt03W4AHVUxcpEwBBvd2BLjFcIvauzKfYx3PZuvuX_aHHL8W5u5TE4OYF4EJCUIliBUB43aaEaV2QN14gU6Xu8_lvCIDvqmwohgmhv5r7QjzfvblRl0JwH44Dhr9FswxKWCSABurnnRhB2FFA28jsj7B_dtT_HSu-O5fng',
-        rating: 4.5,
-        location: 'Nông trại CP',
-        seller: 'CP Food',
-        unit: '/kg',
-        category: 'Thịt'
-    }
+        id: 'giong-ot-canh-f1',
+        name: 'Giống ớt cánh F1 Cháy Đỏ (Giống TN557)',
+        price: 32000,
+        originalPrice: 40000,
+        discount: 20,
+        image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=400&q=80',
+        rating: 4.7,
+        location: 'TP. Hồ Chí Minh',
+        seller: 'Trang Nông Seeds',
+        unit: '/gói 50 hạt',
+        category: 'Giống rau'
+    },
 ];
 
 export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
-    products = FLASH_DEALS_PRODUCTS,
     onAddToCart,
     title = 'Ưu đãi nhanh'
 }) => {
@@ -72,25 +67,20 @@ export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
             setTimeLeft((prev) => {
                 let { hours, minutes, seconds } = prev;
                 seconds--;
-
                 if (seconds < 0) {
                     seconds = 59;
                     minutes--;
                 }
-
                 if (minutes < 0) {
                     minutes = 59;
                     hours--;
                 }
-
                 if (hours < 0) {
                     hours = 23;
                 }
-
                 return { hours, minutes, seconds };
             });
         }, 1000);
-
         return () => clearInterval(timer);
     }, []);
 
@@ -103,10 +93,9 @@ export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
                     </div>
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Ưu đãi trong thời gian giới hạn</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Ưu đãi giống nông sản trong thời gian giới hạn</p>
                     </div>
                 </div>
-
                 {/* Countdown Timer */}
                 <div className="flex items-center gap-2">
                     <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono font-bold text-lg px-3 py-1.5 rounded-md shadow-sm border border-gray-100 dark:border-gray-700">
@@ -125,7 +114,7 @@ export const FlashDealsSection: React.FC<FlashDealsSectionProps> = ({
 
             {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map((product) => (
+                {FLASH_DEALS_PRODUCTS.map((product) => (
                     <ProductCard
                         key={product.id}
                         product={product}

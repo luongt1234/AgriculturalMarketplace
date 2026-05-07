@@ -4,6 +4,7 @@ namespace AgroMarket.Domain.Enums
     {
         // ── Giai đoạn 1: Khởi tạo ───────────────────────────────────────────────
         ChoXuLy,            // PENDING   – Buyer vừa đặt, chờ seller xác nhận
+        ChoThanhToan,       // AWAITING_PAYMENT – Đơn MoMo mới tạo, chờ buyer quét QR
         XacNhan,            // CONFIRMED – Seller đã bấm "Chuẩn bị hàng"
         Huy,                // CANCELLED – Seller từ chối hoặc buyer huỷ
 
@@ -44,7 +45,8 @@ namespace AgroMarket.Domain.Enums
     {
         COD,            // cod
         ChuyenKhoan,    // chuyen_khoan
-        ViDienTu        // vi_dien_tu
+        ViDienTu,       // vi_dien_tu
+        MoMo            // momo – thanh toán ví nội bộ hệ thống
     }
 
     public enum LoaiGiaoDichVi

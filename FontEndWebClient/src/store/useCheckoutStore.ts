@@ -30,31 +30,17 @@ const mockShippingMethods: ShippingMethod[] = [
 ];
 
 const mockPaymentMethods: PaymentMethod[] = [
-    // {
-    //     id: '1',
-    //     name: 'Credit/Debit Card',
-    //     description: 'Visa, Mastercard, JCB',
-    //     available: true,
-    //     icon: 'credit_card',
-    // },
-    // {
-    //     id: '2',
-    //     name: 'Bank Transfer',
-    //     description: 'Direct bank transfer',
-    //     available: true,
-    //     icon: 'account_balance',
-    // },
     {
-        id: '3',
-        name: 'Mobile Wallet',
-        description: 'Momo, ZaloPay',
+        id: 'MOMO',
+        name: 'Ví MoMo',
+        description: 'Quét mã QR bằng app MoMo. Tiền được giữ an toàn, chuyển cho người bán sau khi giao hàng thành công.',
         available: true,
-        icon: 'phone_iphone',
+        icon: 'account_balance_wallet',
     },
     {
-        id: '4',
-        name: 'Cash on Delivery',
-        description: 'Pay when order arrives',
+        id: 'COD',
+        name: 'Thanh toán khi nhận hàng (COD)',
+        description: 'Trả tiền mặt khi nhận hàng tại nhà.',
         available: true,
         icon: 'money',
     },

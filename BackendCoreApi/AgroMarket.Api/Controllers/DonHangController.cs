@@ -116,6 +116,29 @@ namespace AgroMarket.Api.Controllers
         }
 
         /// <summary>
+        /// Buyer hủy đơn hàng (chỉ khi ChoXuLy). MoMo tự động hoàn tiền.
+        /// POST /api/DonHang/{id}/buyer-huy
+        /// </summary>
+        [HttpPost("{id}/buyer-huy")]
+        public async Task<IActionResult> BuyerHuyDonHang(Guid id)
+        {
+            try
+            {
+                var buyerId = GetCurrentUserId();
+                if (buyerId == Guid.Empty) return Error("Không xác định được người dùng", 401);
+
+                var ok = await _donHangService.BuyerHuyDonHangAsync(id, buyerId);
+                if (!ok) return Error("Không thể hủy đơn hàng.", 400);
+
+                return Ok(new { message = "Đã hủy đơn hàng. Tiền sẽ được hoàn lại nếu thanh toán qua ví." });
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message, 400);
+            }
+        }
+
+        /// <summary>
         /// Seller lấy danh sách đơn hàng của shop mình.
         /// GET /api/DonHang/seller-orders?pageNumber=1&pageSize=10&trangThai=ChoXuLy
         /// </summary>

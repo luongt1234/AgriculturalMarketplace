@@ -51,12 +51,30 @@ export const BuyerPage = () => {
             <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
                 {/* Hero Banner */}
                 <HeroBanner
-                    title={settings?.heroBannerTitle || "Trái vải Lục Ngạn tươi ngon\nThu hoạch sáng nay"}
-                    subtitle={settings?.heroBannerSubtitle || "Từ nông trại"}
-                    description={settings?.heroBannerDescription || "Trải nghiệm vị ngọt thanh của vải Lục Ngạn cao cấp. Nguồn gốc trực tiếp từ nông dân đạt chuẩn tỉnh Bắc Giang."}
-                    imageUrl={settings?.heroBannerImageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCpy2mZAcN5k6BzX_bURHyi3XojFDm1o-Gnx38QJopkLMz2EqKfHDGt7LHFLC41xw6TyrqvLVrjU4kwQCSmPthQ52mXKZtB9RgpReLKgGwiskVB0S5PGURESydMoHJVIv9QRIb-uiI90HKRXRlTzogTVAewTAMrXXq5wJGsbfJ3zfJ2dBakZs7veYoTG7g5pgDnABlLHz_DMoaLgH1CX7_xQq5RvF2-YgVUe1J5K_X7PWnMl7OS5_tPepeyS4Sbjhny1QptTPF-VA"}
-                    ctaText={settings?.heroBannerCtaText || "Mua ngay"}
-                    ctaSecondaryText={settings?.heroBannerCtaSecondaryText || "Tìm hiểu thêm"}
+                    title={
+                        settings?.heroBannerTitle ||
+                        "Giống cây trồng chuẩn chất lượng\nNền tảng cho mùa màng bội thu"
+                    }
+                    subtitle={
+                        settings?.heroBannerSubtitle ||
+                        "Trực tiếp từ các Viện nghiên cứu & Vườn ươm uy tín"
+                    }
+                    description={
+                        settings?.heroBannerDescription ||
+                        "Cung cấp đa dạng hạt giống, cây giống chuẩn F1, tỷ lệ nảy mầm cao và sạch bệnh. Đồng hành cùng nhà nông kiến tạo những vụ mùa năng suất cao."
+                    }
+                    imageUrl={
+                        settings?.heroBannerImageUrl ||
+                        "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2070"
+                    }
+                    ctaText={
+                        settings?.heroBannerCtaText ||
+                        "Khám phá danh mục giống"
+                    }
+                    ctaSecondaryText={
+                        settings?.heroBannerCtaSecondaryText ||
+                        "Đăng ký nhận tư vấn kỹ thuật"
+                    }
                     onCtaClick={handleHeroBannerClick}
                 />
 

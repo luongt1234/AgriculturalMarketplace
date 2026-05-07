@@ -116,5 +116,12 @@ namespace AgroMarket.Application.Services
                 throw new Exception($"Lỗi khi đăng ký làm người bán: {ex.Message}");
             }
         }
+
+        public async Task<decimal> GetSoDuAsync(Guid userId)
+        {
+            var user = await _nguoiDungRepository.GetByIdAsync(userId)
+                ?? throw new KeyNotFoundException("Không tìm thấy người dùng.");
+            return user.SoDu;
+        }
     }
 }

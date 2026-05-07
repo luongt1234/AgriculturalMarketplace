@@ -36,21 +36,6 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
-        //[HttpGet]
-        //[Route("get-product-by-buyer/{id}")]
-        //public async Task<IActionResult> GetProductByBuyer([FromRoute] Guid id)
-        //{
-        //    try
-        //    {
-        //        var result = await _sanPhamDangService.GetProductByBuyerAsync(id);
-        //        return CreatedResult(result, "Thêm mới thành công");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Error($"Lỗi khi tạo sản phẩm đăng: {ex.Message}");
-        //    }
-        //}
-
         [HttpGet("product")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProduct([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)

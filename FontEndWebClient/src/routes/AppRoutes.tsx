@@ -80,7 +80,7 @@ export default function AppRoutes() {
                             {/* <Route path="contracts" element={<div>Quản lý Hợp đồng</div>} /> */}
                             {/* <Route path="logs" element={<FarmingLogsPage />} /> */}
                             <Route path="chat" element={<FarmerChatPage />} />
-                            {/* <Route path="settings" element={<SellerSettingsPage />} /> */}
+                            <Route path="settings" element={<SellerSettingsPage />} />
                             <Route path="vouchers" element={<VoucherPage />} />
                         </Route>
                     </Route>

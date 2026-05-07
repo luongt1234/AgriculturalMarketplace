@@ -1,4 +1,4 @@
-﻿using AgroMarket.Domain.Common;
+using AgroMarket.Domain.Common;
 using AgroMarket.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -22,6 +22,13 @@ namespace AgroMarket.Domain.Entities
 
         [MaxLength(50)]
         public string? MaVanDonGhn { get; set; }
+
+        /// <summary>requestId gửi lên MoMo khi tạo thanh toán — dùng để refund sau</summary>
+        [MaxLength(100)]
+        public string? MoMoRequestId { get; set; }
+
+        /// <summary>transId trả về từ MoMo IPN sau khi buyer thanh toán</summary>
+        public long? MoMoTransId { get; set; }
 
         [MaxLength(500)]
         public string? DiaChiGiaoHang { get; set; }
@@ -61,6 +68,8 @@ namespace AgroMarket.Domain.Entities
         public string? GhiChu { get; set; } // ghi_chu_mua
 
         public PhuongThucGiaoHang PhuongThucNhanHang { get; set; } = PhuongThucGiaoHang.TaiKho; // phuong_thuc_nhan_hang
+
+        public PhuongThucThanhToan PhuongThucThanhToan { get; set; } = PhuongThucThanhToan.COD; // phuong_thuc_thanh_toan
 
         public bool IsDatHangTruoc { get; set; } = false; // is_dat_hang (Pre-order)
 

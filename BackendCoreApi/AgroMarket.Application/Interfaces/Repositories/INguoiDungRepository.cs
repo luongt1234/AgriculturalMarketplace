@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,5 +25,10 @@ namespace AgroMarket.Application.Interfaces.Repositories
         /// </summary>
         Task<(IEnumerable<NguoiDung> Data, int TotalRecords)> GetAllBuyerPagedAsync(int pageIndex, int pageNumber, Guid vaiTroId);
 
+        /// <summary>Lấy người dùng theo Id</summary>
+        Task<NguoiDung?> GetByIdAsync(Guid userId);
+
+        /// <summary>Cập nhật số dư ví của người dùng (dùng cho giao dịch MoMo nội bộ)</summary>
+        Task<bool> CapNhatSoDuAsync(Guid userId, decimal soDuMoi);
     }
 }

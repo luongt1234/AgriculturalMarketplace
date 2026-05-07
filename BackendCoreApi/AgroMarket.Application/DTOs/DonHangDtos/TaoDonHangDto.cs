@@ -1,3 +1,5 @@
+using AgroMarket.Domain.Enums;
+
 namespace AgroMarket.Application.DTOs.DonHangDtos
 {
     // ── Request gửi từ FE lên khi buyer bấm "Đặt hàng" ─────────────────────────
@@ -27,6 +29,9 @@ namespace AgroMarket.Application.DTOs.DonHangDtos
         /// <summary>Ghi chú của buyer</summary>
         public string? GhiChu { get; set; }
 
+        /// <summary>Phương thức thanh toán: COD hoặc MoMo (ví nội bộ)</summary>
+        public PhuongThucThanhToan PhuongThucThanhToan { get; set; } = PhuongThucThanhToan.COD;
+
         /// <summary>Danh sách sản phẩm trong đơn (đã nhóm theo seller)</summary>
         public List<ChiTietDonHangRequest> Items { get; set; } = new();
     }
@@ -47,5 +52,11 @@ namespace AgroMarket.Application.DTOs.DonHangDtos
         public decimal PhiVanChuyen { get; set; }
         public decimal TongThanhToan { get; set; }
         public DateTime NgayTao { get; set; }
+
+        /// <summary>URL trang thanh toán MoMo (mở browser) — chỉ có khi dùng MoMo</summary>
+        public string? MomoPayUrl { get; set; }
+
+        /// <summary>Chuỗi QR EMVCO để render QR code — chỉ có khi dùng MoMo</summary>
+        public string? MomoQrCodeUrl { get; set; }
     }
 }

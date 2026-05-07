@@ -4,9 +4,10 @@ interface PaymentStepProps {
     methods: PaymentMethod[];
     selectedMethod: PaymentMethod | null;
     onSelectMethod: (method: PaymentMethod) => void;
+    soDuVi?: number | null;
 }
 
-export const PaymentStep: React.FC<PaymentStepProps> = ({ methods, selectedMethod, onSelectMethod }) =>  {
+export const PaymentStep: React.FC<PaymentStepProps> = ({ methods, selectedMethod, onSelectMethod, soDuVi }) => {
     return (
         <section className="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden ring-1 ring-primary/10">
             <div className="p-6 border-b border-gray-100 dark:border-gray-700">
@@ -49,6 +50,13 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ methods, selectedMetho
                                     <p className={`text-xs ${method.available ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400'}`}>
                                         {method.description}
                                     </p>
+                                    {/* Hiển thị số dư ví khi chọn MoMo */}
+                                    {method.id === 'MOMO' && selectedMethod?.id === 'MOMO' && soDuVi !== null && soDuVi !== undefined && (
+                                        <div className="mt-2 inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold px-3 py-1 rounded-full">
+                                            <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
+                                            Số dư: {soDuVi.toLocaleString('vi-VN')}đ
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex-shrink-0">
                                     <div

@@ -4,6 +4,7 @@ using AgroMarket.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AgroMarket.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430161527_AddPhuongThucThanhToanToDonHang")]
+    partial class AddPhuongThucThanhToanToDonHang
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -400,15 +403,6 @@ namespace AgroMarket.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)")
                         .HasColumnName("ma_van_don_ghn");
-
-                    b.Property<string>("MoMoRequestId")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("mo_mo_request_id");
-
-                    b.Property<long?>("MoMoTransId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("mo_mo_trans_id");
 
                     b.Property<DateTime?>("NgayChinhSua")
                         .HasColumnType("datetime(6)")

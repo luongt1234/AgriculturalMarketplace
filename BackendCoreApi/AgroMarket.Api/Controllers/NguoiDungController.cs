@@ -79,5 +79,27 @@ namespace AgroMarket.Api.Controllers
                 return (ActionResult)Error($"Lỗi khi đăng ký làm người bán: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Lấy số dư ví hiện tại của người dùng đang đăng nhập.
+        /// GET /api/NguoiDung/me/so-du
+        /// </summary>
+        [HttpGet("me/so-du")]
+        public async Task<IActionResult> GetSoDu()
+        {
+            try
+            {
+                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId))
+                    return Unauthorized("Không xác định được người dùng.");
+
+                var soDu = await _nguoiDungService.GetSoDuAsync(userId);
+                return Ok(new { soDu });
+            }
+            catch (Exception ex)
+            {
+                return (ActionResult)Error($"Lỗi khi lấy số dư: {ex.Message}");
+            }
+        }
     }
 }

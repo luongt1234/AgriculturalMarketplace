@@ -17,6 +17,8 @@ export interface TaoDonHangRequest {
     phiVanChuyen: number;
     ghnServiceId?: number;
     ghiChu?: string;
+    /** 'COD' hoặc 'MoMo' */
+    phuongThucThanhToan?: string;
     items: ChiTietDonHangRequest[];
 }
 
@@ -27,6 +29,10 @@ export interface TaoDonHangResponse {
     phiVanChuyen: number;
     tongThanhToan: number;
     ngayTao: string;
+    /** URL trang thanh toán MoMo — chỉ có khi dùng MoMo */
+    momoPayUrl?: string;
+    /** Chuỗi QR EMVCO để render QR code — chỉ có khi dùng MoMo */
+    momoQrCodeUrl?: string;
 }
 
 // ── API calls ────────────────────────────────────────────────────────────────
@@ -83,4 +89,22 @@ export async function sellerTuChoi(donHangId: string): Promise<void> {
  */
 export async function sellerGiaoHang(donHangId: string): Promise<void> {
     await axiosInstance.put(`/api/DonHang/${donHangId}/ship`);
+}
+
+/**
+ * Lấy số dư ví hiện tại của người dùng đang đăng nhập.
+ * GET /api/NguoiDung/me/so-du
+ */
+export async function getSoDu(): Promise<number> {
+    const response = await axiosInstance.get<{ soDu: number }>('/api/NguoiDung/me/so-du');
+    return response.data.soDu;
+}
+
+/**
+ * Buyer hủy đơn hàng (chỉ khi ChoXuLy). MoMo tự động hoàn tiền.
+ * POST /api/DonHang/{id}/buyer-huy
+ */
+export async function buyerHuyDonHang(donHangId: string): Promise<{ message: string }> {
+    const response = await axiosInstance.post<{ message: string }>(`/api/DonHang/${donHangId}/buyer-huy`);
+    return response.data;
 }
