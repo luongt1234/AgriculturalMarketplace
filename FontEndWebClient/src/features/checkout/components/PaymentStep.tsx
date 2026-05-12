@@ -21,66 +21,70 @@ export const PaymentStep: React.FC<PaymentStepProps> = ({ methods, selectedMetho
             </div>
 
             <div className="p-6 grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-                {methods.map((method) => (
-                    <label key={method.id} className="relative cursor-pointer group">
-                        <input
-                            type="radio"
-                            name="payment"
-                            checked={selectedMethod?.id === method.id}
-                            onChange={() => onSelectMethod(method)}
-                            className="peer sr-only"
-                            disabled={!method.available}
-                        />
-                        <div
-                            className={`p-5 rounded-xl border-2 transition-all ${!method.available
-                                ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 opacity-50 cursor-not-allowed'
-                                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 peer-checked:border-primary peer-checked:bg-green-50/30 dark:peer-checked:bg-green-900/10 hover:border-primary/50'
+                {methods.map((method) => {
+                    const isSelected = selectedMethod?.id === method.id;
+                    return (
+                        <label key={method.id} className="relative cursor-pointer group">
+                            <input
+                                type="radio"
+                                name="payment"
+                                checked={isSelected}
+                                onChange={() => onSelectMethod(method)}
+                                className="sr-only"
+                                disabled={!method.available}
+                            />
+                            <div
+                                className={`p-5 rounded-xl border-2 transition-all ${
+                                    !method.available
+                                        ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 opacity-50 cursor-not-allowed'
+                                        : isSelected
+                                            ? 'border-primary bg-green-50/30 dark:bg-green-900/10'
+                                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-primary/50'
                                 }`}
-                        >
-                            <div className="flex gap-4 mb-3">
-                                <div className="flex-shrink-0">
-                                    <span className={`material-symbols-outlined text-2xl ${method.available ? 'text-primary' : 'text-gray-400'}`}>
-                                        {method.icon}
-                                    </span>
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className={`font-bold mb-1 ${method.available ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
-                                        {method.name}
-                                    </h3>
-                                    <p className={`text-xs ${method.available ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400'}`}>
-                                        {method.description}
-                                    </p>
-                                    {/* Hiển thị số dư ví khi chọn MoMo */}
-                                    {method.id === 'MOMO' && selectedMethod?.id === 'MOMO' && soDuVi !== null && soDuVi !== undefined && (
-                                        <div className="mt-2 inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold px-3 py-1 rounded-full">
-                                            <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
-                                            Số dư: {soDuVi.toLocaleString('vi-VN')}đ
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex-shrink-0">
-                                    <div
-                                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${method.available
-                                            ? 'border-gray-300 peer-checked:bg-primary peer-checked:border-primary'
-                                            : 'border-gray-300 bg-gray-200 dark:bg-gray-700'
-                                            }`}
-                                    >
-                                        {method.available && selectedMethod?.id === method.id && (
-                                            <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                            >
+                                <div className="flex gap-4 mb-3">
+                                    <div className="flex-shrink-0">
+                                        <span className={`material-symbols-outlined text-2xl ${method.available ? 'text-primary' : 'text-gray-400'}`}>
+                                            {method.icon}
+                                        </span>
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className={`font-bold mb-1 ${method.available ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                            {method.name}
+                                        </h3>
+                                        <p className={`text-xs ${method.available ? 'text-gray-500 dark:text-gray-400' : 'text-gray-400'}`}>
+                                            {method.description}
+                                        </p>
+                                        {method.id === 'MOMO' && isSelected && soDuVi !== null && soDuVi !== undefined && (
+                                            <div className="mt-2 inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold px-3 py-1 rounded-full">
+                                                <span className="material-symbols-outlined text-sm">account_balance_wallet</span>
+                                                Số dư: {soDuVi.toLocaleString('vi-VN')}đ
+                                            </div>
                                         )}
                                     </div>
+                                    <div className="flex-shrink-0">
+                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                            method.available && isSelected
+                                                ? 'bg-primary border-primary'
+                                                : 'border-gray-300 bg-gray-200 dark:bg-gray-700'
+                                        }`}>
+                                            {method.available && isSelected && (
+                                                <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {!method.available && (
-                                <div className="flex items-center gap-1 text-xs text-gray-400">
-                                    <span className="material-symbols-outlined text-sm">info</span>
-                                    Sắp có
-                                </div>
-                            )}
-                        </div>
-                    </label>
-                ))}
+                                {!method.available && (
+                                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                                        <span className="material-symbols-outlined text-sm">info</span>
+                                        Sắp có
+                                    </div>
+                                )}
+                            </div>
+                        </label>
+                    );
+                })}
             </div>
 
             <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800 rounded-b-lg">

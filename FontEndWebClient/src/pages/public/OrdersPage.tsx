@@ -89,7 +89,7 @@ function OrderDetailModal({
                     <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                         {order.anhDaiDienNguoiBan ? (
                             <img
-                                src={`http://localhost:5000${order.anhDaiDienNguoiBan}`}
+                                src={`http://localhost:5182${order.anhDaiDienNguoiBan}`}
                                 alt={order.tenNguoiBan ?? ''}
                                 className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                             />
@@ -135,7 +135,7 @@ function OrderDetailModal({
                                         className="w-14 h-14 rounded-lg bg-gray-200 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-600"
                                         style={{
                                             backgroundImage: item.hinhAnhUrl
-                                                ? `url('http://localhost:5000${item.hinhAnhUrl}')`
+                                                ? `url('http://localhost:5182${item.hinhAnhUrl}')`
                                                 : undefined,
                                         }}
                                     />
@@ -219,7 +219,7 @@ function OrderCard({
                 <div className="flex items-center gap-2.5">
                     {order.anhDaiDienNguoiBan ? (
                         <img
-                            src={`http://localhost:5000${order.anhDaiDienNguoiBan}`}
+                            src={`http://localhost:5182${order.anhDaiDienNguoiBan}`}
                             alt={order.tenNguoiBan ?? ''}
                             className="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                         />
@@ -246,7 +246,7 @@ function OrderCard({
                             className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-600"
                             style={{
                                 backgroundImage: item.hinhAnhUrl
-                                    ? `url('http://localhost:5000${item.hinhAnhUrl}')`
+                                    ? `url('http://localhost:5182${item.hinhAnhUrl}')`
                                     : undefined,
                             }}
                         />
@@ -403,11 +403,10 @@ export const OrdersPage = () => {
                             <button
                                 key={tab.key}
                                 onClick={() => handleTabChange(tab.key)}
-                                className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
-                                    activeTab === tab.key
+                                className={`flex items-center gap-1.5 px-4 py-3.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.key
                                         ? 'border-primary text-primary'
                                         : 'border-transparent text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                }`}
+                                    }`}
                             >
                                 <span className="material-symbols-outlined text-[15px]">{tab.icon}</span>
                                 {tab.label}
@@ -467,11 +466,10 @@ export const OrdersPage = () => {
                                     <button
                                         key={p}
                                         onClick={() => setCurrentPage(p)}
-                                        className={`px-3.5 py-2 rounded-xl border text-sm font-medium transition-colors ${
-                                            p === currentPage
+                                        className={`px-3.5 py-2 rounded-xl border text-sm font-medium transition-colors ${p === currentPage
                                                 ? 'bg-primary text-white border-primary'
                                                 : 'border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary'
-                                        }`}
+                                            }`}
                                     >
                                         {p}
                                     </button>

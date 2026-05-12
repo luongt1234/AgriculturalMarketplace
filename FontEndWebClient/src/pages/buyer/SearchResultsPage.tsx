@@ -41,7 +41,7 @@ export const SearchResultsPage = () => {
         rating: 4.5,
         location: 'Hà Nội',
         seller: p.tenNguoiBan || 'Người bán',
-        image: p.hinhAnhUrl ? `http://localhost:5000${p.hinhAnhUrl}` : 'https://placehold.co/400x300?text=Product',
+        image: p.hinhAnhUrl ? `http://localhost:5182${p.hinhAnhUrl}` : 'https://placehold.co/400x300?text=Product',
         unit: p.tenDonVi || '/kg',
         category: p.tenSanPhamChung || 'Nông sản',
         discount: 0

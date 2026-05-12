@@ -58,7 +58,6 @@ export const MyProductPage = () => {
     };
 
     const handleSuccess = () => {
-        // Reload danh sách sau khi tạo/sửa thành công
         setPageNumber(1);
         loadProducts();
     };
@@ -81,12 +80,9 @@ export const MyProductPage = () => {
 
     useSetPageTitle('Quản lý Nông sản', headerAction);
 
-    // Load dữ liệu khi page thay đổi
     useEffect(() => {
         loadProducts();
     }, [pageNumber, pageSize]);
-
-    // Định nghĩa columns cho DataTable
     const columns: Column<Product>[] = useMemo(() => [
         {
             header: 'Sản phẩm',
@@ -150,7 +146,7 @@ export const MyProductPage = () => {
                                 const toastId = toast.loading('Đang xử lý...');
                                 await togglePinProduct(product.id);
                                 toast.success('Cập nhật trạng thái ghim thành công', { id: toastId });
-                                loadProducts(); // Reload sau khi ghim
+                                loadProducts();
                             } catch (e) {
                                 toast.error('Lỗi khi thao tác');
                             }
@@ -232,8 +228,7 @@ export const MyProductPage = () => {
                 />
             </div>
 
-            {/* Modals */}
-            <ProductFormModal
+             <ProductFormModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={handleSuccess}

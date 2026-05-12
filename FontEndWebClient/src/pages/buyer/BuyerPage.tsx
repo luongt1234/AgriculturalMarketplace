@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { HeroBanner } from '../../components/buyer/HeroBanner';
-import { CategoriesSection } from '../../components/buyer/CategoriesSection';
 import { FlashDealsSection } from '../../components/buyer/FlashDealsSection';
 import { FreshArrivalsSection } from '../../components/buyer/FreshArrivalsSection';
 import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
 import { useSettingsStore } from '../../stores/useSettingsStore';
-import type { BuyerProduct, Category } from '../../types/buyer.types';
+import type { BuyerProduct } from '../../types/buyer.types';
 
 export const BuyerPage = () => {
     const [cartCount, setCartCount] = useState(3);
-    const [searchQuery, setSearchQuery] = useState('');
-    const navigate = useNavigate();
     const { settings, fetchSettings } = useSettingsStore();
 
     React.useEffect(() => {
@@ -26,16 +22,8 @@ export const BuyerPage = () => {
         toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
     };
 
-    const handleCategoryClick = (category: Partial<Category> & { id: string, name: string }) => {
-        navigate(`/category/${category.id}`);
-    };
-
     const handleHeroBannerClick = () => {
         toast.info('Đang chuyển đến cửa hàng...');
-    };
-
-    const handleSearchChange = (query: string) => {
-        setSearchQuery(query);
     };
 
     return (
@@ -44,7 +32,6 @@ export const BuyerPage = () => {
             <BuyerHeader
                 cartCount={cartCount}
                 showNavigation={true}
-                onSearchChange={handleSearchChange}
             />
 
             {/* Main Content */}
@@ -78,12 +65,6 @@ export const BuyerPage = () => {
                     onCtaClick={handleHeroBannerClick}
                 />
 
-                {/* Categories Section */}
-                <CategoriesSection
-                    title="Khám phá danh mục"
-                    showViewAll={true}
-                    onCategoryClick={handleCategoryClick}
-                />
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

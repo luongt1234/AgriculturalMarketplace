@@ -15,7 +15,7 @@ interface BuyerHeaderProps {
 
 export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
     onSearchChange,
-    showNavigation = true
+    showNavigation = true,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [suggestions, setSuggestions] = useState<DisplayProduct[]>([]);
@@ -175,7 +175,7 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                                 >
                                                     {/* Hiển thị avatar cửa hàng nếu có, hoặc ảnh sản phẩm */}
                                                     <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex-shrink-0 bg-cover bg-center"
-                                                        style={{ backgroundImage: `url(${item.hinhAnhUrl ? 'http://localhost:5000' + item.hinhAnhUrl : 'https://placehold.co/40x40?text=SP'})` }}
+                                                        style={{ backgroundImage: `url(${item.hinhAnhUrl ? 'http://localhost:5182' + item.hinhAnhUrl : 'https://placehold.co/40x40?text=SP'})` }}
                                                     ></div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">

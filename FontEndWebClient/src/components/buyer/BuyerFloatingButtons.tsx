@@ -1,6 +1,7 @@
 import React from 'react';
 import { AIChatbot } from '../../features/chatbot/components/AIChatbot';
 import { FloatingChat } from '../../features/chat/components/FloatingChat';
+import { CategoryFloatingButton } from './CategorySidebar';
 
 interface BuyerFloatingButtonsProps {
     targetSellerId?: string;
@@ -9,16 +10,21 @@ interface BuyerFloatingButtonsProps {
 }
 
 /**
- * Component gói cả 2 nút nổi (Chatbot AI và Chat giữa người-người) 
- * Giúp định vị góc phải dưới màn hình và tránh đè lên nhau
+ * Gộp tất cả nút nổi góc phải dưới màn hình:
+ *   - CategoryFloatingButton (chỉ ở "/") — xanh primary, icon danh mục
+ *   - AIChatbot — tím, trợ lý AI
+ *   - FloatingChat — xanh, chat người bán
  */
 export const BuyerFloatingButtons: React.FC<BuyerFloatingButtonsProps> = (props) => {
     return (
         <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
-            {/* Chatbot AI (Màu tím) ở trên */}
+            {/* Nút danh mục (chỉ hiện ở trang chủ "/") */}
+            <CategoryFloatingButton />
+
+            {/* Chatbot AI (tím) */}
             <AIChatbot />
 
-            {/* Chat người bán (Màu xanh) ở dưới, dùng embedded để không tự set fixed position */}
+            {/* Chat người bán (xanh) */}
             <FloatingChat embedded {...props} />
         </div>
     );
