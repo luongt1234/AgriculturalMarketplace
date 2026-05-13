@@ -43,7 +43,13 @@ namespace AgroMarket.Infrastructure.Services
         public async Task<object> GetWardsAsync(int districtId)
         {
             var response = await _httpClient.GetAsync($"/shiip/public-api/master-data/ward?district_id={districtId}");
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Lỗi GHN GetWardsAsync (DistrictID: {districtId}): {errorContent}");
+            }
+
             return await response.Content.ReadFromJsonAsync<object>();
         }
 
@@ -60,7 +66,8 @@ namespace AgroMarket.Infrastructure.Services
 
             var response = await _httpClient.PostAsJsonAsync("/shiip/public-api/v2/shipping-order/available-services", payload);
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<object>();
+            var result = await response.Content.ReadFromJsonAsync<object>();
+            return result;
         }
 
         public async Task<object> CalculateFeeAsync(int fromDistrictId, int toDistrictId, string toWardCode, int weight, int serviceId)

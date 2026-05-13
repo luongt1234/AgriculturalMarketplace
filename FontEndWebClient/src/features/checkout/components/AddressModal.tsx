@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { DeliveryAddress } from '../../../types/checkout.types';
 import axios from 'axios';
+import axiosInstance from '../../../lip/axiosInstance';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { createAddress, updateAddress } from '../api/address.api';
 import { toast } from 'sonner';
@@ -13,7 +14,7 @@ interface AddressModalProps {
 }
 
 type FullLocationItem = {
-    code: number;
+    code: number | string;
     name: string;
     division_type: string;
     codename: string;
@@ -21,8 +22,6 @@ type FullLocationItem = {
     province_code?: number;
     district_code?: number;
 };
-
-const API_ADDRESS = import.meta.env.PROVINCES_API_URL || 'https://provinces.open-api.vn/api/v1';
 
 const emptyAddress: DeliveryAddress = {
     id: '',
@@ -78,17 +77,19 @@ export function AddressModal({
         }
     };
 
+    const GHN_LOCATION_PROXY = '/api/shipping/ghn';
+
     const normalizeLocations = (data: any): FullLocationItem[] => {
         if (!data) return [];
         if (Array.isArray(data)) {
             return data.map((item) => ({
-                code: item.code,
-                name: item.name ?? item.name_with_type ?? item.full_name ?? item.label ?? '',
-                division_type: item.division_type,
+                code: item.WardCode ?? item.ward_code ?? item.DistrictID ?? item.district_id ?? item.ProvinceID ?? item.province_id ?? item.Code ?? item.code ?? item.WardID ?? 0,
+                name: item.WardName ?? item.ward_name ?? item.DistrictName ?? item.district_name ?? item.ProvinceName ?? item.province_name ?? item.name ?? item.full_name ?? item.name_with_type ?? item.label ?? '',
+                division_type: item.Type ?? item.division_type ?? item.ProvinceType ?? item.DistrictType ?? item.ward_type ?? '',
                 codename: item.codename,
                 phone_code: item.phone_code,
-                province_code: item.province_code,
-                district_code: item.district_code,
+                province_code: item.ProvinceID ?? item.province_code ?? item.province_id ?? item.provinceId,
+                district_code: item.DistrictID ?? item.district_code ?? item.district_id ?? item.districtId,
             }));
         }
         if (data.provinces) return normalizeLocations(data.provinces);
@@ -98,11 +99,26 @@ export function AddressModal({
         return [];
     };
 
+    const fetchGhnProvinces = async () => {
+        const response = await axiosInstance.get(`${GHN_LOCATION_PROXY}/provinces`);
+        return normalizeLocations((response as any)?.data ?? response);
+    };
+
     const fetchProvinces = async () => {
         try {
             setLoadingProvinces(true);
-            const response = await axios.get(API_ADDRESS);
-            const list = normalizeLocations(response.data);
+            let list: FullLocationItem[] = [];
+
+            try {
+                list = await fetchGhnProvinces();
+            } catch (error) {
+                console.warn('GHN provinces request failed, falling back to open provinces API.', error);
+            }
+
+            if (!list.length) {
+                return [];
+            }
+
             setProvinces(list);
             return list;
         } catch (error) {
@@ -117,8 +133,22 @@ export function AddressModal({
     const fetchDistricts = async (provinceCode: string) => {
         try {
             setLoadingDistricts(true);
-            const response = await axios.get(`${API_ADDRESS}/p/${provinceCode}?depth=2`);
-            const list = normalizeLocations(response.data.districts);
+            let list: FullLocationItem[] = [];
+
+            try {
+                const response = await axiosInstance.get(`${GHN_LOCATION_PROXY}/districts/${provinceCode}`);
+                list = normalizeLocations((response as any)?.data ?? response);
+            } catch (error) {
+                console.warn('GHN districts request failed, falling back to open provinces API.', error);
+            }
+
+            if (!list.length) {
+                // Fallback to open API if GHN fails
+                // const response = await axios.get(`${API_ADDRESS}/p/${provinceCode}?depth=2`);
+                // list = normalizeLocations(response.data.districts);
+                return [];
+            }
+
             setDistricts(list);
             return list;
         } catch (error) {
@@ -133,8 +163,22 @@ export function AddressModal({
     const fetchWards = async (districtCode: string) => {
         try {
             setLoadingWards(true);
-            const response = await axios.get(`${API_ADDRESS}/d/${districtCode}?depth=2`);
-            const list = normalizeLocations(response.data.wards);
+            let list: FullLocationItem[] = [];
+
+            try {
+                const response = await axiosInstance.get(`${GHN_LOCATION_PROXY}/wards/${districtCode}`);
+                list = normalizeLocations((response as any)?.data ?? response);
+            } catch (error) {
+                console.warn('GHN wards request failed, falling back to open provinces API.', error);
+            }
+
+            if (!list.length) {
+                // Fallback to open API if GHN fails
+                // const response = await axios.get(`${API_ADDRESS}/d/${districtCode}?depth=2`);
+                // list = normalizeLocations(response.data.wards);
+                return [];
+            }
+
             setWards(list);
             return list;
         } catch (error) {
@@ -270,8 +314,8 @@ export function AddressModal({
                 city: selectedProvince.name,
                 district: selectedDistrict.name,
                 ward: selectedWard.name,
-                provinceId: selectedProvince.code,
-                districtCode: selectedDistrict.code,
+                provinceId: Number(selectedProvince.code),
+                districtCode: Number(selectedDistrict.code),
                 wardCode: String(selectedWard.code),
                 detailedAddress: savedAddress.diaChiChiTiet,
                 label: 'home',

@@ -74,6 +74,20 @@ export const calculateShippingFee = async (
     );
 };
 
+const groupItemsByOrigin = (items: CartItem[], fallbackDistrictId: number) => {
+    const grouped = items.reduce<Record<number, CartItem[]>>((acc, item) => {
+        const origin = typeof item.originDistrictCode === 'number' ? item.originDistrictCode : fallbackDistrictId;
+        acc[origin] = acc[origin] ?? [];
+        acc[origin].push(item);
+        return acc;
+    }, {});
+
+    return Object.entries(grouped).map(([originId, groupItems]) => ({
+        originDistrictId: Number(originId),
+        items: groupItems,
+    }));
+};
+
 export const getShippingFeeForDestination = async (
     destinationDistrictId: number,
     destinationWardCode: string,
@@ -81,7 +95,19 @@ export const getShippingFeeForDestination = async (
     serviceId?: number
 ): Promise<number> => {
     const fromDistrictId = resolveFromDistrict(items, destinationDistrictId);
-    return calculateShippingFee(fromDistrictId, destinationDistrictId, destinationWardCode, items, serviceId);
+    const groupedItems = groupItemsByOrigin(items, fromDistrictId);
+
+    if (groupedItems.length <= 1) {
+        return calculateShippingFee(fromDistrictId, destinationDistrictId, destinationWardCode, items, serviceId);
+    }
+
+    const fees = await Promise.all(
+        groupedItems.map(({ originDistrictId, items: groupItems }) =>
+            calculateShippingFee(originDistrictId, destinationDistrictId, destinationWardCode, groupItems, serviceId)
+        )
+    );
+
+    return fees.reduce((sum, fee) => sum + fee, 0);
 };
 
 const resolvePackageType = (items: CartItem[]): string => {

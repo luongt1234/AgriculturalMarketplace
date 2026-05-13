@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../../store/useCartStore';
 import { useCheckoutStore } from '../../../store/useCheckoutStore';
+import { getProductById } from '../../products/api/product.api';
 import type { CartItemDto } from '../../../types/cart.types';
 
 interface CartDrawerProps {
@@ -47,20 +48,51 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     const selectedItems = cartItems.filter(i => selectedIds.has(i.id));
     const subtotal = selectedItems.reduce((s, i) => s + i.gia * i.soLuong, 0);
 
-    const handleCheckout = () => {
+    const resolveCartItemOriginDistrict = async (item: CartItemDto): Promise<number | undefined> => {
+        if (typeof (item as any).originDistrictCode === 'number') {
+            return (item as any).originDistrictCode;
+        }
+
+        try {
+            const product = await getProductById(item.sanPhamDangId);
+            if (!product?.diaChi) return undefined;
+
+            const diaChiObj = JSON.parse(product.diaChi);
+            if (Array.isArray(diaChiObj.districts) && diaChiObj.districts.length > 0) {
+                return diaChiObj.districts[0].district_code ?? diaChiObj.districts[0].code;
+            }
+
+            return (
+                diaChiObj.districtId ??
+                diaChiObj.DistrictID ??
+                diaChiObj.districtCode ??
+                diaChiObj.district_code ??
+                undefined
+            );
+        } catch (error) {
+            console.error('Error resolving cart item origin district:', error);
+            return undefined;
+        }
+    };
+
+    const handleCheckout = async () => {
         if (selectedItems.length === 0) return;
-        // Convert selected items to CartItem format for checkout
-        const checkoutItems = selectedItems.map(item => ({
-            id: item.id,
-            productId: item.sanPhamDangId,
-            name: item.tenSanPham || '',
-            price: item.gia,
-            quantity: item.soLuong,
-            image: item.hinhAnhUrl || '',
-            unit: item.donVi || '',
-            sellerId: item.nguoiBanId,
-            sellerName: item.tenNguoiBan || '',
-        }));
+
+        const checkoutItems = await Promise.all(
+            selectedItems.map(async (item) => ({
+                id: item.id,
+                productId: item.sanPhamDangId,
+                name: item.tenSanPham || '',
+                price: item.gia,
+                quantity: item.soLuong,
+                image: item.hinhAnhUrl || '',
+                unit: item.donVi || '',
+                sellerId: item.nguoiBanId,
+                sellerName: item.tenNguoiBan || '',
+                originDistrictCode: await resolveCartItemOriginDistrict(item),
+            }))
+        );
+
         setCartItems(checkoutItems);
         onClose();
         navigate('/checkout');
