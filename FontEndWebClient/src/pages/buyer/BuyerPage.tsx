@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
@@ -17,13 +18,19 @@ export const BuyerPage = () => {
         fetchSettings();
     }, [fetchSettings]);
 
+    const navigate = useNavigate();
+
     const handleAddToCart = (product: BuyerProduct) => {
         setCartCount((prev) => prev + 1);
         toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
     };
 
     const handleHeroBannerClick = () => {
-        toast.info('Đang chuyển đến cửa hàng...');
+        navigate('/featured');
+    };
+
+    const handleOpenChatbot = () => {
+        window.dispatchEvent(new CustomEvent('open-ai-chatbot'));
     };
 
     return (
@@ -56,13 +63,14 @@ export const BuyerPage = () => {
                     }
                     ctaText={
                         settings?.heroBannerCtaText ||
-                        "Khám phá danh mục giống"
+                        "Khám phá sản phẩm"
                     }
                     ctaSecondaryText={
                         settings?.heroBannerCtaSecondaryText ||
-                        "Đăng ký nhận tư vấn kỹ thuật"
+                        "Tư vấn kĩ thuật"
                     }
                     onCtaClick={handleHeroBannerClick}
+                    onCtaSecondaryClick={handleOpenChatbot}
                 />
 
 

@@ -156,18 +156,28 @@ export function AddressModal({
             if (editingAddress) {
                 setFormData(editingAddress);
 
-                // Tìm province khớp với city đã lưu
-                const province = provinceList.find(p => p.name === editingAddress.city);
+                // Ưu tiên match theo ID (format mới), fallback theo tên (format cũ)
+                const province = editingAddress.provinceId
+                    ? provinceList.find(p => p.code === editingAddress.provinceId)
+                    : provinceList.find(p => p.name === editingAddress.city);
                 if (!province) return;
 
                 const districtList = await fetchDistricts(province.code.toString());
 
-                // Tìm district khớp
-                const district = districtList.find(d => d.name === editingAddress.district);
+                const district = editingAddress.districtCode
+                    ? districtList.find(d => d.code === editingAddress.districtCode)
+                    : districtList.find(d => d.name === editingAddress.district);
                 if (!district) return;
 
-                await fetchWards(district.code.toString());
-                // wards sẽ được set, select sẽ hiển thị đúng vì formData.ward đã có sẵn
+                const wardList = await fetchWards(district.code.toString());
+
+                // wardCode trong format mới là string (mã ward)
+                if (editingAddress.wardCode) {
+                    const ward = wardList.find(w => String(w.code) === String(editingAddress.wardCode));
+                    if (ward) {
+                        setFormData(prev => ({ ...prev, ward: ward.name }));
+                    }
+                }
             } else {
                 setFormData(emptyAddress);
             }
@@ -175,36 +185,6 @@ export function AddressModal({
 
         init();
     }, [isOpen, editingAddress]);
-
-    // Effect: Fetch Quận/Huyện khi Tỉnh/Thành thay đổi do user tự chọn
-    useEffect(() => {
-        if (!formData.city) {
-            setDistricts([]);
-            setWards([]);
-            return;
-        }
-        const province = provinces.find((item) => item.name === formData.city);
-        if (!province) {
-            setDistricts([]);
-            setWards([]);
-            return;
-        }
-        fetchDistricts(province.code.toString());
-    }, [formData.city, provinces]);
-
-    // Effect: Fetch Phường/Xã khi Quận/Huyện thay đổi do user tự chọn
-    useEffect(() => {
-        if (!formData.district) {
-            setWards([]);
-            return;
-        }
-        const district = districts.find((item) => item.name === formData.district);
-        if (!district) {
-            setWards([]);
-            return;
-        }
-        fetchWards(district.code.toString());
-    }, [formData.district, districts]);
 
 
     // Xử lý các Input text thông thường
@@ -216,15 +196,22 @@ export function AddressModal({
         });
     };
 
-    // Các hàm xử lý riêng cho select để tự động reset cấp bậc thấp hơn
-    const handleCityChange = (cityName: string) => {
+    // Các hàm xử lý riêng cho select — fetch cấp dưới và reset giá trị phụ thuộc
+    const handleCityChange = async (cityName: string) => {
         setFormData(prev => ({ ...prev, city: cityName, district: '', ward: '' }));
+        setDistricts([]);
+        setWards([]);
         provinceSearchRef.current = '';
+        const province = provinces.find(p => p.name === cityName);
+        if (province) await fetchDistricts(province.code.toString());
     };
 
-    const handleDistrictChange = (districtName: string) => {
+    const handleDistrictChange = async (districtName: string) => {
         setFormData(prev => ({ ...prev, district: districtName, ward: '' }));
+        setWards([]);
         districtSearchRef.current = '';
+        const district = districts.find(d => d.name === districtName);
+        if (district) await fetchWards(district.code.toString());
     };
 
     const handleWardChange = (wardName: string) => {
@@ -248,11 +235,12 @@ export function AddressModal({
         }
 
         const diaChiObject = {
-            ...selectedProvince,
-            districts: [{
-                ...selectedDistrict,
-                wards: [selectedWard]
-            }]
+            provinceId: selectedProvince.code,
+            provinceName: selectedProvince.name,
+            districtId: selectedDistrict.code,
+            districtName: selectedDistrict.name,
+            wardCode: String(selectedWard.code),
+            wardName: selectedWard.name,
         };
 
         const addressData = {
@@ -279,9 +267,12 @@ export function AddressModal({
                 id: savedAddress.id,
                 fullName: savedAddress.tenNguoiNhanHang,
                 phone: savedAddress.soDienThoai,
-                city: formData.city,
-                district: formData.district,
-                ward: formData.ward,
+                city: selectedProvince.name,
+                district: selectedDistrict.name,
+                ward: selectedWard.name,
+                provinceId: selectedProvince.code,
+                districtCode: selectedDistrict.code,
+                wardCode: String(selectedWard.code),
                 detailedAddress: savedAddress.diaChiChiTiet,
                 label: 'home',
                 isDefault: savedAddress.isDefault

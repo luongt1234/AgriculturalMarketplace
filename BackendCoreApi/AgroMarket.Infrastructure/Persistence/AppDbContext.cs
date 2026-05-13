@@ -34,6 +34,7 @@ namespace AgroMarket.Infrastructure.Persistence
         public DbSet<CaiDatGiaoDien> CaiDatGiaoDiens { get; set; }
         public DbSet<Voucher> Vouchers { get; set; }
         public DbSet<VoucherNguoiDung> VoucherNguoiDungs { get; set; }
+        public DbSet<AdminChucNangPhanQuyen> AdminChucNangPhanQuyens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +67,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<CaiDatGiaoDien>().ToTable("cai_dat_giao_dien");
             modelBuilder.Entity<Voucher>().ToTable("voucher");
             modelBuilder.Entity<VoucherNguoiDung>().ToTable("voucher_nguoi_dung");
+            modelBuilder.Entity<AdminChucNangPhanQuyen>().ToTable("admin_chuc_nang_phan_quyen");
 
             // =========================================================
             // 3. CẤU HÌNH QUAN HỆ (RELATIONSHIPS)
@@ -234,6 +236,16 @@ namespace AgroMarket.Infrastructure.Persistence
                 .HasIndex(vnd => new { vnd.VoucherId, vnd.NguoiDungId })
                 .IsUnique();
 
+            modelBuilder.Entity<AdminChucNangPhanQuyen>()
+                .HasOne(pq => pq.NguoiDung)
+                .WithMany(nd => nd.AdminChucNangPhanQuyens)
+                .HasForeignKey(pq => pq.NguoiDungId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AdminChucNangPhanQuyen>()
+                .HasIndex(pq => new { pq.NguoiDungId, pq.MaChucNang })
+                .IsUnique();
+
             // =========================================================
             // 4. CẤU HÌNH ENUM (CONVERSION)
             // =========================================================
@@ -296,6 +308,7 @@ namespace AgroMarket.Infrastructure.Persistence
             modelBuilder.Entity<CaiDatGiaoDien>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<Voucher>().HasQueryFilter(x => !x.IsDeleted);
             modelBuilder.Entity<VoucherNguoiDung>().HasQueryFilter(x => !x.IsDeleted);
+            modelBuilder.Entity<AdminChucNangPhanQuyen>().HasQueryFilter(x => !x.IsDeleted);
         }
     }
 }

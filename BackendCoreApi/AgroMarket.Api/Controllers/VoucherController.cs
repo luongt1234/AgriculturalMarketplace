@@ -1,5 +1,7 @@
 using AgroMarket.Application.DTOs.Voucher;
 using AgroMarket.Application.Interfaces.Services;
+using AgroMarket.Api.Attributes;
+using AgroMarket.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -29,6 +31,7 @@ namespace AgroMarket.Api.Controllers
 
         // ─── Admin ───────────────────────────────────────────────────────────
         [Authorize(Roles = "ADMIN")]
+        [RequireAdminPermission(AdminFeaturePermission.VoucherManagement)]
         [HttpGet("admin")]
         public async Task<IActionResult> GetAdminVouchers()
         {
@@ -37,6 +40,7 @@ namespace AgroMarket.Api.Controllers
         }
 
         [Authorize(Roles = "ADMIN")]
+        [RequireAdminPermission(AdminFeaturePermission.VoucherManagement)]
         [HttpPost("admin")]
         public async Task<IActionResult> CreateAdminVoucher([FromBody] CreateVoucherDto dto)
         {

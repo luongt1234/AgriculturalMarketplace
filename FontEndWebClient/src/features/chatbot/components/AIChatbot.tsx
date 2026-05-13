@@ -89,6 +89,13 @@ export const AIChatbot: React.FC = () => {
         }
     }, [isOpen]);
 
+    // Lắng nghe sự kiện mở từ bên ngoài (ví dụ: nút "Tư vấn kĩ thuật" ở HeroBanner)
+    useEffect(() => {
+        const handleOpenEvent = () => setIsOpen(true);
+        window.addEventListener('open-ai-chatbot', handleOpenEvent);
+        return () => window.removeEventListener('open-ai-chatbot', handleOpenEvent);
+    }, []);
+
     const handleSend = async () => {
         if (!inputText.trim() || isLoading) return;
         setShowQuickQ(false);

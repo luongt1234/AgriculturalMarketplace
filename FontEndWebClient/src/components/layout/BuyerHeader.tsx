@@ -6,6 +6,7 @@ import { useFavoriteStore } from '../../store/useFavoriteStore';
 import { getSearchSuggestions, type DisplayProduct } from '../../features/products/api/product.api';
 import { CartDrawer } from '../../features/cart/components/CartDrawer';
 import { BecomeSellerModal } from '../../features/auth/components/BecomeSellerModal';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface BuyerHeaderProps {
     cartCount?: number;
@@ -210,9 +211,6 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                     <a href="/orders" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors">
                                         Đơn hàng
                                     </a>
-                                    <a href="/analytics" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors">
-                                        Thống kê
-                                    </a>
                                 </nav>
                             )}
 
@@ -232,9 +230,7 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                 </button>
 
                                 {/* Notifications */}
-                                <button className="p-2 text-gray-500 hover:text-primary dark:text-gray-400 transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 hidden sm:block">
-                                    <span className="material-symbols-outlined text-[24px]">notifications</span>
-                                </button>
+                                <NotificationDropdown />
 
                                 {/* Profile Avatar or Login Button */}
                                 {user ? (
@@ -289,6 +285,10 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                                 <a href="/orders" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                     <span className="material-symbols-outlined text-[18px]">receipt_long</span>
                                                     Đơn hàng
+                                                </a>
+                                                <a href="/statistics" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                    <span className="material-symbols-outlined text-[18px]">bar_chart</span>
+                                                    Thống kê mua hàng
                                                 </a>
                                                 <a href="/favorites" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                     <span className="material-symbols-outlined text-[18px]">favorite</span>

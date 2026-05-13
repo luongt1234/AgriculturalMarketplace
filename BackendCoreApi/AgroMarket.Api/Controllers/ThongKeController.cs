@@ -1,4 +1,6 @@
 using AgroMarket.Application.Interfaces.Services;
+using AgroMarket.Api.Attributes;
+using AgroMarket.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -39,7 +41,7 @@ namespace AgroMarket.Api.Controllers
         }
 
         [HttpGet("admin-dashboard")]
-        // [Authorize(Roles = "Admin")] // Uncomment if you want to strictly check Admin role
+        [RequireAdminPermission(AdminFeaturePermission.Dashboard)]
         public async Task<IActionResult> GetAdminDashboardStats()
         {
             try

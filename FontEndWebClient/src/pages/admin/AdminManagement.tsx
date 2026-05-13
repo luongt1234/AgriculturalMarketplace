@@ -1,62 +1,49 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-
-// Tầng Giao diện chung (Shared UI)
 import { AdminHeader } from '../../layouts/components/AdminHeader';
 import { DataTable, type Column } from '../../components/common/DataTable';
-
-// Tầng Dữ liệu & Tiện ích
 import axiosInstance from '../../lip/axiosInstance';
 import type { NguoiDung } from '../../types/nguoiDung.type';
 import type { DanhMuc } from '../../types/danhMuc.type';
-
-// Tầng Nghiệp vụ (Features)
 import { AddUserModal } from '../../features/admin/components/AddUserModal';
 import { EditUserModal } from '../../features/admin/components/EditUserModal';
 import { DeleteUserModal } from '../../features/admin/components/DeleteUserModal';
+import { AdminPermissionModal } from '../../features/admin/components/AdminPermissionModal';
+
+const pageSize = 10;
 
 const AdminManagement: React.FC = () => {
-    // --- 1. Quản lý Trạng thái (State Management) ---
     const [admins, setAdmins] = useState<NguoiDung[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [pageNumber, setPageNumber] = useState<number>(1);
-    const [total, setTotal] = useState<number>(0);
-    const pageSize = 10;
-
-    // Trạng thái Modals
+    const [loading, setLoading] = useState(false);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [total, setTotal] = useState(0);
     const [selectedUser, setSelectedUser] = useState<NguoiDung | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-
-    // Bộ lọc & Tìm kiếm
-    const [activeTab, setActiveTab] = useState<string>('Tất cả');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isPermModalOpen, setIsPermModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('Tất cả');
     const [danhMucVaiTro, setDanhMucVaiTro] = useState<DanhMuc | undefined>();
-
-    // --- 2. Xử lý Dữ liệu (Data Fetching) ---
 
     const fetchRoleData = async () => {
         try {
-            const res = await axiosInstance.get(`/api/DanhMuc/GetByMaGiaTri/ADMIN`);
+            const res = await axiosInstance.get<DanhMuc>('/api/DanhMuc/GetByMaGiaTri/ADMIN');
             if (res.data) setDanhMucVaiTro(res.data);
         } catch (err) {
-            console.error("Lỗi lấy danh mục vai trò ADMIN:", err);
+            console.error('Lỗi lấy danh mục vai trò ADMIN:', err);
         }
     };
 
     const fetchAdmins = useCallback(async () => {
         setLoading(true);
         try {
-            // Gọi API lấy danh sách người dùng có vai trò ADMIN
-            const res = await axiosInstance.get(
+            const res = await axiosInstance.get<NguoiDung[]>(
                 `/api/NguoiDung/GetByMa/ADMIN?pageNumber=${pageNumber}&pageSize=${pageSize}`
             );
-            if (res) {
-                setAdmins(res.data || []);
-                setTotal(res.totalRecords || 0);
-            }
+            setAdmins(res.data || []);
+            setTotal(res.totalRecords || 0);
         } catch (err) {
-            toast.error("Không thể tải danh sách quản trị viên");
+            toast.error('Không thể tải danh sách quản trị viên');
         } finally {
             setLoading(false);
         }
@@ -64,21 +51,23 @@ const AdminManagement: React.FC = () => {
 
     useEffect(() => {
         fetchRoleData();
+    }, []);
+
+    useEffect(() => {
         fetchAdmins();
     }, [fetchAdmins]);
 
-    // --- 3. Định nghĩa Cấu trúc Bảng (Columns Definition) ---
     const columns: Column<NguoiDung>[] = [
         {
-            header: "Tài khoản quản trị",
-            key: "hoTen",
+            header: 'Tài khoản quản trị',
+            key: 'hoTen',
             render: (user) => (
                 <div className="flex items-center gap-3">
                     {user.anhDaiDienUrl ? (
                         <img src={user.anhDaiDienUrl} alt="" className="size-10 rounded-full object-cover border" />
                     ) : (
                         <div className="size-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                            {user.hoTen?.charAt(0).toUpperCase()}
+                            {user.hoTen?.charAt(0).toUpperCase() || 'A'}
                         </div>
                     )}
                     <div className="flex flex-col min-w-0">
@@ -89,13 +78,13 @@ const AdminManagement: React.FC = () => {
             )
         },
         {
-            header: "Địa chỉ",
-            key: "diaChi",
+            header: 'Địa chỉ',
+            key: 'diaChi',
             render: (user) => <span className="text-sm">{user.diaChi || '---'}</span>
         },
         {
-            header: "Ngày đăng ký",
-            key: "ngayTao",
+            header: 'Ngày đăng ký',
+            key: 'ngayTao',
             render: (user) => (
                 <span className="text-sm text-[#6b806c]">
                     {user.ngayTao ? new Date(user.ngayTao).toLocaleDateString('vi-VN') : '---'}
@@ -103,9 +92,9 @@ const AdminManagement: React.FC = () => {
             )
         },
         {
-            header: "Trạng thái",
-            key: "kichHoat",
-            className: "text-center",
+            header: 'Trạng thái',
+            key: 'kichHoat',
+            className: 'text-center',
             render: (user) => (
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${user.kichHoat
                     ? 'bg-green-50 text-green-700 border-green-200'
@@ -116,20 +105,29 @@ const AdminManagement: React.FC = () => {
             )
         },
         {
-            header: "Hành động",
-            key: "actions",
-            className: "text-center",
+            header: 'Hành động',
+            key: 'actions',
+            className: 'text-center',
             render: (user) => (
                 <div className="flex items-center justify-center gap-1">
                     <button
+                        onClick={() => { setSelectedUser(user); setIsPermModalOpen(true); }}
+                        className="p-1.5 hover:text-primary transition-colors"
+                        title="Phân quyền chức năng"
+                    >
+                        <span className="material-symbols-outlined text-[20px]">rule_settings</span>
+                    </button>
+                    <button
                         onClick={() => { setSelectedUser(user); setIsEditModalOpen(true); }}
                         className="p-1.5 hover:text-primary transition-colors"
+                        title="Chỉnh sửa"
                     >
                         <span className="material-symbols-outlined text-[20px]">edit</span>
                     </button>
                     <button
                         onClick={() => { setSelectedUser(user); setIsDeleteModalOpen(true); }}
                         className="p-1.5 hover:text-red-500 transition-colors"
+                        title="Xóa"
                     >
                         <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
@@ -138,7 +136,6 @@ const AdminManagement: React.FC = () => {
         }
     ];
 
-    // --- 4. Giao diện (Render) ---
     return (
         <div className="flex-1 flex flex-col min-w-0 p-6 bg-white dark:bg-[#131613] font-display overflow-y-auto">
             <AdminHeader
@@ -161,7 +158,6 @@ const AdminManagement: React.FC = () => {
             />
 
             <div className="flex flex-col mt-6">
-                {/* Bộ lọc & Tìm kiếm */}
                 <div className="bg-white dark:bg-[#1a261c] p-4 rounded-t-xl border border-[#dee3de] dark:border-gray-700 border-b-0 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="relative w-80">
@@ -190,7 +186,6 @@ const AdminManagement: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Bảng dữ liệu dùng component DataTable */}
                 <DataTable
                     data={admins}
                     columns={columns}
@@ -205,7 +200,6 @@ const AdminManagement: React.FC = () => {
                 />
             </div>
 
-            {/* Modals điều khiển nghiệp vụ */}
             <AddUserModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -224,6 +218,12 @@ const AdminManagement: React.FC = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => { setIsDeleteModalOpen(false); setSelectedUser(null); }}
                 onSuccess={fetchAdmins}
+                user={selectedUser}
+            />
+
+            <AdminPermissionModal
+                isOpen={isPermModalOpen}
+                onClose={() => { setIsPermModalOpen(false); setSelectedUser(null); }}
                 user={selectedUser}
             />
         </div>

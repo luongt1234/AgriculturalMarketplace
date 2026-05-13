@@ -52,7 +52,7 @@ interface ProductDetail {
     unit: string;
     location: string;
     seller: string;
-    sellerAvatar: string;
+    sellerAvatar: string | null;
     image: string;
     description: string;
     harvestDate: string;
@@ -75,6 +75,15 @@ const ProductDetailPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     // Thông tin người bán cho FloatingChat
     const [sellerInfo, setSellerInfo] = useState<{ id: string; name: string; avatar?: string } | null>(null);
+
+    const getSellerInitials = (name: string) => {
+        return name
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part.charAt(0).toUpperCase())
+            .join('') || '?';
+    };
 
     // Sử dụng number | string để cho phép người dùng xóa trắng input khi gõ
     const [quantity, setQuantity] = useState<number | string>(1);
@@ -256,7 +265,7 @@ const ProductDetailPage: React.FC = () => {
                         ? item.anhDaiDienNguoiBan.startsWith('http')
                             ? item.anhDaiDienNguoiBan
                             : `${axiosInstance.defaults.baseURL}${item.anhDaiDienNguoiBan}`
-                        : 'https://via.placeholder.com/150?text=Seller',
+                        : null,
                     image: imageUrl || 'https://via.placeholder.com/800x600?text=No+Image',
                     description: item.moTaChiTiet,
                     harvestDate: new Date(item.ngayDang).toLocaleDateString('vi-VN', { year: 'numeric', month: 'short' }),
@@ -416,8 +425,12 @@ const ProductDetailPage: React.FC = () => {
                                 </button>
                             </div>
                             <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
-                                <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                                    <img className="w-full h-full object-cover" src={product.sellerAvatar} />
+                                <div className="w-12 h-12 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-lg font-bold text-gray-700 dark:text-gray-100">
+                                    {product.sellerAvatar ? (
+                                        <img className="w-full h-full object-cover" src={product.sellerAvatar} alt={product.seller} />
+                                    ) : (
+                                        <span>{getSellerInitials(product.seller)}</span>
+                                    )}
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wide mb-0.5">Direct from Farmer</p>

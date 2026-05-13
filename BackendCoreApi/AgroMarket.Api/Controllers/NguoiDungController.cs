@@ -4,9 +4,12 @@ using AgroMarket.Application.DTOs.NguoiDungDtos;
 using AgroMarket.Application.Interfaces.Services;
 using AgroMarket.Domain.Entities;
 using AgroMarket.Domain.Enums;
+using AgroMarket.Infrastructure.Persistence;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AgroMarket.Api.Controllers
 {
@@ -16,9 +19,51 @@ namespace AgroMarket.Api.Controllers
     public class NguoiDungController : BaseCrudController<NguoiDung, NguoiDungDto, NguoiDungFormDto>
     {
         private readonly INguoiDungService _nguoiDungService;
-        public NguoiDungController(INguoiDungService nguoiDungService, IBaseService<NguoiDung> service, IMapper mapper) : base(service, mapper)
+        private readonly AppDbContext _context;
+
+        public NguoiDungController(
+            INguoiDungService nguoiDungService,
+            IBaseService<NguoiDung> service,
+            IMapper mapper,
+            AppDbContext context) : base(service, mapper)
         {
             _nguoiDungService = nguoiDungService;
+            _context = context;
+        }
+
+        private static string GetPermissionByRoleCode(string? roleCode)
+        {
+            return roleCode switch
+            {
+                "THUONG-LAI" => AdminFeaturePermission.BuyerManagement,
+                "NONG-DAN" => AdminFeaturePermission.SellerManagement,
+                "ADMIN" => AdminFeaturePermission.AdminAccountManagement,
+                _ => AdminFeaturePermission.AdminAccountManagement
+            };
+        }
+
+        private async Task<bool> HasAdminPermissionAsync(string permissionCode)
+        {
+            if (User.FindFirst(ClaimTypes.Role)?.Value != UserRole.Admin)
+                return false;
+
+            if (!Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var currentUserId))
+                return false;
+
+            var configured = await _context.AdminChucNangPhanQuyens
+                .IgnoreQueryFilters()
+                .AnyAsync(x => x.NguoiDungId == currentUserId && !x.IsDeleted);
+
+            if (!configured)
+                return true;
+
+            return await _context.AdminChucNangPhanQuyens
+                .AnyAsync(x => x.NguoiDungId == currentUserId && x.MaChucNang == permissionCode);
+        }
+
+        private IActionResult ForbiddenFeature()
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { message = "Forbidden. Bạn không có quyền sử dụng chức năng này." });
         }
 
         [RequireRole(UserRole.Admin)]
@@ -26,6 +71,10 @@ namespace AgroMarket.Api.Controllers
         {
             try
             {
+                var role = await _context.DanhMucs.FirstOrDefaultAsync(x => x.Id == payload.VaiTroId);
+                if (!await HasAdminPermissionAsync(GetPermissionByRoleCode(role?.MaGiaTri)))
+                    return ForbiddenFeature();
+
                 await _nguoiDungService.CreateUserAsync(payload);
                 return CreatedResult("Thêm mới thành công");
             }
@@ -43,10 +92,11 @@ namespace AgroMarket.Api.Controllers
             try
             {
                 if (string.IsNullOrEmpty(ma))
-                {
-                    return BadRequest("ma không được để trống");
-                }
-                // xác thực admin
+                    return BadRequest("Mã vai trò không được để trống");
+
+                if (!await HasAdminPermissionAsync(GetPermissionByRoleCode(ma)))
+                    return ForbiddenFeature();
+
                 var result = await _nguoiDungService.GetAllByMaAsync(pageSize, pageNumber, ma);
                 return PagedResult(result.Data, result.PageNumber, result.PageSize, result.TotalRecords);
             }
@@ -56,22 +106,49 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
+        [RequireRole(UserRole.Admin)]
+        public override async Task<IActionResult> Update(Guid id, [FromBody] NguoiDungFormDto formDto)
+        {
+            var existingUser = await _context.NguoiDungs
+                .Include(x => x.VaiTro)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingUser == null)
+                return Error("Không tìm thấy", 404);
+
+            if (!await HasAdminPermissionAsync(GetPermissionByRoleCode(existingUser.VaiTro.MaGiaTri)))
+                return ForbiddenFeature();
+
+            return await base.Update(id, formDto);
+        }
+
+        [RequireRole(UserRole.Admin)]
+        public override async Task<IActionResult> Delete(Guid id)
+        {
+            var existingUser = await _context.NguoiDungs
+                .Include(x => x.VaiTro)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (existingUser == null)
+                return Error("Không tìm thấy", 404);
+
+            if (!await HasAdminPermissionAsync(GetPermissionByRoleCode(existingUser.VaiTro.MaGiaTri)))
+                return ForbiddenFeature();
+
+            return await base.Delete(id);
+        }
+
         [HttpPut("register-seller")]
         [Authorize]
         public async Task<IActionResult> RegisterSeller()
         {
             try
             {
-                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdStr, out var userId))
-                {
                     return Unauthorized("Không xác định được người dùng.");
-                }
 
                 await _nguoiDungService.RegisterSellerAsync(userId);
-                
-                // Trả về token mới nếu cần, nhưng ở đây có thể bắt frontend logout/login lại 
-                // hoặc refresh token. Tạm thời trả về message thành công.
                 return Ok(new { message = "Đã đăng ký làm người bán thành công. Vui lòng đăng xuất và đăng nhập lại để cập nhật quyền." });
             }
             catch (Exception ex)
@@ -80,16 +157,12 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
-        /// <summary>
-        /// Lấy số dư ví hiện tại của người dùng đang đăng nhập.
-        /// GET /api/NguoiDung/me/so-du
-        /// </summary>
         [HttpGet("me/so-du")]
         public async Task<IActionResult> GetSoDu()
         {
             try
             {
-                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdStr, out var userId))
                     return Unauthorized("Không xác định được người dùng.");
 

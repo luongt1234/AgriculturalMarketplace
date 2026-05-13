@@ -8,6 +8,7 @@ interface HeroBannerProps {
     ctaText?: string;
     ctaSecondaryText?: string;
     onCtaClick?: () => void;
+    onCtaSecondaryClick?: () => void;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
@@ -17,7 +18,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
     imageUrl,
     ctaText = 'Mua ngay',
     ctaSecondaryText = 'Tìm hiểu thêm',
-    onCtaClick
+    onCtaClick,
+    onCtaSecondaryClick
 }) => {
     return (
         <section className="w-full">
@@ -55,7 +57,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                             {ctaText}
                             <span className="material-symbols-outlined text-sm">arrow_forward</span>
                         </button>
-                        <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-3 px-6 rounded-lg transition-all border border-white/30">
+                        <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-3 px-6 rounded-lg transition-all border border-white/30 flex items-center gap-2"
+                            onClick={onCtaSecondaryClick}
+                        >
+                            <span className="material-symbols-outlined text-sm">smart_toy</span>
                             {ctaSecondaryText}
                         </button>
                     </div>

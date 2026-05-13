@@ -2,7 +2,9 @@
 using AgroMarket.Application.DTOs.DanhMucDtos;
 using AgroMarket.Application.Interfaces.Services;
 using AgroMarket.Application.Services;
+using AgroMarket.Api.Attributes;
 using AgroMarket.Domain.Entities;
+using AgroMarket.Domain.Enums;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +21,21 @@ namespace AgroMarket.Api.Controllers
         {
             _danhMucService = danhMucService;
         }
+
+        [RequireAdminPermission(AdminFeaturePermission.CategoryManagement)]
+        public override Task<IActionResult> GetAll() => base.GetAll();
+
+        [RequireAdminPermission(AdminFeaturePermission.CategoryManagement)]
+        public override Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10) => base.GetPaged(pageNumber, pageSize);
+
+        [RequireAdminPermission(AdminFeaturePermission.CategoryManagement)]
+        public override Task<IActionResult> Create([FromBody] DanhMucFormDto formDto) => base.Create(formDto);
+
+        [RequireAdminPermission(AdminFeaturePermission.CategoryManagement)]
+        public override Task<IActionResult> Update(Guid id, [FromBody] DanhMucFormDto formDto) => base.Update(id, formDto);
+
+        [RequireAdminPermission(AdminFeaturePermission.CategoryManagement)]
+        public override Task<IActionResult> Delete(Guid id) => base.Delete(id);
 
         [AllowAnonymous]
         [HttpGet("GetByMaLoaiDanhMuc/{loai}")]

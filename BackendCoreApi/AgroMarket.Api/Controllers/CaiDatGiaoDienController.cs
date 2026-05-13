@@ -1,5 +1,7 @@
 using AgroMarket.Application.DTOs.CaiDatGiaoDien;
 using AgroMarket.Application.Interfaces;
+using AgroMarket.Api.Attributes;
+using AgroMarket.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +25,8 @@ namespace AgroMarket.Api.Controllers
             return Ok(settings);
         }
 
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRole.Admin)]
+        [RequireAdminPermission(AdminFeaturePermission.ThemeSettings)]
         [HttpPut]
         public async Task<IActionResult> UpdateSettings([FromBody] UpdateCaiDatGiaoDienDto dto)
         {
