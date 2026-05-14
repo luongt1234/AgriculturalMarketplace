@@ -41,9 +41,9 @@ export interface TaoDonHangResponse {
  * Buyer đặt đơn hàng (COD hoặc bất kỳ phương thức nào).
  * POST /api/DonHang
  */
-export async function taoDonHang(payload: TaoDonHangRequest): Promise<TaoDonHangResponse> {
+export async function taoDonHang(payload: TaoDonHangRequest): Promise<any> {
     const response = await axiosInstance.post<TaoDonHangResponse>('/api/DonHang', payload);
-    return response.data;
+    return response;
 }
 
 /**

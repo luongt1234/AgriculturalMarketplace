@@ -11,7 +11,6 @@ import { ShippingStep } from '../../features/checkout/components/ShippingStep';
 import { PaymentStep } from '../../features/checkout/components/PaymentStep';
 import { ConfirmationStep } from '../../features/checkout/components/ConfirmationStep';
 import { OrderSummaryPanel } from '../../features/checkout/components/OrderSummaryPanel';
-import { MomoQrModal } from '../../features/checkout/components/MomoQrModal';
 import { getUserAddresses, deleteAddress as deleteAddressApi } from '../../features/checkout/api/address.api';
 import { getAvailableShippingMethods, getShippingFeeForDestination } from '../../features/checkout/api/shipping.api';
 import { getSoDu, taoDonHang } from '../../features/checkout/api/order.api';
@@ -34,12 +33,6 @@ export function CheckoutPage() {
     const [loadingShippingMethods, setLoadingShippingMethods] = useState(false);
     const [loadingShippingFee, setLoadingShippingFee] = useState(false);
     const [soDuVi, setSoDuVi] = useState<number | null>(null);
-    const [momoPaymentInfo, setMomoPaymentInfo] = useState<{
-        donHangId: string;
-        qrCodeUrl: string;
-        payUrl: string;
-        tongThanhToan: number;
-    } | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -312,6 +305,8 @@ export function CheckoutPage() {
                     return acc;
                 }, {});
 
+                debugger;
+
                 const orderPromises = Object.entries(grouped).map(([sellerId, items]) =>
                     taoDonHang({
                         diaChiGiaoHangId: addr.id,
@@ -345,16 +340,10 @@ export function CheckoutPage() {
                 if (paymentId === 'MOMO') {
                     const momoResult = results[0]; // 1 đơn/1 seller
                     if (momoResult.momoQrCodeUrl && momoResult.momoPayUrl) {
-                        const tongThanhToan = momoResult.tongThanhToan;
-                        setMomoPaymentInfo({
-                            donHangId: momoResult.donHangId,
-                            qrCodeUrl: momoResult.momoQrCodeUrl,
-                            payUrl: momoResult.momoPayUrl,
-                            tongThanhToan,
-                        });
                         // Refresh giỏ hàng (items đã bị xoá phía backend)
                         await fetchCart();
-                        return; // Dừng ở đây, modal sẽ xử lý tiếp
+                        window.location.href = momoResult.momoPayUrl;
+                        return;
                     } else {
                         throw new Error('Không nhận được thông tin thanh toán MoMo từ server.');
                     }
@@ -382,13 +371,6 @@ export function CheckoutPage() {
                 store.setLoading(false);
             }
         }
-    };
-
-    // ── Khi buyer thanh toán MoMo thành công ────────────────────────────────
-    const handleMomoSuccess = () => {
-        setMomoPaymentInfo(null);
-        toast.success('Thanh toán MoMo thành công! Đơn hàng đang chờ người bán xác nhận.', { duration: 5000 });
-        navigate('/orders');
     };
 
     const handleStepClick = (step: 1 | 2 | 3 | 4) => {
@@ -627,18 +609,6 @@ export function CheckoutPage() {
                 onSave={handleSaveAddress}
                 editingAddress={editingAddress}
             />
-
-            {/* MoMo QR Payment Modal */}
-            {momoPaymentInfo && (
-                <MomoQrModal
-                    donHangId={momoPaymentInfo.donHangId}
-                    qrCodeUrl={momoPaymentInfo.qrCodeUrl}
-                    payUrl={momoPaymentInfo.payUrl}
-                    tongThanhToan={momoPaymentInfo.tongThanhToan}
-                    onSuccess={handleMomoSuccess}
-                    onClose={() => setMomoPaymentInfo(null)}
-                />
-            )}
 
             <BuyerFooter />
         </div>
