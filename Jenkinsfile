@@ -1,6 +1,9 @@
 pipeline {
-    // Chạy trên bất kỳ agent (server) nào có sẵn của Jenkins
-    agent any 
+    agent {
+        node {
+            customWorkspace '/home/debian/project/AgriculturalMarketplace/AgriculturalMarketplace'
+        }
+    } 
 
     environment {
         // Định nghĩa các biến môi trường nếu cần
@@ -11,7 +14,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Jenkins tự động pull code mới nhất từ Git dựa trên cấu hình Job
-                checkout scm 
+                sh 'git pull'
                 echo 'Pull code thành công!'
             }
         }
