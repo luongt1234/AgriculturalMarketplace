@@ -97,6 +97,7 @@ namespace AgroMarket.Infrastructure.Persistence
                 .HasForeignKey(dh => dh.NguoiBanId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // DanhGia relationships
             modelBuilder.Entity<DanhGia>()
                 .HasOne(dg => dg.NguoiDanhGia)
                 .WithMany()
@@ -108,6 +109,17 @@ namespace AgroMarket.Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(dg => dg.NguoiBiDanhGiaId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DanhGia>()
+                .HasOne(dg => dg.SanPhamDang)
+                .WithMany()
+                .HasForeignKey(dg => dg.SanPhamDangId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique: mỗi đơn hàng chỉ review 1 sản phẩm 1 lần
+            modelBuilder.Entity<DanhGia>()
+                .HasIndex(dg => new { dg.DonHangId, dg.SanPhamDangId })
+                .IsUnique();
 
             modelBuilder.Entity<SanPhamChung>()
                 .HasOne(spc => spc.Cha)

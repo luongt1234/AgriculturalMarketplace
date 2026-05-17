@@ -18,5 +18,6 @@ namespace AgroMarket.Application.Interfaces.Services
         Task<bool> ToggleGhimAsync(Guid id, Guid currentUserId);
         // Lấy chi tiết sản phẩm theo id kèm các dữ liệu liên quan
         Task<SanPhamDangDto?> GetDetailByIdAsync(Guid id);
+        Task<IEnumerable<SanPhamDangDto>> GetRandomProductsAsync(int limit);
     }
 }

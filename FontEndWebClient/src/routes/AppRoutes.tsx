@@ -31,6 +31,7 @@ import SellerSettingsPage from '../pages/farmer/SellerSettingsPage';
 import UserProfilePage from '../pages/public/UserProfilePage';
 import OrdersPage from '../pages/public/OrdersPage';
 import FavoriteProductsPage from '../pages/buyer/FavoriteProductsPage';
+import FollowingStoresPage from '../pages/buyer/FollowingStoresPage';
 import CategoryProductPage from '../pages/buyer/CategoryProductPage';
 import VoucherManagement from '../pages/admin/VoucherManagement';
 import VoucherPage from '../pages/farmer/VoucherPage';
@@ -66,6 +67,7 @@ export default function AppRoutes() {
                     <Route path="/profile" element={<UserProfilePage />} />
                     <Route path="/orders" element={<OrdersPage />} />
                     <Route path="/favorites" element={<FavoriteProductsPage />} />
+                    <Route path="/following" element={<FollowingStoresPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/statistics" element={<PurchaseStatisticsPage />} />
 

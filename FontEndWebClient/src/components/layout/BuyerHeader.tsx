@@ -126,7 +126,10 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 gap-4">
                         {/* Logo */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
+                        <div
+                            className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
+                            onClick={() => navigate('/')}
+                        >
                             <div className="size-8 text-primary flex items-center justify-center">
                                 <span className="material-symbols-outlined text-4xl">eco</span>
                             </div>
@@ -293,6 +296,10 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                                 <a href="/favorites" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
                                                     <span className="material-symbols-outlined text-[18px]">favorite</span>
                                                     Sản phẩm yêu thích
+                                                </a>
+                                                <a href="/following" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                                    <span className="material-symbols-outlined text-[18px]">storefront</span>
+                                                    Gian hàng đang theo dõi
                                                 </a>
 
                                                 {/* Become Seller – only for buyers */}

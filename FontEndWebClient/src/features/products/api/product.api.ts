@@ -189,3 +189,9 @@ export const getSearchSuggestions = async (keyword: string, limit: number = 5) =
     const response = await axiosInstance.get(`/api/SanPhamDang/search-suggestions?${queryString.toString()}`);
     return response.data;
 };
+
+// API Lấy danh sách sản phẩm gợi ý ngẫu nhiên
+export const getRandomSuggestedProducts = async (limit: number = 8): Promise<DisplayProduct[]> => {
+    const response = await axiosInstance.get(`/api/SanPhamDang/random-suggestions?limit=${limit}`);
+    return response.data; // Theo base controller, response trả về { data: [...] }
+};

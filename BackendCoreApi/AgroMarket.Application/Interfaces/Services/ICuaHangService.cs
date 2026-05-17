@@ -7,6 +7,12 @@ namespace AgroMarket.Application.Interfaces.Services
         /// <summary>Lấy thông tin profile người bán + thống kê</summary>
         Task<SellerProfileDto?> GetSellerProfileAsync(Guid sellerId, Guid? currentUserId = null);
 
+        /// <summary>Tìm kiếm gian hàng theo từ khóa</summary>
+        Task<(List<SellerProfileDto> Items, int Total)> SearchSellersAsync(string keyword, int page = 1, int pageSize = 10);
+
+        /// <summary>Lấy danh sách các gian hàng đã theo dõi</summary>
+        Task<(List<SellerProfileDto> Items, int Total)> GetFollowedSellersAsync(Guid userId, int page = 1, int pageSize = 10);
+
         /// <summary>Lấy danh sách sản phẩm của người bán (paged, search, filter)</summary>
         Task<(List<SanPhamCuaHangDto> Items, int Total)> GetSellerProductsAsync(
             Guid sellerId,

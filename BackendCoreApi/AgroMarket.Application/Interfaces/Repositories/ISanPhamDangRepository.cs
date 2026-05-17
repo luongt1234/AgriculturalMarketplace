@@ -18,5 +18,6 @@ namespace AgroMarket.Application.Interfaces.Repositories
         // Lấy chi tiết 1 SanPhamDang kèm các relation để hiển thị
         Task<AgroMarket.Domain.Entities.SanPhamDang?> GetByIdWithIncludesAsync(Guid id);
         Task<IEnumerable<SanPhamDang>> GetTopActiveProductsAsync(int count);
+        Task<IEnumerable<AgroMarket.Domain.Entities.SanPhamDang>> GetRandomProductsAsync(int limit);
     }
 }

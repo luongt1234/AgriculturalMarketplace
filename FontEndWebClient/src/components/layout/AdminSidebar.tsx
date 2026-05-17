@@ -1,10 +1,18 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/useAuthStore';
 import { ADMIN_PERMISSIONS, type AdminPermissionCode } from '../../features/admin/constants/adminPermissions';
 import { useAdminPermissions } from '../../features/admin/hooks/useAdminPermissions';
 
 const AdminSidebar: React.FC = () => {
     const { hasPermission } = useAdminPermissions();
+    const { logout } = useAuthStore();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login', { replace: true });
+    };
 
     const mainMenus: Array<{ name: string; icon: string; path: string; permission: AdminPermissionCode }> = [
         { name: 'Tổng quan', icon: 'dashboard', path: '/admin/dashboard', permission: ADMIN_PERMISSIONS.DASHBOARD },
@@ -100,7 +108,11 @@ const AdminSidebar: React.FC = () => {
                         <p className="text-sm font-bold text-[#131613] dark:text-white truncate">Quản trị viên</p>
                         <p className="text-[11px] text-[#6b806c] dark:text-gray-400 truncate">admin@agriconnect.vn</p>
                     </div>
-                    <button className="ml-auto flex items-center shrink-0" title="Đăng xuất">
+                    <button
+                        onClick={handleLogout}
+                        className="ml-auto flex items-center shrink-0"
+                        title="Đăng xuất"
+                    >
                         <span className="material-symbols-outlined text-[#6b806c] dark:text-gray-400 text-lg group-hover:text-red-500 transition-colors">
                             logout
                         </span>

@@ -3,25 +3,46 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { ProductCard } from '../../features/products/components/ProductCard';
-import { getDisplayProducts, type DisplayProduct } from '../../features/products/api/product.api';
+import { getDisplayProducts, getRandomSuggestedProducts, type DisplayProduct } from '../../features/products/api/product.api';
+import { searchStores, type SellerProfile } from '../../features/sellerStorefront/api/storefront.api';
+import { StoreCard } from '../../features/sellerStorefront/components/StoreCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 
 export const SearchResultsPage = () => {
     const [searchParams] = useSearchParams();
     const keyword = searchParams.get('keyword') || '';
     const [products, setProducts] = useState<DisplayProduct[]>([]);
+    const [stores, setStores] = useState<SellerProfile[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
 
-    const fetchProducts = async () => {
+    const [suggestedProducts, setSuggestedProducts] = useState<DisplayProduct[]>([]);
+
+    const fetchData = async () => {
         setIsLoading(true);
         try {
-            // Include basic keyword filter, expand with other filters if API supported later
-            const res = await getDisplayProducts({ keyword, pageNumber: 1, pageSize: 50 });
-            setProducts(res.data?.data || res.data || []);
+            // Chạy đồng thời 2 request: lấy sản phẩm và lấy gian hàng
+            const [productsRes, storesRes] = await Promise.all([
+                getDisplayProducts({ keyword, pageNumber: 1, pageSize: 50 }),
+                searchStores(keyword, 1, 5)
+            ]);
+
+            const searchResults = productsRes.data?.data || (productsRes as any).data || [];
+            setProducts(searchResults);
+
+            const storesResults = storesRes.data || (storesRes as any).data?.data || [];
+            setStores(storesResults);
+
+            // if (searchResults.length === 0) {
+            // Sử dụng API lấy sản phẩm ngẫu nhiên riêng biệt
+            const randomSuggest = await getRandomSuggestedProducts(8);
+            setSuggestedProducts(randomSuggest || []);
+            // } else {
+            //     setSuggestedProducts([]);
+            // }
         } catch (error) {
             console.error('Error fetching search results:', error);
         } finally {
@@ -30,7 +51,7 @@ export const SearchResultsPage = () => {
     };
 
     useEffect(() => {
-        fetchProducts();
+        fetchData();
     }, [keyword]);
 
     const mapToBuyerProduct = (p: DisplayProduct): BuyerProduct => ({
@@ -111,21 +132,64 @@ export const SearchResultsPage = () => {
                             <div className="flex justify-center p-12">
                                 <span className="text-primary font-medium">Đang tìm kiếm...</span>
                             </div>
-                        ) : products.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {products.map((p) => (
-                                    <ProductCard
-                                        key={p.id}
-                                        product={mapToBuyerProduct(p)}
-                                        onClick={() => navigate(`/product/${p.id}`)}
-                                    />
-                                ))}
-                            </div>
                         ) : (
-                            <div className="bg-white dark:bg-gray-800 p-12 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center">
-                                <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">search_off</span>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Không tìm thấy sản phẩm nào</h3>
-                                <p className="text-gray-500">Thử thay đổi từ khóa hoặc xóa bớt bộ lọc để có thêm kết quả.</p>
+                            <>
+                                {stores.length > 0 && (
+                                    <div className="mb-10">
+                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-primary">storefront</span>
+                                            Gian hàng liên quan
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                                            {stores.map((store) => (
+                                                <StoreCard key={store.id} store={store} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="mb-4">
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-primary">inventory_2</span>
+                                        Sản phẩm ({products.length})
+                                    </h3>
+                                </div>
+
+                                {products.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {products.map((p) => (
+                                            <ProductCard
+                                                key={p.id}
+                                                product={mapToBuyerProduct(p)}
+                                                onClick={() => navigate(`/product/${p.id}`)}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="bg-white dark:bg-gray-800 p-12 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                                        <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">search_off</span>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Không tìm thấy sản phẩm nào</h3>
+                                        <p className="text-gray-500">Thử thay đổi từ khóa hoặc xóa bớt bộ lọc để có thêm kết quả.</p>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+                        {suggestedProducts.length > 0 && (
+                            <div className="mt-10">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">recommend</span>
+                                    Sản phẩm gợi ý cho bạn
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {suggestedProducts.map((p) => (
+                                        <ProductCard
+                                            key={`suggest_${p.id}`}
+                                            product={mapToBuyerProduct(p)}
+                                            onClick={() => navigate(`/product/${p.id}`)}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>

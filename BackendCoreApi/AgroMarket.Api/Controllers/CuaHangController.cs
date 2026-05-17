@@ -40,6 +40,48 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
+        // ─── READ: Search Sellers ────────────────────────────────────────────
+        /// <summary>GET /api/CuaHang/search?keyword=abc&page=1&pageSize=10</summary>
+        [HttpGet("search")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchSellers(
+            [FromQuery] string keyword,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var (items, total) = await _cuaHangService.SearchSellersAsync(keyword, page, pageSize);
+                return PagedResult(items, page, pageSize, total);
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message);
+            }
+        }
+
+        // ─── READ: Followed Sellers ───────────────────────────────────────────
+        /// <summary>GET /api/CuaHang/following?page=1&pageSize=10</summary>
+        [HttpGet("following")]
+        [Authorize]
+        public async Task<IActionResult> GetFollowedSellers(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                if (!userId.HasValue) return Error("Chưa xác thực.", 401);
+
+                var (items, total) = await _cuaHangService.GetFollowedSellersAsync(userId.Value, page, pageSize);
+                return PagedResult(items, page, pageSize, total);
+            }
+            catch (Exception ex)
+            {
+                return Error(ex.Message);
+            }
+        }
+
         // ─── READ: Products paged ────────────────────────────────────────────
         /// <summary>GET /api/CuaHang/{sellerId}/products?page=1&pageSize=9&search=&category=</summary>
         [HttpGet("{sellerId:guid}/products")]

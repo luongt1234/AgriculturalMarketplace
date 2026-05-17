@@ -8,6 +8,12 @@ import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { FloatingChat } from '../../features/chat/components/FloatingChat';
 import { AIChatbot } from '../../features/chatbot/components/AIChatbot';
+import { useProductReviews } from '../../features/reviews/hooks/useProductReviews';
+import { ReviewCard } from '../../features/reviews/components/ReviewCard';
+import { ReviewStars } from '../../features/reviews/components/ReviewStars';
+import { WriteReviewModal } from '../../features/reviews/components/WriteReviewModal';
+import { checkCanReview } from '../../features/reviews/api/reviewApi';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface ProductDetailApiData {
     id: string;
@@ -88,6 +94,20 @@ const ProductDetailPage: React.FC = () => {
     // Sử dụng number | string để cho phép người dùng xóa trắng input khi gõ
     const [quantity, setQuantity] = useState<number | string>(1);
     const [isFavorite, setIsFavorite] = useState(false);
+
+    // Tab & filter state
+    type TabKey = 'reviews' | 'details' | 'shipping';
+    const [activeTab, setActiveTab] = useState<TabKey>('reviews');
+
+    // Auth state (để biết đã đăng nhập chưa)
+    const { user } = useAuthStore();
+
+    // Review state
+    const reviewHook = useProductReviews(id ?? '');
+    const [showWriteModal, setShowWriteModal] = useState(false);
+    const [canReview, setCanReview] = useState<{ coThe: boolean; lyDo: string; donHangId?: string } | null>(null);
+    const [checkingReview, setCheckingReview] = useState(false);
+    const [filterSaoSelected, setFilterSaoSelected] = useState<number | undefined>(undefined);
 
     // ==========================================
     // CÁC HÀM XỬ LÝ SỐ LƯỢNG MỚI
@@ -181,6 +201,7 @@ const ProductDetailPage: React.FC = () => {
             }
 
             toast.success('Đã thêm sản phẩm vào giỏ hàng');
+            setQuantity(1); // Reset số lượng về mặc định sau khi thêm thành công
         } catch (error) {
             toast.error('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
         }
@@ -212,6 +233,7 @@ const ProductDetailPage: React.FC = () => {
                 shippingFee: checkoutStore.selectedShippingMethod?.baseFee || 0,
                 total: product.price * finalQuantity + (checkoutStore.selectedShippingMethod?.baseFee || 0),
             });
+            checkoutStore.setSelectedAddress(null); // Reset địa chỉ để tự động lấy địa chỉ mặc định
             checkoutStore.setSelectedShippingMethod(null);
             checkoutStore.setSelectedPaymentMethod(null);
             checkoutStore.setStep(1);
@@ -497,114 +519,310 @@ const ProductDetailPage: React.FC = () => {
 
                 <div className="border-b border-gray-200 dark:border-gray-700 mb-8">
                     <nav aria-label="Tabs" className="flex space-x-8">
-                        <a aria-current="page" className="border-b-2 border-primary py-4 px-1 text-sm font-bold text-primary" href="#reviews">Reviews ({product.reviews})</a>
-                        <a className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300" href="#">Product Details</a>
-                        <a className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300" href="#">Shipping Policy</a>
+                        {([
+                            { key: 'reviews' as const, label: `Đánh giá (${reviewHook.summary?.tongSoDanhGia ?? 0})` },
+                            { key: 'details' as const, label: 'Chi tiết sản phẩm' },
+                            { key: 'shipping' as const, label: 'Chính sách giao hàng' },
+                        ] as { key: TabKey; label: string }[]).map(({ key, label }) => (
+                            <button
+                                key={key}
+                                onClick={() => setActiveTab(key)}
+                                aria-current={activeTab === key ? 'page' : undefined}
+                                className={`border-b-2 py-4 px-1 text-sm font-medium transition-colors ${activeTab === key
+                                    ? 'border-primary text-primary font-bold'
+                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
                     </nav>
                 </div>
-                <section className="grid grid-cols-1 lg:grid-cols-12 gap-10" id="reviews">
-                    <div className="lg:col-span-4">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Customer Reviews</h3>
-                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 mb-6">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="text-5xl font-black text-gray-900 dark:text-white">{product.rating}</div>
-                                <div className="flex flex-col">
-                                    <div className="flex text-amber-400 text-sm">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <span key={star} className={`material-symbols-outlined ${star <= Math.floor(product.rating) ? 'fill-1' : star === Math.ceil(product.rating) && product.rating % 1 !== 0 ? 'fill-0.5' : ''}`}>star</span>
-                                        ))}
+
+                {/* ── TAB: REVIEWS ────────────────────────────────────────── */}
+                {activeTab === 'reviews' && (
+                    <section className="grid grid-cols-1 lg:grid-cols-12 gap-10" id="reviews">
+                        {/* Cột trái: Tổng hợp rating */}
+                        <div className="lg:col-span-4">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Đánh giá khách hàng</h3>
+                            </div>
+                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6 mb-6">
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="text-5xl font-black text-gray-900 dark:text-white">
+                                        {reviewHook.summary ? reviewHook.summary.diemTrungBinh.toFixed(1) : '—'}
                                     </div>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">Based on {product.reviews} reviews</span>
+                                    <div className="flex flex-col gap-1">
+                                        <ReviewStars rating={reviewHook.summary?.diemTrungBinh ?? 0} size="sm" />
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                                            {reviewHook.summary?.tongSoDanhGia ?? 0} đánh giá
+                                        </span>
+                                    </div>
+                                </div>
+                                {/* Phân bổ sao */}
+                                <div className="space-y-2">
+                                    {[5, 4, 3, 2, 1].map((star) => {
+                                        const count = reviewHook.summary?.phanBoSao[star - 1] ?? 0;
+                                        const total = reviewHook.summary?.tongSoDanhGia ?? 1;
+                                        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                                        return (
+                                            <button
+                                                key={star}
+                                                onClick={() => {
+                                                    const next = filterSaoSelected === star ? undefined : star;
+                                                    setFilterSaoSelected(next);
+                                                    reviewHook.handleFilterChange(next);
+                                                }}
+                                                className={`w-full flex items-center gap-2 text-xs rounded-lg px-1 py-0.5 transition-colors ${filterSaoSelected === star ? 'bg-amber-50 dark:bg-amber-900/20' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                                                    }`}
+                                            >
+                                                <span className="w-10 text-gray-500 text-left">{star} ★</span>
+                                                <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-amber-400 transition-all" style={{ width: `${pct}%` }} />
+                                                </div>
+                                                <span className="w-10 text-right text-gray-400">{count}</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                {[85, 10, 3, 1, 1].map((percentage, index) => (
-                                    <div key={index} className="flex items-center gap-2 text-xs">
-                                        <span className="w-8 text-gray-500">{6 - index} star</span>
-                                        <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-amber-400" style={{ width: `${percentage}%` }}></div>
-                                        </div>
-                                        <span className="w-8 text-right text-gray-400">{percentage}%</span>
-                                    </div>
+
+                            {/* Nút viết đánh giá */}
+                            {user ? (
+                                <button
+                                    onClick={async () => {
+                                        if (!id) return;
+                                        // Tìm đơn hàng HoanTat chứa sản phẩm này
+                                        try {
+                                            setCheckingReview(true);
+                                            const res = await axiosInstance.get('/api/DonHang/my-orders', {
+                                                params: { pageSize: 50, trangThai: 'HoanTat' },
+                                            });
+                                            const orders = (res as any)?.data?.data ?? [];
+                                            let found: { coThe: boolean; lyDo: string; donHangId?: string } | null = null;
+                                            for (const order of orders) {
+                                                const hasProduct = order.chiTiet?.some((ct: any) => ct.sanPhamDangId === id);
+                                                if (hasProduct) {
+                                                    const check = await checkCanReview(order.id, id);
+                                                    if (check.coThe) {
+                                                        found = { coThe: true, lyDo: 'ok', donHangId: order.id };
+                                                        break;
+                                                    } else if (!found) {
+                                                        found = { coThe: false, lyDo: check.lyDo, donHangId: order.id };
+                                                    }
+                                                }
+                                            }
+                                            if (!found) found = { coThe: false, lyDo: 'order_not_completed' };
+                                            setCanReview(found);
+                                            if (found.coThe) {
+                                                setShowWriteModal(true);
+                                            } else {
+                                                const msgs: Record<string, string> = {
+                                                    order_not_completed: 'Bạn chưa có đơn hàng hoàn tất cho sản phẩm này.',
+                                                    already_reviewed: 'Bạn đã đánh giá sản phẩm này rồi.',
+                                                    not_owner: 'Bạn không có quyền đánh giá.',
+                                                };
+                                                toast.info(msgs[found.lyDo] ?? 'Không thể đánh giá lúc này.');
+                                            }
+                                        } catch {
+                                            toast.error('Không thể kiểm tra quyền đánh giá.');
+                                        } finally {
+                                            setCheckingReview(false);
+                                        }
+                                    }}
+                                    disabled={checkingReview}
+                                    className="w-full py-3 rounded-xl border-2 border-primary text-primary font-bold text-sm
+                                           hover:bg-primary hover:text-white transition-colors
+                                           flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {checkingReview
+                                        ? <><span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Đang kiểm tra...</>
+                                        : <><span className="material-symbols-outlined text-[18px]">rate_review</span> Viết đánh giá</>
+                                    }
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => navigate('/login')}
+                                    className="w-full py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600
+                                           text-gray-500 font-medium text-sm hover:border-primary hover:text-primary transition-colors"
+                                >
+                                    Đăng nhập để đánh giá
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Cột phải: Danh sách đánh giá */}
+                        <div className="lg:col-span-8">
+                            {/* Filter buttons */}
+                            <div className="flex flex-wrap items-center gap-2 mb-6">
+                                {([
+                                    { sao: undefined, label: 'Tất cả' },
+                                    { sao: 5, label: '5 ★' },
+                                    { sao: 4, label: '4 ★' },
+                                    { sao: 3, label: '3 ★' },
+                                    { sao: 2, label: '2 ★' },
+                                    { sao: 1, label: '1 ★' },
+                                ] as { sao?: number; label: string }[]).map(({ sao, label }) => (
+                                    <button
+                                        key={label}
+                                        onClick={() => {
+                                            setFilterSaoSelected(sao);
+                                            reviewHook.handleFilterChange(sao);
+                                        }}
+                                        className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${filterSaoSelected === sao
+                                            ? 'border-primary bg-primary/10 text-primary font-bold'
+                                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-gray-600 dark:text-gray-300 hover:border-primary hover:text-primary'
+                                            }`}
+                                    >
+                                        {label}
+                                    </button>
                                 ))}
                             </div>
-                        </div>
-                    </div>
-                    <div className="lg:col-span-8">
-                        <div className="flex flex-wrap items-center gap-3 mb-6">
-                            <button className="px-4 py-2 rounded-full border border-primary bg-primary/10 text-primary font-bold text-sm transition-colors">
-                                All
-                            </button>
-                            <button className="px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-gray-600 dark:text-gray-300 font-medium text-sm hover:border-primary hover:text-primary transition-colors flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[16px]">photo_camera</span>
-                                With Photos (24)
-                            </button>
-                            <button className="px-4 py-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark text-gray-600 dark:text-gray-300 font-medium text-sm hover:border-primary hover:text-primary transition-colors flex items-center gap-1">
-                                5 <span className="material-symbols-outlined text-[14px]">star</span> (108)
-                            </button>
-                        </div>
-                        <div className="space-y-6">
-                            <div className="border-b border-gray-100 dark:border-gray-800 pb-6">
-                                <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">LM</div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Le Minh</h4>
-                                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <div className="flex text-amber-400">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <span key={star} className="material-symbols-outlined fill-1 text-[14px]">star</span>
-                                                    ))}
+
+                            {/* Loading skeleton */}
+                            {reviewHook.loading && (
+                                <div className="space-y-6">
+                                    {[1, 2, 3].map((i) => (
+                                        <div key={i} className="border-b border-gray-100 dark:border-gray-800 pb-6 animate-pulse">
+                                            <div className="flex gap-3 mb-3">
+                                                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+                                                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
                                                 </div>
-                                                <span>• 2 days ago</span>
                                             </div>
+                                            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
                                         </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Danh sách review */}
+                            {!reviewHook.loading && (
+                                <>
+                                    {reviewHook.summary && reviewHook.summary.danhGias.length > 0 ? (
+                                        <div className="space-y-6">
+                                            {reviewHook.summary.danhGias.map((review) => (
+                                                <ReviewCard key={review.id} review={review} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-12">
+                                            <span className="material-symbols-outlined text-[48px] text-gray-300 dark:text-gray-600 mb-3 block">reviews</span>
+                                            <p className="text-gray-400 font-medium">Chưa có đánh giá nào</p>
+                                            <p className="text-sm text-gray-300 dark:text-gray-600 mt-1">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+                                        </div>
+                                    )}
+
+                                    {/* Load more */}
+                                    {reviewHook.summary && reviewHook.summary.trangHienTai < reviewHook.summary.tongTrang && (
+                                        <button
+                                            onClick={reviewHook.loadMore}
+                                            className="mt-6 w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700
+                                                   text-sm font-medium text-gray-600 dark:text-gray-300
+                                                   hover:border-primary hover:text-primary transition-colors"
+                                        >
+                                            Xem thêm đánh giá
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </section>
+                )}
+
+                {/* ── TAB: PRODUCT DETAILS ────────────────────────────────── */}
+                {activeTab === 'details' && (
+                    <section className="space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Product Details</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[
+                                { icon: 'category', label: 'Category', value: product.category },
+                                { icon: 'straighten', label: 'Unit', value: product.unit },
+                                { icon: 'inventory_2', label: 'Available Stock', value: `${product.availableQuantity} ${product.unit}` },
+                                { icon: 'calendar_month', label: 'Harvest Date', value: product.harvestDate },
+                                { icon: 'person', label: 'Seller', value: product.seller },
+                                { icon: 'location_on', label: 'Location', value: product.location },
+                            ].map(({ icon, label, value }) => (
+                                <div key={label} className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+                                    <span className="material-symbols-outlined text-primary text-[22px] mt-0.5">{icon}</span>
+                                    <div>
+                                        <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-0.5">{label}</p>
+                                        <p className="text-sm font-semibold text-gray-800 dark:text-white">{value}</p>
                                     </div>
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
-                                    Rice is extremely fragrant and soft. Packaging was very secure. Will definitely buy again from this farm!
+                            ))}
+                        </div>
+                        {product.certifications.length > 0 && (
+                            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                                <p className="text-xs font-bold uppercase tracking-wide text-green-600 dark:text-green-400 mb-2 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[16px]">verified</span>
+                                    Certifications
                                 </p>
-                                <div className="flex gap-2">
-                                    <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden cursor-pointer">
-                                        <img className="w-full h-full object-cover opacity-80 hover:opacity-100" src={product.image} />
-                                    </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {product.certifications.map((cert) => (
+                                        <span key={cert} className="px-3 py-1 text-sm font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 rounded-full">
+                                            {cert}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="border-b border-gray-100 dark:border-gray-800 pb-6">
-                                <div className="flex items-start justify-between mb-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">TH</div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Tran Hieu</h4>
-                                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                <div className="flex text-amber-400">
-                                                    {[1, 2, 3, 4, 5].map((star) => (
-                                                        <span key={star} className="material-symbols-outlined fill-1 text-[14px]">star</span>
-                                                    ))}
-                                                </div>
-                                                <span>• 1 week ago</span>
-                                            </div>
-                                        </div>
+                        )}
+                        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Description</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{product.description}</p>
+                        </div>
+                    </section>
+                )}
+
+                {/* ── TAB: SHIPPING POLICY ────────────────────────────────── */}
+                {activeTab === 'shipping' && (
+                    <section className="space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Shipping Policy</h3>
+                        <div className="space-y-4">
+                            {[
+                                { icon: 'local_shipping', title: 'Standard Delivery', desc: 'Delivered within 3–5 business days. Free shipping on orders over 500,000₫.' },
+                                { icon: 'bolt', title: 'Express Delivery', desc: 'Same-day or next-day delivery available in select areas. Additional fee applies.' },
+                                { icon: 'thermostat', title: 'Cold Chain Guarantee', desc: 'Perishable items are packed with cooling material to maintain freshness during transit.' },
+                                { icon: 'cached', title: 'Returns & Refunds', desc: "If the product arrives damaged or doesn't match the description, contact us within 24 hours for a full refund." },
+                            ].map(({ icon, title, desc }) => (
+                                <div key={title} className="flex gap-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                        <span className="material-symbols-outlined text-primary text-[20px]">{icon}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">{title}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{desc}</p>
                                     </div>
                                 </div>
-                                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
-                                    Best rice I've had in a while. It's truly worthy of the "World's Best Rice" title. Delivery was a bit slow, but the product quality makes up for it.
-                                </p>
-                            </div>
+                            ))}
                         </div>
-                        <button className="mt-4 text-sm font-bold text-primary hover:text-primary-dark transition-colors flex items-center gap-1">
-                            Show more reviews <span className="material-symbols-outlined text-[16px]">expand_more</span>
-                        </button>
-                    </div>
-                </section>
+                    </section>
+                )}
             </main>
 
-            <AIChatbot />
-            <FloatingChat
-                targetSellerId={sellerInfo?.id}
-                targetSellerName={sellerInfo?.name}
-                targetSellerAvatar={sellerInfo?.avatar}
-            />
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+                <AIChatbot />
+                <FloatingChat
+                    embedded
+                    targetSellerId={sellerInfo?.id}
+                    targetSellerName={sellerInfo?.name}
+                    targetSellerAvatar={sellerInfo?.avatar}
+                />
+            </div>
+
+            {showWriteModal && canReview?.donHangId && id && product && (
+                <WriteReviewModal
+                    sanPhamDangId={id}
+                    donHangId={canReview.donHangId}
+                    productName={product.name}
+                    onClose={() => setShowWriteModal(false)}
+                    onSuccess={() => {
+                        reviewHook.refresh();
+                        setCanReview(null);
+                    }}
+                />
+            )}
 
             <BuyerFooter />
         </div>

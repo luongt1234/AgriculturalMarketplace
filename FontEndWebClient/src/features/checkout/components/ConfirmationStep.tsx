@@ -98,7 +98,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                         </div>
                         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 ml-9 space-y-3">
                             <div className="flex justify-between text-sm">
-                                <span className="text-gray-600 dark:text-gray-400">Tổng phụ</span>
+                                <span className="text-gray-600 dark:text-gray-400">Đơn hàng </span>
                                 <span className="font-semibold text-gray-900 dark:text-white">
                                     {orderSummary.subtotal.toLocaleString()}₫
                                 </span>

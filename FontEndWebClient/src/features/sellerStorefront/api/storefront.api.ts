@@ -40,8 +40,25 @@ export interface SellerProductsResponse {
     totalRecords: number;
     totalPages: number;
 }
+export interface StoreSearchResponse {
+    data: SellerProfile[];
+    pageNumber: number;
+    pageSize: number;
+    totalRecords: number;
+    totalPages: number;
+}
 
 // ─── READ ──────────────────────────────────────────────────────────────────
+export const searchStores = async (
+    keyword: string,
+    page = 1,
+    pageSize = 10
+): Promise<StoreSearchResponse> => {
+    const params = new URLSearchParams({ keyword, page: String(page), pageSize: String(pageSize) });
+    const res = await axiosInstance.get<StoreSearchResponse>(`${BASE}/search?${params}`);
+    return res as any;
+};
+
 export const getSellerProfile = async (sellerId: string): Promise<SellerProfile> => {
     const res = await axiosInstance.get<SellerProfile>(`${BASE}/${sellerId}`);
     return (res as any).data;
@@ -75,6 +92,13 @@ export const unfollowSeller = async (sellerId: string): Promise<void> => {
 export const checkFollow = async (sellerId: string): Promise<boolean> => {
     const res = await axiosInstance.get<boolean>(`${BASE}/${sellerId}/theo-doi/check`);
     return (res as any).data ?? false;
+};
+
+// ─── READ (Followed Stores) ──────────────────────────────────────────────────
+export const getFollowedStores = async (page = 1, pageSize = 10): Promise<StoreSearchResponse> => {
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+    const res = await axiosInstance.get<StoreSearchResponse>(`${BASE}/following?${params}`);
+    return res as any;
 };
 
 // ─── SETTINGS ───────────────────────────────────────────────────────────────

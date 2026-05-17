@@ -263,5 +263,18 @@ namespace AgroMarket.Application.Services
                 throw new Exception($"Lỗi khi lấy gợi ý tìm kiếm: {ex.Message}");
             }
         }
+
+        public async Task<IEnumerable<SanPhamDangDto>> GetRandomProductsAsync(int limit)
+        {
+            try
+            {
+                var items = await _sanPhamDangRepository.GetRandomProductsAsync(limit);
+                return _mapper.Map<IEnumerable<SanPhamDangDto>>(items);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách sản phẩm ngẫu nhiên: {ex.Message}");
+            }
+        }
     }
 }

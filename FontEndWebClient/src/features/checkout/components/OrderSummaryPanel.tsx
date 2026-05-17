@@ -42,7 +42,7 @@ export const OrderSummaryPanel: React.FC<OrderSummaryPanelProps> = ({ items, sum
                 {/* Pricing Summary */}
                 <div className="p-5 space-y-3 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">
-                        <span>Tổng phụ</span>
+                        <span>Đơn hàng</span>
                         <span>{summary?.subtotal.toLocaleString() || '0'}₫</span>
                     </div>
                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300">

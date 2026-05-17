@@ -30,6 +30,8 @@ export function CheckoutPage() {
     }, [fetchCart]);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [editingAddress, setEditingAddress] = useState<DeliveryAddress | null>(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [addressToDeleteId, setAddressToDeleteId] = useState<string | null>(null);
     const [loadingShippingMethods, setLoadingShippingMethods] = useState(false);
     const [loadingShippingFee, setLoadingShippingFee] = useState(false);
     const [soDuVi, setSoDuVi] = useState<number | null>(null);
@@ -74,6 +76,12 @@ export function CheckoutPage() {
                     };
                 });
                 store.setAddresses(deliveryAddresses);
+
+                // Tự động chọn địa chỉ mặc định nếu người dùng chưa chọn địa chỉ nào
+                const defaultAddress = deliveryAddresses.find(addr => addr.isDefault);
+                if (defaultAddress && !useCheckoutStore.getState().selectedAddress) {
+                    useCheckoutStore.getState().setSelectedAddress(defaultAddress);
+                }
             } catch (error) {
                 console.error('Error loading addresses:', error);
                 toast.error('Không thể tải danh sách địa chỉ');
@@ -205,14 +213,19 @@ export function CheckoutPage() {
         setEditingAddress(null);
     };
 
-    const handleDeleteAddress = async (id: string) => {
-        if (!confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) return;
+    const handleRequestDeleteAddress = (id: string) => {
+        setAddressToDeleteId(id);
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDeleteAddress = async () => {
+        if (!addressToDeleteId) return;
 
         try {
-            await deleteAddressApi(id);
-            store.removeAddress(id);
-            if (store.selectedAddress?.id === id) {
-                const firstAddress = store.addresses.find((addr) => addr.id !== id);
+            await deleteAddressApi(addressToDeleteId);
+            store.removeAddress(addressToDeleteId);
+            if (store.selectedAddress?.id === addressToDeleteId) {
+                const firstAddress = store.addresses.find((addr) => addr.id !== addressToDeleteId);
                 if (firstAddress) {
                     store.setSelectedAddress(firstAddress);
                 }
@@ -221,6 +234,9 @@ export function CheckoutPage() {
         } catch (error) {
             console.error('Error deleting address:', error);
             toast.error('Không thể xóa địa chỉ');
+        } finally {
+            setShowDeleteConfirm(false);
+            setAddressToDeleteId(null);
         }
     };
 
@@ -379,6 +395,10 @@ export function CheckoutPage() {
         }
     };
 
+    const deletingAddress = addressToDeleteId
+        ? store.addresses.find((addr) => addr.id === addressToDeleteId)
+        : null;
+
     return (
         <div className="flex flex-col min-h-screen bg-background-light dark:bg-background-dark transition-colors duration-200">
             <BuyerHeader />
@@ -445,7 +465,7 @@ export function CheckoutPage() {
                                     onSelectAddress={(addr) => store.setSelectedAddress(addr)}
                                     onAddNew={handleAddAddress}
                                     onEdit={handleEditAddress}
-                                    onDelete={handleDeleteAddress}
+                                    onDelete={handleRequestDeleteAddress}
                                 />
                                 {store.currentStep === 1 && (
                                     <div className="p-6 bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-700 rounded-xl flex justify-end shadow-sm">
@@ -609,6 +629,69 @@ export function CheckoutPage() {
                 onSave={handleSaveAddress}
                 editingAddress={editingAddress}
             />
+
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-[#1a261c] w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col font-display border border-[#dee3de] dark:border-gray-700">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-[#dee3de] dark:border-gray-700 bg-[#f9faf9] dark:bg-[#1f2d21]">
+                            <h2 className="text-lg font-bold text-[#131613] dark:text-white uppercase tracking-wide">
+                                Xác nhận xóa địa chỉ
+                            </h2>
+                            <button onClick={() => {
+                                setShowDeleteConfirm(false);
+                                setAddressToDeleteId(null);
+                            }} className="text-[#6b806c] hover:text-red-500">
+                                <span className="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="flex items-start gap-3">
+                                <span className="material-symbols-outlined text-red-500 text-3xl">
+                                    warning
+                                </span>
+                                <div>
+                                    <p className="text-sm text-[#131613] dark:text-white font-medium">
+                                        Bạn có chắc chắn muốn xóa địa chỉ này?
+                                    </p>
+                                    <p className="text-xs text-[#6b806c] dark:text-gray-400 mt-1">
+                                        Hành động này không thể hoàn tác.
+                                    </p>
+                                </div>
+                            </div>
+                            {deletingAddress && (
+                                <div className="mt-4 p-3 rounded-lg bg-[#f1f3f1] dark:bg-[#253326] border border-[#dee3de] dark:border-gray-700">
+                                    <p className="text-sm font-bold text-[#131613] dark:text-white">
+                                        {deletingAddress.fullName}
+                                    </p>
+                                    <p className="text-xs text-[#6b806c] dark:text-gray-400 mt-1">
+                                        {deletingAddress.phone}
+                                    </p>
+                                    <p className="text-xs text-[#6b806c] dark:text-gray-400 mt-1">
+                                        {deletingAddress.detailedAddress}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                        <div className="px-6 py-4 border-t border-[#dee3de] dark:border-gray-700 flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteConfirm(false);
+                                    setAddressToDeleteId(null);
+                                }}
+                                className="px-5 py-2 rounded-lg text-sm font-bold text-[#6b806c] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleConfirmDeleteAddress}
+                                className="px-5 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-bold shadow-sm transition-colors flex items-center gap-2"
+                            >
+                                XÁC NHẬN XÓA
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <BuyerFooter />
         </div>

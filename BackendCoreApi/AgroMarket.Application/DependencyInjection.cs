@@ -31,6 +31,7 @@ namespace AgroMarket.Application
             services.AddScoped<IChatbotService, ChatbotService>();
             services.AddScoped<IThongKeService, ThongKeService>();
             services.AddScoped<IGhnWebhookService, GhnWebhookService>();
+            services.AddScoped<IDiaChiNguoiDungService, DiaChiNguoiDungService>();
 
             return services;
         }

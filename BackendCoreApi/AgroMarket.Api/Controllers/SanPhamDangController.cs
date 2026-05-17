@@ -82,6 +82,21 @@ namespace AgroMarket.Api.Controllers
             }
         }
 
+        [HttpGet("random-suggestions")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetRandomSuggestions([FromQuery] int limit = 8)
+        {
+            try
+            {
+                var items = await _sanPhamDangService.GetRandomProductsAsync(limit);
+                return Success(items);
+            }
+            catch (Exception ex)
+            {
+                return Error($"Lỗi khi lấy danh sách sản phẩm ngẫu nhiên: {ex.Message}");
+            }
+        }
+
         [HttpGet("user")]
         public async Task<IActionResult> GetListProductByUser([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {

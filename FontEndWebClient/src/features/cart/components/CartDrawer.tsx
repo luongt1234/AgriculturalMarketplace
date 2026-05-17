@@ -13,7 +13,7 @@ interface CartDrawerProps {
 export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const { cart, updateQuantity, removeFromCart, fetchCart } = useCartStore();
-    const { setCartItems } = useCheckoutStore();
+    const { setCartItems, setSelectedAddress, setSelectedShippingMethod, setSelectedPaymentMethod, setStep } = useCheckoutStore();
     const cartItems = cart?.chiTiet || [];
     // When drawer opens, initialise selection to all items; user can then deselect
     const initialSelected = useMemo(
@@ -94,6 +94,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
         );
 
         setCartItems(checkoutItems);
+        setSelectedAddress(null);
+        setSelectedShippingMethod(null);
+        setSelectedPaymentMethod(null);
+        setStep(1);
         onClose();
         navigate('/checkout');
     };

@@ -44,6 +44,7 @@ namespace AgroMarket.Infrastructure
             services.AddScoped<ISanPhamYeuThichService, SanPhamYeuThichService>();
             services.AddScoped<ICaiDatGiaoDienService, CaiDatGiaoDienService>();
             services.AddScoped<IVoucherService, VoucherService>();
+            services.AddScoped<IDanhGiaService, DanhGiaService>();
 
             // MoMo Payment Service (dùng IHttpClientFactory)
             services.AddScoped<IMoMoService, MoMoService>();
