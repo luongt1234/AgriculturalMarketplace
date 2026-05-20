@@ -5,10 +5,10 @@ import { useNotificationStore, type AppNotification, type NotificationType } fro
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function typeConfig(type: NotificationType): { icon: string; color: string } {
     switch (type) {
-        case 'order':   return { icon: 'receipt_long',      color: 'text-primary bg-primary/10' };
-        case 'system':  return { icon: 'info',              color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' };
-        case 'promo':   return { icon: 'local_offer',       color: 'text-orange-500 bg-orange-100 dark:bg-orange-900/30' };
-        default:        return { icon: 'notifications',     color: 'text-gray-500 bg-gray-100 dark:bg-gray-700' };
+        case 'order': return { icon: 'receipt_long', color: 'text-primary bg-primary/10' };
+        case 'system': return { icon: 'info', color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' };
+        case 'promo': return { icon: 'local_offer', color: 'text-orange-500 bg-orange-100 dark:bg-orange-900/30' };
+        default: return { icon: 'notifications', color: 'text-gray-500 bg-gray-100 dark:bg-gray-700' };
     }
 }
 
@@ -32,17 +32,16 @@ function NotifItem({ notif, onRead, onRemove }: {
 
     const handleClick = () => {
         onRead(notif.id);
-        if (notif.link) navigate(notif.link);
+        // if (notif.link) navigate(notif.link);
     };
 
     return (
         <div
             onClick={handleClick}
-            className={`flex items-start gap-3 px-4 py-3 group transition-colors cursor-pointer border-b border-gray-50 dark:border-gray-800 last:border-0 ${
-                notif.isRead
+            className={`flex items-start gap-3 px-4 py-3 group transition-colors cursor-pointer border-b border-gray-50 dark:border-gray-800 last:border-0 ${notif.isRead
                     ? 'hover:bg-gray-50 dark:hover:bg-white/5'
                     : 'bg-primary/[0.03] hover:bg-primary/[0.06] dark:bg-primary/10 dark:hover:bg-primary/15'
-            }`}
+                }`}
         >
             {/* Icon */}
             <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${cfg.color}`}>
@@ -110,11 +109,10 @@ export function NotificationDropdown() {
             <button
                 id="notification-bell-btn"
                 onClick={() => setIsOpen((o) => !o)}
-                className={`relative p-2 rounded-full transition-colors ${
-                    isOpen
+                className={`relative p-2 rounded-full transition-colors ${isOpen
                         ? 'text-primary bg-primary/10'
                         : 'text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
+                    }`}
             >
                 <span className="material-symbols-outlined text-[24px]">
                     {unreadCount > 0 ? 'notifications_active' : 'notifications'}

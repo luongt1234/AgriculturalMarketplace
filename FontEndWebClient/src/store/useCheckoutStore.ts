@@ -153,5 +153,19 @@ export const useCheckoutStore = create<CheckoutState>()(
                 error: null,
             });
         },
+
+        updateItemQuantity: (itemId, quantity) => {
+            set((state) => ({
+                cartItems: state.cartItems.map((item) =>
+                    item.id === itemId ? { ...item, quantity: Math.max(1, quantity) } : item
+                ),
+            }));
+        },
+
+        removeCartItem: (itemId) => {
+            set((state) => ({
+                cartItems: state.cartItems.filter((item) => item.id !== itemId),
+            }));
+        },
     })
 );

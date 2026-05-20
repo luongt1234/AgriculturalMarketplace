@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { getMyOrders, type DonHangDto, type ChiTietDonHangDto } from '../../features/orders/api/order.api';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const MONTHS = [
     { value: 0, label: 'Tất cả tháng' },
@@ -331,7 +332,7 @@ export const PurchaseStatisticsPage = () => {
                                                     </span>
                                                     <div
                                                         className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-600"
-                                                        style={p.imageUrl ? { backgroundImage: `url('http://localhost:5182${p.imageUrl}')` } : {}}
+                                                        style={p.imageUrl ? { backgroundImage: `url('${getImageUrl(p.imageUrl)}')` } : {}}
                                                     />
                                                     <p className="font-semibold text-sm text-gray-800 dark:text-gray-100 truncate">{p.name}</p>
                                                 </div>

@@ -9,6 +9,7 @@ import { AddUserModal } from '../../features/admin/components/AddUserModal';
 import { EditUserModal } from '../../features/admin/components/EditUserModal';
 import { DeleteUserModal } from '../../features/admin/components/DeleteUserModal';
 import { AdminPermissionModal } from '../../features/admin/components/AdminPermissionModal';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const pageSize = 10;
 
@@ -64,7 +65,7 @@ const AdminManagement: React.FC = () => {
             render: (user) => (
                 <div className="flex items-center gap-3">
                     {user.anhDaiDienUrl ? (
-                        <img src={user.anhDaiDienUrl} alt="" className="size-10 rounded-full object-cover border" />
+                        <img src={getImageUrl(user.anhDaiDienUrl)} alt="" className="size-10 rounded-full object-cover border" />
                     ) : (
                         <div className="size-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                             {user.hoTen?.charAt(0).toUpperCase() || 'A'}

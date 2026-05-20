@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { getMyOrders, buyerXacNhanDaNhan, type DonHangDto, type ChiTietDonHangDto } from '../../features/orders/api/order.api';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_TABS = [
@@ -89,7 +90,7 @@ function OrderDetailModal({
                     <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                         {order.anhDaiDienNguoiBan ? (
                             <img
-                                src={`http://localhost:5182${order.anhDaiDienNguoiBan}`}
+                                src={getImageUrl(order.anhDaiDienNguoiBan)}
                                 alt={order.tenNguoiBan ?? ''}
                                 className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                             />
@@ -135,7 +136,7 @@ function OrderDetailModal({
                                         className="w-14 h-14 rounded-lg bg-gray-200 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-600"
                                         style={{
                                             backgroundImage: item.hinhAnhUrl
-                                                ? `url('http://localhost:5182${item.hinhAnhUrl}')`
+                                                ? `url('${getImageUrl(item.hinhAnhUrl)}')`
                                                 : undefined,
                                         }}
                                     />
@@ -219,7 +220,7 @@ function OrderCard({
                 <div className="flex items-center gap-2.5">
                     {order.anhDaiDienNguoiBan ? (
                         <img
-                            src={`http://localhost:5182${order.anhDaiDienNguoiBan}`}
+                            src={getImageUrl(order.anhDaiDienNguoiBan)}
                             alt={order.tenNguoiBan ?? ''}
                             className="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-600"
                         />
@@ -246,7 +247,7 @@ function OrderCard({
                             className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-600"
                             style={{
                                 backgroundImage: item.hinhAnhUrl
-                                    ? `url('http://localhost:5182${item.hinhAnhUrl}')`
+                                    ? `url('${getImageUrl(item.hinhAnhUrl)}')`
                                     : undefined,
                             }}
                         />

@@ -108,4 +108,6 @@ export interface CheckoutState {
     goToNextStep: () => void;
     goToPreviousStep: () => void;
     reset: () => void;
+    updateItemQuantity: (itemId: string, quantity: number) => void;
+    removeCartItem: (itemId: string) => void;
 }

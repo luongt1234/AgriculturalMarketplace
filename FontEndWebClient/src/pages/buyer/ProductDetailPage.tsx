@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axiosInstance from '../../lip/axiosInstance';
+import { getImageUrl } from '../../utils/imageUrl';
 import { useCartStore } from '../../store/useCartStore';
 import { useCheckoutStore } from '../../store/useCheckoutStore';
 import { toast } from 'sonner';
@@ -255,11 +256,7 @@ const ProductDetailPage: React.FC = () => {
                 setLoading(true);
                 const response = await axiosInstance.get(`/api/SanPhamDang/detail/${id}`) as unknown as ApiResponse<ProductDetailApiData>;
                 const item = response.data;
-                const imageUrl = item.hinhAnhUrl
-                    ? item.hinhAnhUrl.startsWith('http')
-                        ? item.hinhAnhUrl
-                        : `${axiosInstance.defaults.baseURL}${item.hinhAnhUrl}`
-                    : '';
+                const imageUrl = getImageUrl(item.hinhAnhUrl);
 
                 let sellerDistrictCode: number | undefined;
                 if (item.diaChi) {
@@ -283,11 +280,7 @@ const ProductDetailPage: React.FC = () => {
                     unit: item.tenDonVi || 'kg',
                     location: item.tenLoai || 'Việt Nam',
                     seller: item.tenNguoiBan,
-                    sellerAvatar: item.anhDaiDienNguoiBan
-                        ? item.anhDaiDienNguoiBan.startsWith('http')
-                            ? item.anhDaiDienNguoiBan
-                            : `${axiosInstance.defaults.baseURL}${item.anhDaiDienNguoiBan}`
-                        : null,
+                    sellerAvatar: getImageUrl(item.anhDaiDienNguoiBan) || null,
                     image: imageUrl || 'https://via.placeholder.com/800x600?text=No+Image',
                     description: item.moTaChiTiet,
                     harvestDate: new Date(item.ngayDang).toLocaleDateString('vi-VN', { year: 'numeric', month: 'short' }),
@@ -302,11 +295,7 @@ const ProductDetailPage: React.FC = () => {
                 setSellerInfo({
                     id: item.nguoiBanId,
                     name: item.tenNguoiBan,
-                    avatar: item.anhDaiDienNguoiBan
-                        ? item.anhDaiDienNguoiBan.startsWith('http')
-                            ? item.anhDaiDienNguoiBan
-                            : `${axiosInstance.defaults.baseURL}${item.anhDaiDienNguoiBan}`
-                        : undefined,
+                    avatar: getImageUrl(item.anhDaiDienNguoiBan) || undefined,
                 });
             } catch (fetchError) {
                 console.error(fetchError);

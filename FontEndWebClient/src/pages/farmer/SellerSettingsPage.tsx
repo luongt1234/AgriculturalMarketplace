@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { getMyShop, updateMyShop } from '../../features/sellerStorefront/api/storefront.api';
 import { uploadImage } from '../../features/upload/api/upload.api';
 import type { StoreSettings } from '../../features/sellerStorefront/api/storefront.api';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const PLACEHOLDER_BANNER = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80';
 const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?background=2f7f34&color=fff&size=128&name=Shop';
@@ -62,7 +63,7 @@ const SellerSettingsPage: React.FC = () => {
         try {
             const toastId = toast.loading('Đang tải ảnh đại diện lên...');
             const url = await uploadImage(file);
-            setFormData(prev => ({ ...prev, anhDaiDienUrl: `http://localhost:5182${url}` }));
+            setFormData(prev => ({ ...prev, anhDaiDienUrl: getImageUrl(url) }));
             toast.success('Tải ảnh đại diện thành công!', { id: toastId });
         } catch (error) {
             toast.error('Lỗi khi tải ảnh. Vui lòng thử lại.');
@@ -75,7 +76,7 @@ const SellerSettingsPage: React.FC = () => {
         try {
             const toastId = toast.loading('Đang tải ảnh bìa lên...');
             const url = await uploadImage(file);
-            setFormData(prev => ({ ...prev, anhBiaUrl: `http://localhost:5182${url}` }));
+            setFormData(prev => ({ ...prev, anhBiaUrl: getImageUrl(url) }));
             toast.success('Tải ảnh bìa thành công!', { id: toastId });
         } catch (error) {
             toast.error('Lỗi khi tải ảnh bìa. Vui lòng thử lại.');
@@ -101,7 +102,7 @@ const SellerSettingsPage: React.FC = () => {
                         {/* Cover Picture */}
                         <div className="relative h-48 md:h-64 bg-gray-100 group">
                             <img 
-                                src={formData.anhBiaUrl || PLACEHOLDER_BANNER} 
+                                src={getImageUrl(formData.anhBiaUrl) || PLACEHOLDER_BANNER} 
                                 alt="Cover" 
                                 className="w-full h-full object-cover"
                             />
@@ -129,7 +130,7 @@ const SellerSettingsPage: React.FC = () => {
                             <div className="relative group shrink-0">
                                 <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-[#1a261c] bg-white shadow-md overflow-hidden">
                                     <img 
-                                        src={formData.anhDaiDienUrl || PLACEHOLDER_AVATAR} 
+                                        src={getImageUrl(formData.anhDaiDienUrl) || PLACEHOLDER_AVATAR} 
                                         alt="Avatar" 
                                         className="w-full h-full object-cover"
                                     />

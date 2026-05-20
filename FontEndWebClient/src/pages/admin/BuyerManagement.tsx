@@ -9,6 +9,7 @@ import { DataTable, type Column } from '../../components/common/DataTable';
 import axiosInstance from '../../lip/axiosInstance';
 import type { NguoiDung } from '../../types/nguoiDung.type';
 import type { DanhMuc } from '../../types/danhMuc.type';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // Tầng Nghiệp vụ (Features)
 import { AddUserModal } from '../../features/admin/components/AddUserModal';
@@ -84,7 +85,7 @@ const BuyerManagement: React.FC = () => {
                 <div className="flex items-center gap-3">
                     {user.anhDaiDienUrl ? (
                         <img
-                            src={user.anhDaiDienUrl}
+                            src={getImageUrl(user.anhDaiDienUrl)}
                             alt="Avatar"
                             className="size-10 rounded-full object-cover border border-gray-100"
                         />

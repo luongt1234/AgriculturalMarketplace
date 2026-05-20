@@ -101,6 +101,7 @@ interface CategorySidebarProps {
 export const CategorySidebar: React.FC<CategorySidebarProps> = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState<CommonProduct[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const panelRef = useRef<HTMLElement>(null);
 
@@ -129,6 +130,24 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({ isOpen, onClos
         onClose();
     };
 
+    const filterNodes = (nodes: CommonProduct[], query: string): CommonProduct[] => {
+        const lowerQuery = query.toLowerCase();
+        return nodes.reduce((acc, node) => {
+            const matches = node.tenSanPham.toLowerCase().includes(lowerQuery);
+            if (node.children && node.children.length > 0) {
+                const filteredChildren = filterNodes(node.children, query);
+                if (matches || filteredChildren.length > 0) {
+                    acc.push({ ...node, children: matches ? node.children : filteredChildren });
+                }
+            } else if (matches) {
+                acc.push(node);
+            }
+            return acc;
+        }, [] as CommonProduct[]);
+    };
+
+    const displayedCategories = searchQuery.trim() ? filterNodes(categories, searchQuery) : categories;
+
     return (
         <aside
             ref={panelRef}
@@ -149,13 +168,29 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({ isOpen, onClos
             className="bg-white dark:bg-[#1a261c] border-r border-primary/15 dark:border-primary/25"
         >
             {/* Header */}
-            <div className="flex items-center gap-2.5 px-4 py-3 border-b border-primary/10 dark:border-primary/20 bg-gradient-to-r from-primary/8 to-transparent flex-shrink-0">
-                <span className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-primary text-[18px]">category</span>
-                </span>
-                <h2 className="text-sm font-bold text-gray-900 dark:text-white flex-1">
-                    Khám phá danh mục
-                </h2>
+            <div className="flex flex-col gap-3 px-4 py-3 border-b border-primary/10 dark:border-primary/20 bg-gradient-to-r from-primary/8 to-transparent flex-shrink-0">
+                <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary text-[18px]">category</span>
+                    </span>
+                    <h2 className="text-sm font-bold text-gray-900 dark:text-white flex-1">
+                        Khám phá danh mục
+                    </h2>
+                </div>
+                
+                {/* Search Bar */}
+                <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                        <span className="material-symbols-outlined text-gray-400 text-[16px]">search</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Tìm danh mục..."
+                        className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-colors"
+                    />
+                </div>
             </div>
 
             {/* Body */}
@@ -169,11 +204,11 @@ export const CategorySidebar: React.FC<CategorySidebarProps> = ({ isOpen, onClos
                             </div>
                         ))}
                     </div>
-                ) : categories.length === 0 ? (
-                    <p className="text-center text-gray-400 text-sm py-8">Không có danh mục.</p>
+                ) : displayedCategories.length === 0 ? (
+                    <p className="text-center text-gray-400 text-sm py-8">Không tìm thấy danh mục.</p>
                 ) : (
                     <ul className="space-y-0.5">
-                        {categories.map((cat) => (
+                        {displayedCategories.map((cat) => (
                             <CategoryNode
                                 key={cat.id}
                                 node={cat}

@@ -10,6 +10,7 @@ import { DeleteUserModal } from '../../features/admin/components/DeleteUserModal
 // Import DataTable component dùng chung
 import { DataTable, type Column } from '../../components/common/DataTable';
 import axiosInstance from '../../lip/axiosInstance';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const SellerManagement: React.FC = () => {
     const [activeTab, setActiveTab] = useState('All');
@@ -77,7 +78,7 @@ const SellerManagement: React.FC = () => {
                     {user.anhDaiDienUrl ? (
                         <div
                             className="size-10 rounded-full bg-center bg-cover border"
-                            style={{ backgroundImage: `url(${user.anhDaiDienUrl})` }}
+                            style={{ backgroundImage: `url(${getImageUrl(user.anhDaiDienUrl)})` }}
                         />
                     ) : (
                         <div className="size-10 rounded-full flex items-center justify-center bg-gray-100 text-gray-600 font-bold uppercase">

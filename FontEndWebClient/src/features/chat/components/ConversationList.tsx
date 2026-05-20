@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Conversation } from '../types/chat.types';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 interface ConversationListProps {
     conversations: Conversation[];
@@ -72,7 +73,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                                 className="w-11 h-11 rounded-full bg-gray-200 bg-cover bg-center border border-gray-100 dark:border-gray-700"
                                 style={{
                                     backgroundImage: conv.otherUserAvatar
-                                        ? `url('${conv.otherUserAvatar}')`
+                                        ? `url('${getImageUrl(conv.otherUserAvatar)}')`
                                         : undefined,
                                 }}
                             >

@@ -4,6 +4,7 @@ import { ProductCard } from '../../features/products/components/ProductCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 import { getDisplayProducts, type DisplayProduct } from '../../features/products/api/product.api';
 import { voucherApi } from '../../features/voucher/api/voucherApi';
+import { getImageUrl } from '../../utils/imageUrl';
 
 interface FreshArrivalsSectionProps {
     products?: BuyerProduct[];
@@ -16,7 +17,7 @@ const mapDisplayProductToBuyerProduct = (product: DisplayProduct): BuyerProduct 
     id: product.id,
     name: product.tenHienThi,
     price: product.gia,
-    image: `http://localhost:5182${product.hinhAnhUrl}`, // Giả sử base URL
+    image: getImageUrl(product.hinhAnhUrl), // Dùng getImageUrl để chuẩn hóa URL
     rating: 4.5, // Mặc định vì API không có
     location: 'Việt Nam', // Mặc định
     seller: product.tenNguoiBan,

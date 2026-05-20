@@ -16,6 +16,7 @@ import {
 import type { SellerProduct, SellerProfile } from '../../features/sellerStorefront/api/storefront.api';
 import { voucherApi } from '../../features/voucher/api/voucherApi';
 import type { VoucherPublicDto } from '../../types/voucher.types';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const PLACEHOLDER_BANNER = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&q=80';
 const PLACEHOLDER_AVATAR = 'https://ui-avatars.com/api/?background=2f7f34&color=fff&size=128&name=';
@@ -202,7 +203,7 @@ const SellerStorefrontPage: React.FC = () => {
                 <section className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-soft overflow-hidden border border-gray-100 dark:border-gray-700">
                     <div className="h-48 md:h-64 relative">
                         <img
-                            src={profile?.anhBiaUrl || PLACEHOLDER_BANNER}
+                            src={getImageUrl(profile?.anhBiaUrl) || PLACEHOLDER_BANNER}
                             alt="Cover"
                             className="w-full h-full object-cover"
                         />
@@ -214,7 +215,7 @@ const SellerStorefrontPage: React.FC = () => {
                             <div className="relative shrink-0">
                                 <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-surface-dark bg-surface-light shadow-md overflow-hidden">
                                     <img
-                                        src={profile?.anhDaiDienUrl || `${PLACEHOLDER_AVATAR}${encodeURIComponent(profile?.hoTen || 'shop')}`}
+                                        src={getImageUrl(profile?.anhDaiDienUrl) || `${PLACEHOLDER_AVATAR}${encodeURIComponent(profile?.hoTen || 'shop')}`}
                                         alt={profile?.hoTen}
                                         className="w-full h-full object-cover"
                                     />
@@ -517,7 +518,7 @@ const SellerStorefrontPage: React.FC = () => {
             <BuyerFloatingButtons
                 targetSellerId={sellerId}
                 targetSellerName={profile?.hoTen}
-                targetSellerAvatar={profile?.anhDaiDienUrl}
+                targetSellerAvatar={getImageUrl(profile?.anhDaiDienUrl)}
             />
         </div>
     );
@@ -540,7 +541,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onClick
             {/* Image */}
             <div className="aspect-[4/3] bg-gray-100 overflow-hidden relative" onClick={onClick}>
                 <img
-                    src={product.hinhAnhUrl || PLACEHOLDER_PRODUCT}
+                    src={getImageUrl(product.hinhAnhUrl) || PLACEHOLDER_PRODUCT}
                     alt={product.tenHienThi}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER_PRODUCT; }}

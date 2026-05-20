@@ -7,6 +7,7 @@ import { getDisplayProducts, getRandomSuggestedProducts, type DisplayProduct } f
 import { searchStores, type SellerProfile } from '../../features/sellerStorefront/api/storefront.api';
 import { StoreCard } from '../../features/sellerStorefront/components/StoreCard';
 import type { BuyerProduct } from '../../types/buyer.types';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export const SearchResultsPage = () => {
     const [searchParams] = useSearchParams();
@@ -62,7 +63,7 @@ export const SearchResultsPage = () => {
         rating: 4.5,
         location: 'Hà Nội',
         seller: p.tenNguoiBan || 'Người bán',
-        image: p.hinhAnhUrl ? `http://localhost:5182${p.hinhAnhUrl}` : 'https://placehold.co/400x300?text=Product',
+        image: getImageUrl(p.hinhAnhUrl) || 'https://placehold.co/400x300?text=Product',
         unit: p.tenDonVi || '/kg',
         category: p.tenSanPhamChung || 'Nông sản',
         discount: 0

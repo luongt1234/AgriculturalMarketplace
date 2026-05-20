@@ -58,9 +58,11 @@ export function AutocompleteSelect<T>({
     }, [selectedLabel]);
 
     // Lọc danh sách dựa trên từ khóa tìm kiếm
-    const filteredOptions = options.filter((opt) =>
-        getOptionLabel(opt).toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOptions = options.filter((opt) => {
+        // Nếu user chưa gõ gì (searchTerm vẫn y chang giá trị đang chọn) -> Hiển thị tất cả
+        if (searchTerm === selectedLabel) return true;
+        return getOptionLabel(opt).toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     const handleSelect = (item: T) => {
         const itemValue = getOptionValue(item);

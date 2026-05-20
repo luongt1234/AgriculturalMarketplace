@@ -7,6 +7,7 @@ import { getSearchSuggestions, type DisplayProduct } from '../../features/produc
 import { CartDrawer } from '../../features/cart/components/CartDrawer';
 import { BecomeSellerModal } from '../../features/auth/components/BecomeSellerModal';
 import { NotificationDropdown } from './NotificationDropdown';
+import { getImageUrl } from '../../utils/imageUrl';
 
 interface BuyerHeaderProps {
     cartCount?: number;
@@ -179,7 +180,7 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                                 >
                                                     {/* Hiển thị avatar cửa hàng nếu có, hoặc ảnh sản phẩm */}
                                                     <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex-shrink-0 bg-cover bg-center"
-                                                        style={{ backgroundImage: `url(${item.hinhAnhUrl ? 'http://localhost:5182' + item.hinhAnhUrl : 'https://placehold.co/40x40?text=SP'})` }}
+                                                        style={{ backgroundImage: `url(${getImageUrl(item.hinhAnhUrl) || 'https://placehold.co/40x40?text=SP'})` }}
                                                     ></div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -207,7 +208,11 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                         <div className="flex items-center gap-2 sm:gap-6">
                             {/* Navigation */}
                             {showNavigation && (
-                                <nav className="hidden lg:flex gap-6">
+                                <nav className="hidden lg:flex gap-6 items-center">
+                                    <a href="/category/all" className="text-gray-600 dark:text-gray-300 font-medium text-sm hover:text-primary transition-colors flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[18px]">category</span>
+                                        Danh mục
+                                    </a>
                                     <a href="/" className="text-primary font-semibold text-sm hover:text-primary-dark transition-colors">
                                         Trang chủ
                                     </a>
@@ -252,7 +257,7 @@ export const BuyerHeader: React.FC<BuyerHeaderProps> = ({
                                             onClick={() => setIsProfileOpen(!isProfileOpen)}
                                             className="ml-2 w-9 h-9 rounded-full bg-cover bg-center border-2 border-white dark:border-gray-700 shadow-sm cursor-pointer hover:ring-2 hover:ring-primary transition-all"
                                             style={{
-                                                backgroundImage: `url('${user.anhDaiDienUrl || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmrqlq18oih4CNLC6LUhf_qcrLZNtkbQEWbCe8yWG4Vtcb3ab7q4Q3DZ3-gzyr7idsugWlYxUKIHLdvdoiilCz3i_FDAc9OaSRjFtXepMhtMwjrmWnCXOpClSSPmrnpOg0ZGH5J4XLJF6kGwf51ad3AXDgmf_6oKxt1WOUF1giE_M3-WljuyERX2Ir4jiRtErV3C27cCSsYpq2owbSoqFSSW36VLPqZkvKN2m0zgtbt-2hnzt5DaCpCdOL-LUkmI7Sid3OaZM4dg'}')`
+                                                backgroundImage: `url('${getImageUrl(user.anhDaiDienUrl) || 'https://lh3.googleusercontent.com/aida-public/AB6AXuBmrqlq18oih4CNLC6LUhf_qcrLZNtkbQEWbCe8yWG4Vtcb3ab7q4Q3DZ3-gzyr7idsugWlYxUKIHLdvdoiilCz3i_FDAc9OaSRjFtXepMhtMwjrmWnCXOpClSSPmrnpOg0ZGH5J4XLJF6kGwf51ad3AXDgmf_6oKxt1WOUF1giE_M3-WljuyERX2Ir4jiRtErV3C27cCSsYpq2owbSoqFSSW36VLPqZkvKN2m0zgtbt-2hnzt5DaCpCdOL-LUkmI7Sid3OaZM4dg'}')`
                                             }}
                                         />
                                         {isProfileOpen && (

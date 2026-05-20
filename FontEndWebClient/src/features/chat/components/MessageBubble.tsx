@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Message } from '../types/chat.types';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 interface MessageBubbleProps {
     message: Message;
@@ -20,7 +21,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isMine })
                     className="w-7 h-7 rounded-full bg-gray-200 bg-cover bg-center shrink-0 border border-gray-200"
                     style={{
                         backgroundImage: message.anhDaiDienNguoiGui
-                            ? `url('${message.anhDaiDienNguoiGui}')`
+                            ? `url('${getImageUrl(message.anhDaiDienNguoiGui)}')`
                             : undefined,
                     }}
                 >

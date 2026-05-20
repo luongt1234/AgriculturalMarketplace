@@ -3,16 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { BuyerHeader } from '../../components/layout/BuyerHeader';
 import { BuyerFooter } from '../../components/layout/BuyerFooter';
 import { BuyerFloatingButtons } from '../../components/buyer/BuyerFloatingButtons';
+import { CategoriesSection } from '../../components/buyer/CategoriesSection';
 import { ProductCard } from '../../features/products/components/ProductCard';
 import { getDisplayProducts, getCommonProducts } from '../../features/products/api/product.api';
 import type { BuyerProduct } from '../../types/buyer.types';
 import type { DisplayProduct } from '../../features/products/api/product.api';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const mapToBuyerProduct = (p: DisplayProduct): BuyerProduct => ({
     id: p.id,
     name: p.tenHienThi,
     price: p.gia,
-    image: `http://localhost:5182${p.hinhAnhUrl}`,
+    image: getImageUrl(p.hinhAnhUrl),
     rating: 4.5,
     location: 'Việt Nam',
     seller: p.tenNguoiBan,
@@ -46,6 +48,10 @@ export const CategoryProductPage = () => {
     // Resolve category name from API
     useEffect(() => {
         const fetchCategoryName = async () => {
+            if (categoryId === 'all') {
+                setCategoryName('Tất cả danh mục');
+                return;
+            }
             try {
                 const data = await getCommonProducts();
                 const found = data.find(c => c.id === categoryId);
@@ -68,6 +74,15 @@ export const CategoryProductPage = () => {
     // Initial load
     useEffect(() => {
         if (!categoryId) return;
+        
+        if (categoryId === 'all') {
+            setLoading(false);
+            setProducts([]);
+            setRawProducts([]);
+            setTotalRecords(0);
+            return;
+        }
+
         setLoading(true);
         setProducts([]);
         setRawProducts([]);
@@ -131,7 +146,7 @@ export const CategoryProductPage = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">{categoryName}</h1>
-                        {!loading && (
+                        {!loading && categoryId !== 'all' && (
                             <p className="text-gray-500 text-sm mt-1">
                                 Tìm thấy <span className="font-semibold text-primary">{totalRecords}</span> sản phẩm
                             </p>
@@ -139,7 +154,8 @@ export const CategoryProductPage = () => {
                     </div>
 
                     {/* Sort */}
-                    <div className="flex items-center gap-3">
+                    {categoryId !== 'all' && (
+                        <div className="flex items-center gap-3">
                         <label className="text-sm text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap">Sắp xếp:</label>
                         <select
                             value={sortBy}
@@ -151,10 +167,15 @@ export const CategoryProductPage = () => {
                             ))}
                         </select>
                     </div>
+                    )}
                 </div>
 
                 {/* Products Grid */}
-                {loading ? (
+                {categoryId === 'all' ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <CategoriesSection title="" showViewAll={false} onCategoryClick={(c) => navigate(`/category/${c.id}`)} />
+                    </div>
+                ) : loading ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         {Array.from({ length: pageSize }).map((_, i) => (
                             <div key={i} className="animate-pulse">

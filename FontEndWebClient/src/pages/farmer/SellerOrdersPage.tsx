@@ -7,6 +7,7 @@ import {
     sellerTuChoi,
     sellerGiaoHang,
 } from '../../features/checkout/api/order.api';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ChiTietDonHang {
@@ -148,7 +149,7 @@ function OrderDetailModal({
                                 <div key={item.id} className="flex items-center gap-3 p-3 bg-[#f6f8f6] dark:bg-[#1e2d20] rounded-xl">
                                     <div
                                         className="w-14 h-14 rounded-lg bg-gray-200 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-700"
-                                        style={{ backgroundImage: item.hinhAnhUrl ? `url('${item.hinhAnhUrl}')` : undefined }}
+                                        style={{ backgroundImage: item.hinhAnhUrl ? `url('${getImageUrl(item.hinhAnhUrl)}')` : undefined }}
                                     />
                                     <div className="flex-1 min-w-0">
                                         <p className="font-medium text-sm text-[#131613] dark:text-white truncate">{item.tenSanPham}</p>
@@ -252,7 +253,7 @@ function OrderRow({
                 <div className="flex items-center gap-3">
                     <div
                         className="w-10 h-10 rounded-lg bg-gray-200 bg-cover bg-center shrink-0 border border-gray-100 dark:border-gray-700"
-                        style={{ backgroundImage: firstImg ? `url('${firstImg}')` : undefined }}
+                        style={{ backgroundImage: firstImg ? `url('${getImageUrl(firstImg)}')` : undefined }}
                     >
                         {!firstImg && (
                             <span className="material-symbols-outlined text-gray-400 text-[18px] flex items-center justify-center w-full h-full">

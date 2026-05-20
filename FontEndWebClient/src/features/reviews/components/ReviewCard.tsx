@@ -1,18 +1,14 @@
 import React from 'react';
 import { ReviewStars } from './ReviewStars';
 import type { Review } from '../types/review.types';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 interface ReviewCardProps {
     review: Review;
-    baseUrl?: string;
 }
 
-export const ReviewCard: React.FC<ReviewCardProps> = ({ review, baseUrl = '' }) => {
-    const avatarUrl = review.anhDaiDienUrl
-        ? review.anhDaiDienUrl.startsWith('http')
-            ? review.anhDaiDienUrl
-            : `${baseUrl}${review.anhDaiDienUrl}`
-        : null;
+export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+    const avatarUrl = getImageUrl(review.anhDaiDienUrl);
 
     const initials = review.tenNguoiDanhGia
         .split(' ')

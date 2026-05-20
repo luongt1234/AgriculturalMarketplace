@@ -1,6 +1,7 @@
 import React from 'react';
 import { useUIStore } from '../../store/useUIStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export const DashboardHeader: React.FC = () => {
     const { pageTitle, headerActions } = useUIStore();
@@ -32,7 +33,7 @@ export const DashboardHeader: React.FC = () => {
 
                 {user?.anhDaiDienUrl ? (
                     <img
-                        src={user.anhDaiDienUrl}
+                        src={getImageUrl(user.anhDaiDienUrl)}
                         alt={user.hoTen}
                         className="w-8 h-8 rounded-full object-cover border border-gray-200 shadow-sm"
                     />

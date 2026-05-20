@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { SellerProfile } from '../api/storefront.api';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 interface StoreCardProps {
     store: SellerProfile;
@@ -17,7 +18,7 @@ export const StoreCard: React.FC<StoreCardProps> = ({ store }) => {
             <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-50 dark:bg-gray-700 flex items-center justify-center">
                 {store.anhDaiDienUrl ? (
                     <img
-                        src={store.anhDaiDienUrl}
+                        src={getImageUrl(store.anhDaiDienUrl)}
                         alt={store.hoTen}
                         className="w-full h-full object-cover"
                     />

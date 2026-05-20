@@ -6,6 +6,7 @@ import { ProductFormModal } from '../../features/products/components/ProductForm
 import { DeleteProductModal } from '../../features/products/components/DeleteProductModal';
 import { getProducts, togglePinProduct } from '../../features/products/api/product.api';
 import { DataTable, type Column } from '../../components/common/DataTable';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export const MyProductPage = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -92,7 +93,7 @@ export const MyProductPage = () => {
                 <div className="flex items-center gap-3">
                     <div
                         className="size-12 rounded-lg bg-gray-200 bg-cover bg-center shrink-0 border border-gray-200 dark:border-gray-700"
-                        style={{ backgroundImage: product.hinhAnhUrl ? `url('${product.hinhAnhUrl}')` : undefined }}
+                        style={{ backgroundImage: product.hinhAnhUrl ? `url('${getImageUrl(product.hinhAnhUrl)}')` : undefined }}
                     ></div>
                     <div className="flex flex-col">
                         <span className="font-medium text-[#131613] dark:text-white truncate max-w-[200px]" title={product.tenHienThi}>

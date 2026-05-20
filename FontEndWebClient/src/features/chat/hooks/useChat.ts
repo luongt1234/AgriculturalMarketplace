@@ -22,72 +22,109 @@ export const useChat = (options: UseChatOptions = {}) => {
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeUserId, setActiveUserId] = useState<string | null>(null);
+    const activeUserIdRef = useRef<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        activeUserIdRef.current = activeUserId;
+    }, [activeUserId]);
 
     const [loadingConv, setLoadingConv] = useState(false);
     const [loadingMsg, setLoadingMsg] = useState(false);
 
     // ─── Kết nối SignalR ────────────────────────────────────────────────────
     const connect = useCallback(async () => {
-        if (hubRef.current) return; // đã kết nối
+        if (
+            hubRef.current &&
+            hubRef.current.state !== signalR.HubConnectionState.Disconnected
+        ) {
+            return;
+        }
+
         const hub = buildHubConnection();
         hubRef.current = hub;
 
-        // Nhận tin nhắn mới trong conversation đang mở
         hub.on('ReceiveMessage', (msg: Message) => {
             setMessages((prev) => {
-                // Tránh duplicate
                 if (prev.some((m) => m.id === msg.id)) return prev;
                 return [...prev, msg];
             });
         });
 
-        // Có tin nhắn mới từ bất kỳ conversation nào
         hub.on('NewMessageNotification', (msg: Message) => {
             setUnreadCount((c) => c + 1);
-            // Cập nhật preview tin nhắn cuối trong danh sách
+
             setConversations((prev) =>
                 prev.map((conv) =>
                     conv.otherUserId === msg.nguoiGuiId
                         ? {
-                              ...conv,
-                              lastMessage: msg.noiDung,
-                              lastMessageTime: msg.thoiGian,
-                              unreadCount: conv.unreadCount + 1,
-                          }
+                            ...conv,
+                            lastMessage: msg.noiDung,
+                            lastMessageTime: msg.thoiGian,
+                            unreadCount: conv.unreadCount + 1,
+                        }
                         : conv
                 )
             );
+
+            // NẾU đang mở chat với người này, push luôn tin nhắn vào list và gọi markRead
+            if (activeUserIdRef.current === msg.nguoiGuiId) {
+                setMessages((prev) => {
+                    if (prev.some((m) => m.id === msg.id)) return prev;
+                    return [...prev, msg];
+                });
+                // Đánh dấu đã đọc ngầm để backend biết
+                markRead(msg.nguoiGuiId).catch(() => {});
+            }
         });
 
-        // Người nhận đã đọc tin
-        hub.on('MessagesRead', () => {
-            // Có thể dùng để update tick "đã đọc" nếu muốn
-        });
+        hub.on('MessagesRead', () => { });
 
         hub.onclose(() => setIsConnected(false));
         hub.onreconnected(() => setIsConnected(true));
 
         try {
             await hub.start();
-            setIsConnected(true);
-        } catch (err) {
+
+            if (hubRef.current === hub) {
+                if (hub.state === signalR.HubConnectionState.Connected) {
+                    setIsConnected(true);
+                }
+            } else {
+                hub.stop(); // Ngắt nếu có kết nối mới ghi đè
+            }
+        } catch (err: any) {
+            if (err.name === 'AbortError' || err.message?.includes('stopped during negotiation')) {
+                // Bỏ qua lỗi ngắt kết nối do React Strict Mode unmount
+                return;
+            }
             console.error('ChatHub connection failed:', err);
+            if (hubRef.current === hub) {
+                hubRef.current = null;
+            }
         }
     }, []);
 
     const disconnect = useCallback(async () => {
         if (!hubRef.current) return;
-        await hubRef.current.stop();
+        const hub = hubRef.current;
         hubRef.current = null;
         setIsConnected(false);
+        await hub.stop().catch(() => {});
     }, []);
 
     useEffect(() => {
         if (autoConnect) connect();
         return () => { disconnect(); };
     }, [autoConnect, connect, disconnect]);
+
+    // ─── Tự động Join Group khi có mạng và có activeUser ─────────────────────
+    useEffect(() => {
+        if (isConnected && activeUserId && hubRef.current?.state === signalR.HubConnectionState.Connected) {
+            hubRef.current.invoke('JoinConversation', activeUserId).catch(() => {});
+        }
+    }, [isConnected, activeUserId]);
 
     // ─── Load conversations ─────────────────────────────────────────────────
     const loadConversations = useCallback(async () => {
@@ -107,7 +144,7 @@ export const useChat = (options: UseChatOptions = {}) => {
         async (otherUserId: string) => {
             // Rời conversation cũ
             if (activeUserId && hubRef.current) {
-                await hubRef.current.invoke('LeaveConversation', activeUserId).catch(() => {});
+                await hubRef.current.invoke('LeaveConversation', activeUserId).catch(() => { });
             }
             setActiveUserId(otherUserId);
             setMessages([]);
@@ -115,7 +152,7 @@ export const useChat = (options: UseChatOptions = {}) => {
 
             // Join conversation group (hub cũng mark-as-read)
             if (hubRef.current?.state === signalR.HubConnectionState.Connected) {
-                await hubRef.current.invoke('JoinConversation', otherUserId).catch(() => {});
+                await hubRef.current.invoke('JoinConversation', otherUserId).catch(() => { });
             }
 
             // Load lịch sử
@@ -135,7 +172,7 @@ export const useChat = (options: UseChatOptions = {}) => {
                 )
             );
             setUnreadCount((n) => Math.max(0, n - (conversations.find((c) => c.otherUserId === otherUserId)?.unreadCount ?? 0)));
-            await markRead(otherUserId).catch(() => {});
+            await markRead(otherUserId).catch(() => { });
         },
         [activeUserId, conversations]
     );

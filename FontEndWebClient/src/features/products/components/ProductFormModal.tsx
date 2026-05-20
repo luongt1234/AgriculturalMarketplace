@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
+import axiosInstance from '../../../lip/axiosInstance';
 import TreeSelect from '../../../components/common/TreeSelect';
 import { AutocompleteSelect } from '../../../components/common/AutocompleteSelect';
 import { createProduct, updateProduct, getCommonProducts, getQualityOptions, type ProductFormRequest } from '../api/product.api';
 import type { Product, CommonProduct, QualityOption } from '../../../types/product.types';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -23,7 +25,7 @@ type FullLocationItem = {
     district_code?: number;
 };
 
-const API_ADDRESS = import.meta.env.PROVINCES_API_URL || 'https://provinces.open-api.vn/api/v1';
+const GHN_LOCATION_PROXY = '/api/shipping/ghn';
 
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
@@ -108,17 +110,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
         const init = async () => {
             // 1. Load provinces
-            let provinceList: FullLocationItem[] = [];
-            try {
-                setLoadingProvinces(true);
-                const response = await axios.get(API_ADDRESS);
-                provinceList = normalizeLocations(response.data);
-                setProvinces(provinceList);
-            } catch (error) {
-                console.error('Error fetching provinces:', error);
-            } finally {
-                setLoadingProvinces(false);
-            }
+            const provinceList = await fetchProvinces();
 
             if (initialData) {
                 // 2a. Edit mode: fill form
@@ -133,15 +125,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     diaChi: initialData.diaChi || '',
                     diaChiChiTiet: initialData.diaChiChiTiet || '',
                 });
-                setPreviewImage(initialData.hinhAnhUrl || null);
+                setPreviewImage(getImageUrl(initialData.hinhAnhUrl) || null);
                 setAddressChanged(false);
 
                 // 3. Parse địa chỉ cũ rồi cascade fetch districts → wards
                 try {
                     const parsed = JSON.parse(initialData.diaChi || '{}');
-                    const cityName = parsed.name ?? parsed.provinceName ?? '';
-                    const districtName = parsed.districts?.[0]?.name ?? parsed.districtName ?? '';
-                    const wardName = parsed.districts?.[0]?.wards?.[0]?.name ?? parsed.wardName ?? '';
+                    const cityName = parsed.provinceName ?? parsed.name ?? '';
+                    const districtName = parsed.districtName ?? parsed.districts?.[0]?.name ?? '';
+                    const wardName = parsed.wardName ?? parsed.districts?.[0]?.wards?.[0]?.name ?? '';
 
                     const province = provinceList.find(p => p.name === cityName);
                     if (province) {
@@ -211,13 +203,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         if (!data) return [];
         if (Array.isArray(data)) {
             return data.map((item) => ({
-                code: item.code,
-                name: item.name ?? item.name_with_type ?? item.full_name ?? item.label ?? '',
-                division_type: item.division_type,
+                code: item.WardCode ?? item.ward_code ?? item.DistrictID ?? item.district_id ?? item.ProvinceID ?? item.province_id ?? item.Code ?? item.code ?? item.WardID ?? 0,
+                name: item.WardName ?? item.ward_name ?? item.DistrictName ?? item.district_name ?? item.ProvinceName ?? item.province_name ?? item.name ?? item.full_name ?? item.name_with_type ?? item.label ?? '',
+                division_type: item.Type ?? item.division_type ?? item.ProvinceType ?? item.DistrictType ?? item.ward_type ?? '',
                 codename: item.codename,
                 phone_code: item.phone_code,
-                province_code: item.province_code,
-                district_code: item.district_code,
+                province_code: item.ProvinceID ?? item.province_code ?? item.province_id ?? item.provinceId,
+                district_code: item.DistrictID ?? item.district_code ?? item.district_id ?? item.districtId,
             }));
         }
         if (data.provinces) return normalizeLocations(data.provinces);
@@ -227,11 +219,27 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         return [];
     };
 
+    const fetchProvinces = async () => {
+        try {
+            setLoadingProvinces(true);
+            const response = await axiosInstance.get(`${GHN_LOCATION_PROXY}/provinces`);
+            const list = normalizeLocations((response as any)?.data ?? response);
+            setProvinces(list);
+            return list;
+        } catch (error) {
+            console.error('Error fetching provinces:', error);
+            setProvinces([]);
+            return [];
+        } finally {
+            setLoadingProvinces(false);
+        }
+    };
+
     const fetchDistricts = async (provinceCode: string) => {
         try {
             setLoadingDistricts(true);
-            const response = await axios.get(`${API_ADDRESS}/p/${provinceCode}?depth=2`);
-            const list = normalizeLocations(response.data.districts);
+            const response = await axiosInstance.get(`${GHN_LOCATION_PROXY}/districts/${provinceCode}`);
+            const list = normalizeLocations((response as any)?.data ?? response);
             setDistricts(list);
             return list;
         } catch (error) {
@@ -246,8 +254,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
     const fetchWards = async (districtCode: string) => {
         try {
             setLoadingWards(true);
-            const response = await axios.get(`${API_ADDRESS}/d/${districtCode}?depth=2`);
-            const list = normalizeLocations(response.data.wards);
+            const response = await axiosInstance.get(`${GHN_LOCATION_PROXY}/wards/${districtCode}`);
+            const list = normalizeLocations((response as any)?.data ?? response);
             setWards(list);
             return list;
         } catch (error) {
@@ -259,17 +267,24 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         }
     };
 
-    const handleCityChange = (cityName: string) => {
+    const handleCityChange = async (cityName: string) => {
         setSelectedCity(cityName);
         setSelectedDistrict('');
         setSelectedWard('');
         setAddressChanged(true);
+        setDistricts([]);
+        setWards([]);
+        const province = provinces.find(p => p.name === cityName);
+        if (province) await fetchDistricts(province.code.toString());
     };
 
-    const handleDistrictChange = (districtName: string) => {
+    const handleDistrictChange = async (districtName: string) => {
         setSelectedDistrict(districtName);
         setSelectedWard('');
         setAddressChanged(true);
+        setWards([]);
+        const district = districts.find(d => d.name === districtName);
+        if (district) await fetchWards(district.code.toString());
     };
 
     const handleWardChange = (wardName: string) => {
@@ -327,8 +342,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             }
 
             diaChiJson = JSON.stringify({
-                ...selectedProvince,
-                districts: [{ ...selectedDistrictObj, wards: [selectedWardObj] }]
+                provinceId: selectedProvince.code,
+                provinceName: selectedProvince.name,
+                districtId: selectedDistrictObj.code,
+                districtName: selectedDistrictObj.name,
+                wardCode: String(selectedWardObj.code),
+                wardName: selectedWardObj.name,
+                diaChiChiTiet: formData.diaChiChiTiet
             });
         }
 

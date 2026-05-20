@@ -375,6 +375,8 @@ export function CheckoutPage() {
                 // Reset store rồi chuyển trang
                 store.goToNextStep();
 
+                // chuyển đến trang đơn hàng của người dùng
+                navigate('/orders');
                 // Refresh giỏ hàng (items đã bị xoá phía backend)
                 await fetchCart();
 

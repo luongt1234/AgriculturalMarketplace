@@ -5,6 +5,7 @@ import {
     HubConnectionState,
     LogLevel,
 } from '@microsoft/signalr';
+import { toast } from 'sonner';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -32,14 +33,11 @@ export function useOrderNotifications() {
     useEffect(() => {
         if (!isAuthenticated) return;
 
-        const token =
-            localStorage.getItem('token') ??
-            sessionStorage.getItem('token') ??
-            '';
+        const token = useAuthStore.getState().token;
         if (!token) return;
 
         const hub = new HubConnectionBuilder()
-            .withUrl(`${HUB_URL}?access_token=${token}`, {
+            .withUrl(HUB_URL, {
                 accessTokenFactory: () => token,
             })
             .withAutomaticReconnect([0, 2000, 5000, 10000])
@@ -49,29 +47,103 @@ export function useOrderNotifications() {
         connRef.current = hub;
 
         // ── Lắng nghe sự kiện cập nhật đơn hàng ──────────────────────────
-        hub.on('OrderStatusUpdated', (orderId: string, newStatus: string) => {
-            const cfg = STATUS_MESSAGES[newStatus];
-            addNotification({
-                type: 'order',
-                title: cfg?.title ?? `Đơn hàng cập nhật: ${newStatus}`,
-                message: cfg?.message ?? `Đơn hàng #${orderId.slice(0, 8).toUpperCase()} đã được cập nhật.`,
-                link: '/orders',
-            });
+        hub.on('OrderStatusChanged', (data: any) => {
+            console.log('[OrderHub] Received OrderStatusChanged:', data);
+            try {
+                // Hỗ trợ cả camelCase và PascalCase
+                const orderId = data.donHangId || data.DonHangId;
+                const status = data.trangThai || data.TrangThai;
+                const msg = data.message || data.Message;
+
+                const cfg = STATUS_MESSAGES[status];
+                const title = cfg?.title ?? `Đơn hàng cập nhật: ${status}`;
+                const notificationMsg = msg || (cfg?.message ?? `Đơn hàng #${String(orderId).slice(0, 8).toUpperCase()} đã được cập nhật.`);
+                
+                addNotification({
+                    type: 'order',
+                    title,
+                    message: notificationMsg,
+                    link: '/orders',
+                });
+                
+                // Hiển thị toast popup
+                toast.info(title, { description: notificationMsg });
+            } catch (err) {
+                console.error('[OrderHub] Error processing OrderStatusChanged:', err);
+            }
+        });
+
+        // ── Lắng nghe đơn hàng mới (Dành cho Seller) ──────────────────────
+        hub.on('NewOrder', (data: any) => {
+            console.log('[OrderHub] Received NewOrder:', data);
+            try {
+                const orderId = data.donHangId || data.DonHangId;
+                const total = data.tongThanhToan || data.TongThanhToan;
+                const title = '🛒 Đơn hàng mới';
+                const message = `Bạn có đơn hàng mới #${String(orderId).slice(0, 8).toUpperCase()} trị giá ${Number(total).toLocaleString()}đ.`;
+                
+                addNotification({
+                    type: 'order',
+                    title,
+                    message,
+                    link: '/farmer/orders',
+                });
+                toast.success(title, { description: message });
+            } catch (err) {
+                console.error('[OrderHub] Error processing NewOrder:', err);
+            }
         });
 
         // ── Lắng nghe thanh toán MoMo thành công ─────────────────────────
-        hub.on('PaymentSuccess', (orderId: string) => {
-            addNotification({
-                type: 'order',
-                title: '💳 Thanh toán thành công',
-                message: `Thanh toán cho đơn hàng #${orderId.slice(0, 8).toUpperCase()} đã được xác nhận qua MoMo.`,
-                link: '/orders',
-            });
+        hub.on('MomoPaymentSuccess', (data: any) => {
+            console.log('[OrderHub] Received MomoPaymentSuccess:', data);
+            try {
+                const orderId = data.donHangId || data.DonHangId;
+                const soTien = data.soTien || data.SoTien || 0;
+                const msg = data.message || data.Message;
+
+                const title = '💳 Thanh toán thành công';
+                const message = msg || `Thanh toán ${Number(soTien).toLocaleString()}đ cho đơn hàng #${String(orderId).slice(0, 8).toUpperCase()} thành công.`;
+                
+                addNotification({
+                    type: 'order',
+                    title,
+                    message,
+                    link: '/orders',
+                });
+                
+                toast.success(title, { description: message });
+            } catch (err) {
+                console.error('[OrderHub] Error processing MomoPaymentSuccess:', err);
+            }
+        });
+
+        // ── Lắng nghe thanh toán MoMo thất bại ───────────────────────────
+        hub.on('MomoPaymentFailed', (data: any) => {
+            console.log('[OrderHub] Received MomoPaymentFailed:', data);
+            try {
+                const orderId = data.donHangId || data.DonHangId;
+                const msg = data.message || data.Message;
+
+                const title = '❌ Thanh toán thất bại';
+                const message = msg || `Thanh toán cho đơn hàng #${String(orderId).slice(0, 8).toUpperCase()} đã thất bại.`;
+                
+                addNotification({
+                    type: 'order',
+                    title,
+                    message,
+                    link: '/orders',
+                });
+                toast.error(title, { description: message });
+            } catch (err) {
+                console.error('[OrderHub] Error processing MomoPaymentFailed:', err);
+            }
         });
 
         // ── Lắng nghe thông báo hệ thống ─────────────────────────────────
         hub.on('SystemNotification', (title: string, message: string) => {
             addNotification({ type: 'system', title, message });
+            toast.info(title, { description: message });
         });
 
         // ── Khởi động kết nối ─────────────────────────────────────────────
@@ -80,8 +152,10 @@ export function useOrderNotifications() {
         });
 
         return () => {
-            hub.off('OrderStatusUpdated');
-            hub.off('PaymentSuccess');
+            hub.off('OrderStatusChanged');
+            hub.off('NewOrder');
+            hub.off('MomoPaymentSuccess');
+            hub.off('MomoPaymentFailed');
             hub.off('SystemNotification');
             if (connRef.current?.state === HubConnectionState.Connected) {
                 connRef.current.stop();

@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import type { Conversation, Message } from '../types/chat.types';
 import { MessageBubble } from './MessageBubble';
 import { ChatInput } from './ChatInput';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 interface ChatWindowProps {
     currentUserId: string;
@@ -58,7 +59,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     className="w-9 h-9 rounded-full bg-gray-200 bg-cover bg-center border border-gray-200 dark:border-gray-700 shrink-0"
                     style={{
                         backgroundImage: conversation.otherUserAvatar
-                            ? `url('${conversation.otherUserAvatar}')`
+                            ? `url('${getImageUrl(conversation.otherUserAvatar)}')`
                             : undefined,
                     }}
                 >

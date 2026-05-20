@@ -5,6 +5,7 @@ import { useFavoriteStore } from '../../store/useFavoriteStore';
 import { ProductCard } from '../../features/products/components/ProductCard';
 import type { BuyerProduct } from '../../types/buyer.types';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export const FavoriteProductsPage = () => {
     const { favorites, loading, error, fetchFavorites } = useFavoriteStore();
@@ -52,7 +53,7 @@ export const FavoriteProductsPage = () => {
                                 id: fav.sanPhamDangId,
                                 name: fav.tenHienThi,
                                 price: fav.gia,
-                                image: `http://localhost:5182${fav.hinhAnhUrl}`,
+                                image: getImageUrl(fav.hinhAnhUrl),
                                 category: '',
                                 location: 'Việt Nam',
                                 seller: fav.tenCuaHang,

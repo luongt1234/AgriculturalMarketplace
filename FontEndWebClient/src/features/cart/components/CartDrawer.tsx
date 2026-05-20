@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../../store/useCartStore';
 import { useCheckoutStore } from '../../../store/useCheckoutStore';
 import { getProductById } from '../../products/api/product.api';
+import { getImageUrl } from '../../../utils/imageUrl';
 import type { CartItemDto } from '../../../types/cart.types';
 
 interface CartDrawerProps {
@@ -85,7 +86,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                 name: item.tenSanPham || '',
                 price: item.gia,
                 quantity: item.soLuong,
-                image: item.hinhAnhUrl || '',
+                image: getImageUrl(item.hinhAnhUrl),
                 unit: item.donVi || '',
                 sellerId: item.nguoiBanId,
                 sellerName: item.tenNguoiBan || '',
@@ -226,7 +227,7 @@ const CartItemRow: React.FC<CartItemRowProps> = ({ item, isSelected, onToggle, o
             {/* Product image */}
             <div
                 className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-700 bg-center bg-cover flex-shrink-0 border border-gray-200 dark:border-gray-600"
-                style={{ backgroundImage: `url(${item.hinhAnhUrl})` }}
+                style={{ backgroundImage: `url(${getImageUrl(item.hinhAnhUrl)})` }}
             />
 
             {/* Details */}

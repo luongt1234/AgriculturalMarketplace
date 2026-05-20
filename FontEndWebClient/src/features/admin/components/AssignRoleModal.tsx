@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import axiosInstance from '../../../lip/axiosInstance';
 import type { NguoiDung } from '../../../types/nguoiDung.type';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 // ── Danh sách vai trò có thể phân ──────────────────────────────────────────────
 const ROLES = [
@@ -115,7 +116,7 @@ export const AssignRoleModal: React.FC<AssignRoleModalProps> = ({
                     {/* ── User Info ───────────────────────────────────── */}
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
                         {user.anhDaiDienUrl ? (
-                            <img src={user.anhDaiDienUrl} alt="" className="w-11 h-11 rounded-full object-cover border-2 border-white shadow" />
+                            <img src={getImageUrl(user.anhDaiDienUrl)} alt="" className="w-11 h-11 rounded-full object-cover border-2 border-white shadow" />
                         ) : (
                             <div className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg">
                                 {user.hoTen?.charAt(0).toUpperCase()}

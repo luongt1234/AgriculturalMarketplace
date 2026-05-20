@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { cartApi } from '../features/cart/api/cart.api';
 import type { CartDto, CartItemDto, AddToCartDto } from '../types/cart.types';
+import { useNotificationStore } from './useNotificationStore';
 
 interface CartState {
     cart: CartDto | null;
@@ -37,6 +38,14 @@ export const useCartStore = create<CartState>((set, get) => ({
         try {
             const cart = await cartApi.addItem(data);
             set({ cart, loading: false });
+            
+            // Push thông báo vào system khi thêm giỏ hàng thành công
+            useNotificationStore.getState().addNotification({
+                type: 'system',
+                title: '🛒 Thêm giỏ hàng thành công',
+                message: 'Sản phẩm đã được thêm vào giỏ hàng của bạn.',
+                link: '/cart'
+            });
         } catch (error) {
             set({ error: error instanceof Error ? error.message : 'Failed to add item to cart', loading: false });
         }
