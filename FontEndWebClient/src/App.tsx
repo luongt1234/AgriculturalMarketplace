@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import AppRoutes from './routes/AppRoutes.tsx';
 import { useOrderNotifications } from './hooks/useOrderNotifications';
-
+import ScrollToTop from './components/common/ScrollToTop';
 // import './index.css';
 
 const queryClient = new QueryClient({
@@ -21,6 +21,7 @@ function AppContent() {
   useOrderNotifications();
   return (
     <>
+      <ScrollToTop />
       <AppRoutes />
       <Toaster position="top-right" richColors closeButton />
     </>
