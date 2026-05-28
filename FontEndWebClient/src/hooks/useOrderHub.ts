@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 
-const HUB_URL = `${import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7001'}/hubs/order`;
+const HUB_URL = `${import.meta.env.VITE_ORDER_HUB_URL ?? '/hubs/order'}`;
 
 /**
  * Hook để kết nối và lắng nghe sự kiện từ OrderHub (SignalR).

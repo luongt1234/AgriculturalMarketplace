@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useAuthStore } from '../store/useAuthStore';
 
-const HUB_URL = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5182'}/hubs/order`;
+const HUB_URL = `${import.meta.env.VITE_ORDER_HUB_URL ?? '/hubs/order'}`;
 
 // Map trạng thái đơn hàng → thông báo tiếng Việt
 const STATUS_MESSAGES: Record<string, { title: string; message: string }> = {

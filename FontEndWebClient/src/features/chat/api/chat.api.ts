@@ -2,7 +2,7 @@ import * as signalR from '@microsoft/signalr';
 import axiosInstance from '../../../lip/axiosInstance';
 import type { Conversation, Message, SendMessagePayload } from '../types/chat.types';
 
-const HUB_URL = 'http://localhost:5182/hubs/chat';
+const HUB_URL = `${import.meta.env.VITE_HUB_URL ?? '/hubs/chat'}`;
 
 // Lấy token từ zustand persist storage
 const getToken = (): string | null => {

@@ -10,7 +10,7 @@ appsettings.json
 # Node.js
 node_modules/
 .env
-
+.env.production
 # Python
 __pycache__/
 *.pyc

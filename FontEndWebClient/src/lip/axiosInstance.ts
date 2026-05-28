@@ -6,7 +6,7 @@ import type {
     InternalAxiosRequestConfig
 } from 'axios';
 
-const API_BASE_URL = 'http://localhost:5182';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '';
 
 export interface ApiResponse<T = any> {
     success: boolean;
@@ -66,7 +66,7 @@ axiosInstance.interceptors.response.use(
                             const refreshToken = localStorage.getItem('refreshToken');
 
                             if (refreshToken) {
-                                const response = await axiosInstance.post('/auth/refresh', {
+                                const response = await axiosInstance.post('/api/auth/refresh', {
                                     refreshToken
                                 });
 

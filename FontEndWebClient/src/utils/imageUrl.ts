@@ -1,7 +1,7 @@
 /**
  * Base URL của backend server (dùng cho static files / ảnh upload)
  */
-const IMAGE_BASE_URL = 'http://localhost:5182';
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL ?? '/api';
 
 /**
  * Trả về URL đầy đủ của ảnh.
